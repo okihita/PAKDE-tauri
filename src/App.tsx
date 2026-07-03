@@ -37,7 +37,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 
 // Interface Definitions
 interface Member {
-  id: string;
+  id?: string;
   nik: string;
   name: string;
   place_of_birth: string;
@@ -87,6 +87,134 @@ interface JournalEntryWithLines {
   }>;
 }
 
+// ── Additional interfaces for typed DB queries ──────────────────
+
+interface CooperativeProfile {
+  id?: string;
+  name: string;
+  legal_id: string;
+  address: string;
+  village: string;
+  district: string;
+  regency: string;
+  province: string;
+  postal_code: string;
+  phone: string;
+  email: string;
+  business_units: string; // JSON string
+  officers: string; // JSON string
+  logo_path?: string;
+  rag_status: string;
+  health_score: number;
+  status?: string;
+  level?: string;
+  parent_id?: string;
+  parent_name?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+interface EwsAlert {
+  id: string;
+  cooperative_id: string;
+  level: "info" | "warning" | "critical";
+  indicator: string;
+  message: string;
+  current_value: number;
+  threshold_value: number;
+  trend: string;
+  suggested_action: string;
+  triggered_at: string;
+  resolved_at: string | null;
+  is_active: number;
+}
+
+interface LedgerLine {
+  id: string;
+  journal_entry_id: string;
+  account_code: string;
+  description: string;
+  debit: number;
+  credit: number;
+  date: string;
+  number: string;
+  entry_desc: string;
+  runningBalance: number;
+}
+
+interface FeasibilityResult {
+  enpv: number;
+  eirr: number;
+  ebcr: number;
+  tier: number;
+  tierLabel?: string;
+  tierColor?: string;
+  isNPVPass?: boolean;
+  isIRRPass?: boolean;
+  isBCRPass?: boolean;
+}
+
+interface SensitivityResult {
+  enpv: number;
+  eirr: number;
+  ebcr: number;
+  tier: number;
+  tierLabel?: string;
+  scenario?: string;
+  investment?: number;
+  flows?: number[];
+}
+
+interface SyncHistoryItem {
+  id: string;
+  cooperative_id: string;
+  direction: "upload" | "download";
+  status: "success" | "failed" | "in_progress";
+  entity_count: number;
+  error_message: string | null;
+  started_at: string;
+  completed_at: string | null;
+}
+
+interface JournalEntryRow {
+  id: string;
+  cooperative_id: string;
+  number: string;
+  date: string;
+  description: string;
+  reference: string;
+  category: string;
+  tags: string;
+  created_by: string;
+  created_at: string;
+  sync_status: string;
+}
+
+interface JournalLineRow {
+  id: string;
+  journal_entry_id: string;
+  account_code: string;
+  description: string;
+  debit: number;
+  credit: number;
+  name: string; // from COA join
+}
+
+interface CoaBalanceRow {
+  normal_balance: string;
+  balance: number;
+}
+
+interface CountRow {
+  count: number;
+}
+
+// ── Error helper ────────────────────────────────────────────────
+
+function getErrorMessage(err: unknown): string {
+  return err instanceof Error ? err.message : String(err);
+}
+
 export default function App() {
   return (
     <ToastProvider>
@@ -110,7 +238,7 @@ function AppContent() {
   const [activeTab, setActiveTab] = useState<"home" | "members" | "accounting" | "feasibility" | "sync" | "settings">(
     "home",
   );
-  const [coopProfile, setCoopProfile] = useState<any>({
+  const [coopProfile, setCoopProfile] = useState<CooperativeProfile>({
     name: "Koperasi Maju Bersama",
     legal_id: "AHU-098872.AH.01.26.2026",
     address: "Jl. Raya Domas No. 12",
@@ -127,8 +255,10 @@ function AppContent() {
     health_score: 94,
     rag_status: "green",
   });
-  const [ewsAlertsList, setEwsAlertsList] = useState<any[]>([]);
-  const [dashboardIncomeData, setDashboardIncomeData] = useState<any[]>([]);
+  const [ewsAlertsList, setEwsAlertsList] = useState<EwsAlert[]>([]);
+  const [dashboardIncomeData, setDashboardIncomeData] = useState<
+    Array<{ month: string; income: number; expense: number }>
+  >([]);
 
   // Member CRUD States
   const [membersList, setMembersList] = useState<Member[]>([]);
@@ -137,7 +267,7 @@ function AppContent() {
   const [showMemberModal, setShowMemberModal] = useState(false);
   const [memberFormType, setMemberFormType] = useState<"add" | "edit">("add");
   const [currentMemberId, setCurrentMemberId] = useState("");
-  const [memberFormValues, setMemberFormValues] = useState<any>({
+  const [memberFormValues, setMemberFormValues] = useState<Member>({
     nik: "",
     name: "",
     place_of_birth: "",
@@ -161,11 +291,17 @@ function AppContent() {
   const [accountingTab, setAccountingTab] = useState<"coa" | "journal" | "ledger" | "neraca" | "labarugi">("coa");
   const [coaAccounts, setCoaAccounts] = useState<CoaAccount[]>([]);
   const [showCoaModal, setShowCoaModal] = useState(false);
-  const [newCoaValues, setNewCoaValues] = useState({
+  const [newCoaValues, setNewCoaValues] = useState<{
+    code: string;
+    name: string;
+    type: CoaAccount["type"];
+    normal_balance: CoaAccount["normal_balance"];
+    balance: number;
+  }>({
     code: "",
     name: "",
-    type: "aset" as const,
-    normal_balance: "debit" as const,
+    type: "aset",
+    normal_balance: "debit",
     balance: 0,
   });
   const [journalEntries, setJournalEntries] = useState<JournalEntryWithLines[]>([]);
@@ -183,7 +319,7 @@ function AppContent() {
     ] as JournalLineInput[],
   });
   const [ledgerSelectedCode, setLedgerSelectedCode] = useState("1.1.01");
-  const [ledgerEntries, setLedgerEntries] = useState<any[]>([]);
+  const [ledgerEntries, setLedgerEntries] = useState<LedgerLine[]>([]);
   const [ledgerBalanceStart, setLedgerBalanceStart] = useState(0);
   const [ledgerBalanceEnd, setLedgerBalanceEnd] = useState(0);
 
@@ -196,12 +332,12 @@ function AppContent() {
     discountRate: 8.5,
     opportunityCost: 5.0,
   });
-  const [feasibilityResults, setFeasibilityResults] = useState<any>(null);
+  const [feasibilityResults, setFeasibilityResults] = useState<FeasibilityResult | null>(null);
   const [sensitivityScenario, setSensitivityScenario] = useState<"optimis" | "moderat" | "pesimis">("moderat");
-  const [sensitivityPresetResults, setSensitivityPresetResults] = useState<any>(null);
+  const [sensitivityPresetResults, setSensitivityPresetResults] = useState<SensitivityResult | null>(null);
 
   // Sync Center States
-  const [syncHistoryList, setSyncHistoryList] = useState<any[]>([]);
+  const [syncHistoryList, setSyncHistoryList] = useState<SyncHistoryItem[]>([]);
   const [isSyncing, setIsSyncing] = useState(false);
   const [syncProgress, setSyncProgress] = useState("");
   const [syncServerUrl] = useState("koperasi.kab-mojokerto.go.id");
@@ -222,9 +358,9 @@ function AppContent() {
         // Skip setup/login wizard screens - load main panel directly
         setCurrentUser({ id: "usr-001", name: "Slamet Riyadi", role: "Ketua Koperasi" });
         setAppState("main");
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error(err);
-        setDbErrorMessage(err.message || String(err));
+        setDbErrorMessage(getErrorMessage(err));
         setAppState("db_error");
       }
     }
@@ -257,7 +393,7 @@ function AppContent() {
   async function loadProfileData() {
     try {
       const db = await getDb();
-      const res = await db.select<any[]>("SELECT * FROM cooperatives LIMIT 1");
+      const res = await db.select<CooperativeProfile[]>("SELECT * FROM cooperatives LIMIT 1");
       if (res.length > 0) {
         setCoopProfile(res[0]);
       }
@@ -269,7 +405,7 @@ function AppContent() {
   async function loadDashboardStats() {
     try {
       const db = await getDb();
-      const alerts = await db.select<any[]>("SELECT * FROM ews_alerts ORDER BY triggered_at DESC LIMIT 5");
+      const alerts = await db.select<EwsAlert[]>("SELECT * FROM ews_alerts ORDER BY triggered_at DESC LIMIT 5");
       setEwsAlertsList(alerts);
 
       setDashboardIncomeData([
@@ -308,11 +444,13 @@ function AppContent() {
   async function loadJournalData() {
     try {
       const db = await getDb();
-      const entries = await db.select<any[]>("SELECT * FROM journal_entries ORDER BY date DESC, number DESC");
+      const entries = await db.select<JournalEntryRow[]>(
+        "SELECT * FROM journal_entries ORDER BY date DESC, number DESC",
+      );
       const mapped: JournalEntryWithLines[] = [];
 
       for (const entry of entries) {
-        const lines = await db.select<any[]>(
+        const lines = await db.select<JournalLineRow[]>(
           `SELECT jl.*, ca.name 
            FROM journal_lines jl
            LEFT JOIN coa_accounts ca ON jl.account_code = ca.code
@@ -330,11 +468,13 @@ function AppContent() {
   async function loadLedgerData() {
     try {
       const db = await getDb();
-      const account = await db.select<any[]>("SELECT balance FROM coa_accounts WHERE code = ?", [ledgerSelectedCode]);
+      const account = await db.select<CoaBalanceRow[]>("SELECT balance FROM coa_accounts WHERE code = ?", [
+        ledgerSelectedCode,
+      ]);
       const balanceEnd = account.length > 0 ? account[0].balance : 0;
       setLedgerBalanceEnd(balanceEnd);
 
-      const lines = await db.select<any[]>(
+      const lines = await db.select<LedgerLine[]>(
         `SELECT jl.*, je.date, je.number, je.description as entry_desc
          FROM journal_lines jl
          INNER JOIN journal_entries je ON jl.journal_entry_id = je.id
@@ -350,7 +490,7 @@ function AppContent() {
         credSum += line.credit;
       }
 
-      const accInfo = await db.select<any[]>("SELECT normal_balance FROM coa_accounts WHERE code = ?", [
+      const accInfo = await db.select<CoaBalanceRow[]>("SELECT normal_balance FROM coa_accounts WHERE code = ?", [
         ledgerSelectedCode,
       ]);
       const normalBal = accInfo.length > 0 ? accInfo[0].normal_balance : "debit";
@@ -375,7 +515,7 @@ function AppContent() {
   async function loadSyncHistoryData() {
     try {
       const db = await getDb();
-      const res = await db.select<any[]>("SELECT * FROM sync_history ORDER BY started_at DESC LIMIT 10");
+      const res = await db.select<SyncHistoryItem[]>("SELECT * FROM sync_history ORDER BY started_at DESC LIMIT 10");
       setSyncHistoryList(res);
     } catch (e) {
       console.error(e);
@@ -415,8 +555,8 @@ function AppContent() {
     }
   };
 
-  const handleProfileFieldChange = (key: string, value: any) => {
-    setCoopProfile((prev: any) => ({ ...prev, [key]: value }));
+  const handleProfileFieldChange = (key: string, value: string) => {
+    setCoopProfile((prev) => ({ ...prev, [key]: value }));
   };
 
   // Member CRUD
@@ -446,7 +586,7 @@ function AppContent() {
 
   const openEditMemberModal = (member: Member) => {
     setMemberFormType("edit");
-    setCurrentMemberId(member.id);
+    setCurrentMemberId(member.id ?? "");
     setMemberFormValues({ ...member });
     setShowMemberModal(true);
   };
@@ -525,8 +665,8 @@ function AppContent() {
       }
       setShowMemberModal(false);
       loadMembersData();
-    } catch (err: any) {
-      toast.error(`Gagal menyimpan anggota: ${err.message || err}`);
+    } catch (err: unknown) {
+      toast.error(`Gagal menyimpan anggota: ${getErrorMessage(err)}`);
     }
   };
 
@@ -569,12 +709,12 @@ function AppContent() {
       );
       setShowCoaModal(false);
       loadAccountsData();
-    } catch (err: any) {
-      toast.error(`Gagal menambah akun: ${err.message || err}`);
+    } catch (err: unknown) {
+      toast.error(`Gagal menambah akun: ${getErrorMessage(err)}`);
     }
   };
 
-  const handleJournalLineChange = (index: number, key: keyof JournalLineInput, value: any) => {
+  const handleJournalLineChange = (index: number, key: keyof JournalLineInput, value: string | number) => {
     setJournalForm((prev) => {
       const lines = [...prev.lines];
       lines[index] = { ...lines[index], [key]: value };
@@ -646,9 +786,10 @@ function AppContent() {
           [lineId, newEntryId, line.accountCode, Number(line.debit), Number(line.credit)],
         );
 
-        const account = await db.select<any[]>("SELECT normal_balance, balance FROM coa_accounts WHERE code = ?", [
-          line.accountCode,
-        ]);
+        const account = await db.select<CoaBalanceRow[]>(
+          "SELECT normal_balance, balance FROM coa_accounts WHERE code = ?",
+          [line.accountCode],
+        );
         if (account.length > 0) {
           const norm = account[0].normal_balance;
           const currentBal = account[0].balance;
@@ -677,8 +818,8 @@ function AppContent() {
       loadJournalData();
       loadAccountsData();
       loadLedgerData();
-    } catch (err: any) {
-      toast.error(`Gagal menyimpan transaksi: ${err.message || err}`);
+    } catch (err: unknown) {
+      toast.error(`Gagal menyimpan transaksi: ${getErrorMessage(err)}`);
     }
   };
 
@@ -855,8 +996,8 @@ function AppContent() {
           try {
             const db = await getDb();
             const syncId = `sync-${Date.now()}`;
-            const members = await db.select<any[]>("SELECT COUNT(*) as count FROM members");
-            const entries = await db.select<any[]>("SELECT COUNT(*) as count FROM journal_entries");
+            const members = await db.select<CountRow[]>("SELECT COUNT(*) as count FROM members");
+            const entries = await db.select<CountRow[]>("SELECT COUNT(*) as count FROM journal_entries");
             const count = (members[0]?.count || 0) + (entries[0]?.count || 0);
 
             await db.execute(
@@ -1500,7 +1641,9 @@ function AppContent() {
                           <label className="text-slate-400 font-mono text-[9px] uppercase">Jenis Kelamin</label>
                           <Select
                             value={memberFormValues.gender}
-                            onValueChange={(val) => setMemberFormValues({ ...memberFormValues, gender: val })}
+                            onValueChange={(val) =>
+                              setMemberFormValues({ ...memberFormValues, gender: val as Member["gender"] })
+                            }
                           >
                             <SelectTrigger className="w-full bg-slate-950 border-slate-900 text-xs">
                               <SelectValue placeholder="Gender" />
@@ -1660,7 +1803,9 @@ function AppContent() {
                         <label className="text-slate-400 font-mono text-[9px] uppercase">Status Anggota</label>
                         <Select
                           value={memberFormValues.status}
-                          onValueChange={(val) => setMemberFormValues({ ...memberFormValues, status: val })}
+                          onValueChange={(val) =>
+                            setMemberFormValues({ ...memberFormValues, status: val as Member["status"] })
+                          }
                         >
                           <SelectTrigger className="w-36 bg-slate-950 border-slate-900 text-xs">
                             <SelectValue />
@@ -1697,7 +1842,11 @@ function AppContent() {
           {activeTab === "accounting" && (
             <div className="space-y-6">
               {/* SAK EP Navigation tab row */}
-              <Tabs value={accountingTab} onValueChange={(val) => setAccountingTab(val as any)} className="w-full">
+              <Tabs
+                value={accountingTab}
+                onValueChange={(val) => setAccountingTab(val as typeof accountingTab)}
+                className="w-full"
+              >
                 <TabsList className="bg-[#090e1a] border border-slate-900 text-slate-400 mb-6 p-0.5 rounded-lg flex w-fit print:hidden">
                   <TabsTrigger
                     value="coa"
@@ -1819,7 +1968,9 @@ function AppContent() {
                           <label className="text-slate-400 font-mono text-[9px] uppercase">Klasifikasi Tipe</label>
                           <Select
                             value={newCoaValues.type}
-                            onValueChange={(val) => setNewCoaValues({ ...newCoaValues, type: val as any })}
+                            onValueChange={(val) =>
+                              setNewCoaValues({ ...newCoaValues, type: val as CoaAccount["type"] })
+                            }
                           >
                             <SelectTrigger className="w-full bg-slate-950 border-slate-900 text-xs">
                               <SelectValue placeholder="Tipe Akun" />
@@ -1837,7 +1988,9 @@ function AppContent() {
                           <label className="text-slate-400 font-mono text-[9px] uppercase">Saldo Normal</label>
                           <Select
                             value={newCoaValues.normal_balance}
-                            onValueChange={(val) => setNewCoaValues({ ...newCoaValues, normal_balance: val as any })}
+                            onValueChange={(val) =>
+                              setNewCoaValues({ ...newCoaValues, normal_balance: val as CoaAccount["normal_balance"] })
+                            }
                           >
                             <SelectTrigger className="w-full bg-slate-950 border-slate-900 text-xs">
                               <SelectValue placeholder="Saldo Normal" />
@@ -2387,7 +2540,7 @@ function AppContent() {
             <div className="space-y-6">
               <Tabs
                 value={feasibilityActiveTab}
-                onValueChange={(val) => setFeasibilityActiveTab(val as any)}
+                onValueChange={(val) => setFeasibilityActiveTab(val as typeof feasibilityActiveTab)}
                 className="w-full"
               >
                 <TabsList className="bg-[#090e1a] border border-slate-900 text-slate-400 mb-6 p-0.5 rounded-lg flex w-fit print:hidden">
@@ -2603,7 +2756,7 @@ function AppContent() {
                           <div className="border-l border-slate-900 pl-6 space-y-3 font-mono text-[11px]">
                             <div className="flex justify-between">
                               <span className="text-slate-500">Kapital Skenario</span>
-                              <span>Rp {Math.round(sensitivityPresetResults.investment).toLocaleString()}</span>
+                              <span>Rp {Math.round(sensitivityPresetResults?.investment ?? 0).toLocaleString()}</span>
                             </div>
                             <div className="flex justify-between">
                               <span className="text-slate-500">NPV Sensitivitas</span>
@@ -2858,7 +3011,7 @@ function AppContent() {
                   <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2 text-xs">
                     <div className="space-y-1">
                       <label className="text-slate-500 font-mono text-[9px] uppercase">Tema Warna Cockpit</label>
-                      <Select value={appTheme} onValueChange={(val) => setAppTheme(val as any)}>
+                      <Select value={appTheme} onValueChange={(val) => setAppTheme(val as typeof appTheme)}>
                         <SelectTrigger className="w-full bg-slate-950 border-slate-900 text-xs text-slate-300">
                           <SelectValue />
                         </SelectTrigger>
@@ -2870,7 +3023,10 @@ function AppContent() {
                     </div>
                     <div className="space-y-1">
                       <label className="text-slate-500 font-mono text-[9px] uppercase">Ukuran Skala Huruf</label>
-                      <Select value={fontSizeSetting} onValueChange={(val) => setFontSizeSetting(val as any)}>
+                      <Select
+                        value={fontSizeSetting}
+                        onValueChange={(val) => setFontSizeSetting(val as typeof fontSizeSetting)}
+                      >
                         <SelectTrigger className="w-full bg-slate-950 border-slate-900 text-xs text-slate-300">
                           <SelectValue />
                         </SelectTrigger>

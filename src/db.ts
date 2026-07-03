@@ -247,7 +247,7 @@ export async function initDb(): Promise<void> {
   // --- SEED DEFAULT DATA ---
 
   // 1. Seed Cooperative profile if empty
-  const cooperatives = await db.select<any[]>("SELECT * FROM cooperatives LIMIT 1");
+  const cooperatives = await db.select<Array<{ id: string }>>("SELECT * FROM cooperatives LIMIT 1");
   if (cooperatives.length === 0) {
     await db.execute(`
       INSERT INTO cooperatives (id, name, regency, province, level, business_units, officers, status)
@@ -265,7 +265,7 @@ export async function initDb(): Promise<void> {
   }
 
   // 2. Seed default SAK EP Chart of Accounts if empty
-  const coa = await db.select<any[]>("SELECT * FROM coa_accounts LIMIT 1");
+  const coa = await db.select<Array<{ code: string }>>("SELECT * FROM coa_accounts LIMIT 1");
   if (coa.length === 0) {
     const accounts = [
       { code: "1.1.01", name: "Kas", type: "aset", normal_balance: "debit", balance: 125000000 },
@@ -303,7 +303,7 @@ export async function initDb(): Promise<void> {
   }
 
   // 3. Seed default categories if empty
-  const cats = await db.select<any[]>("SELECT * FROM categories LIMIT 1");
+  const cats = await db.select<Array<{ id: string }>>("SELECT * FROM categories LIMIT 1");
   if (cats.length === 0) {
     const categoriesList = [
       { id: "unit_apotek", name: "Unit Apotek", icon: "💊" },
