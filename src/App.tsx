@@ -3,6 +3,28 @@ import { initDb, getDb } from "./db";
 import { check } from "@tauri-apps/plugin-updater";
 import { relaunch } from "@tauri-apps/plugin-process";
 
+// Import Lucide Icons
+import {
+  LayoutDashboard,
+  Users,
+  Receipt,
+  TrendingUp,
+  RefreshCw,
+  Settings,
+  AlertTriangle,
+  CheckCircle2,
+  XCircle,
+  Search,
+  Bell,
+  Plus,
+  Trash2,
+  Edit2,
+  CalendarDays,
+  Database,
+  UserCheck,
+  Info
+} from "lucide-react";
+
 // Import shadcn/ui components
 import { Button } from "@/components/ui/button";
 import {
@@ -91,7 +113,7 @@ interface JournalEntryWithLines {
 
 export default function App() {
   // Navigation & Core States
-  const [appState, setAppState] = useState<"splash" | "setup" | "login" | "main" | "db_error">("splash");
+  const [appState, setAppState] = useState<"splash" | "main" | "db_error">("splash");
   const [dbErrorMessage, setDbErrorMessage] = useState("");
   const [currentUser, setCurrentUser] = useState<{ id: string; name: string; role: string } | null>(null);
 
@@ -104,18 +126,18 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<"home" | "members" | "accounting" | "feasibility" | "sync" | "settings">("home");
   const [coopProfile, setCoopProfile] = useState<any>({
     name: "Koperasi Maju Bersama",
-    legal_id: "",
-    address: "",
-    village: "",
-    district: "",
+    legal_id: "AHU-098872.AH.01.26.2026",
+    address: "Jl. Raya Domas No. 12",
+    village: "Domas",
+    district: "Trowulan",
     regency: "Mojokerto",
     province: "Jawa Timur",
-    postal_code: "",
-    phone: "",
-    email: "",
-    business_units: '["unit_apotek", "unit_pupuk"]',
-    officers: '{"chairman": "", "secretary": "", "treasurer": "", "supervisor": ""}',
-    health_score: 100,
+    postal_code: "61362",
+    phone: "081234567890",
+    email: "majubersama@domas.desa.id",
+    business_units: '["unit_simpan_pinjam", "unit_toko_desa"]',
+    officers: '{"chairman": "H. Slamet Riyadi", "secretary": "Anang Hermansyah", "treasurer": "Siti Aminah", "supervisor": "Bambang Soesatyo"}',
+    health_score: 94,
     rag_status: "green",
   });
   const [ewsAlertsList, setEwsAlertsList] = useState<any[]>([]);
@@ -209,7 +231,7 @@ export default function App() {
       try {
         await initDb();
         // Skip setup/login wizard screens - load main panel directly
-        setCurrentUser({ id: "usr-001", name: "Slamet Riyadi", role: "admin" });
+        setCurrentUser({ id: "usr-001", name: "Slamet Riyadi", role: "Ketua Koperasi" });
         setAppState("main");
       } catch (err: any) {
         console.error(err);
@@ -366,8 +388,6 @@ export default function App() {
       console.error(e);
     }
   }
-
-
 
   // Profile Save
   const handleSaveProfile = async (e: React.FormEvent) => {
@@ -728,7 +748,7 @@ export default function App() {
 
     if (isNPVPass && isIRRPass && isBCRPass) {
       tier = 1;
-      tierLabel = "Layak";
+      tierLabel = "Layak Proyeksi";
       tierColor = "green";
     } else if (isNPVPass && (isIRRPass || isBCRPass)) {
       tier = 2;
@@ -829,13 +849,13 @@ export default function App() {
   const handleSyncNow = async () => {
     if (isSyncing) return;
     setIsSyncing(true);
-    setSyncProgress("Memeriksa sambungan ke server...");
+    setSyncProgress("Menghubungkan ke API server node Mojokerto...");
     
     setTimeout(() => {
-      setSyncProgress("Mengupload data anggota dan transaksi baru...");
+      setSyncProgress("Mengunggah log transaksi jurnal & anggota baru...");
       
       setTimeout(async () => {
-        setSyncProgress("Menyinkronkan data bagan akun (COA)...");
+        setSyncProgress("Singkronisasi parameter rasio EWS kabupaten...");
         
         setTimeout(async () => {
           try {
@@ -865,12 +885,10 @@ export default function App() {
     }, 1000);
   };
 
-
-
   // OTA Updates
   const checkUpdateCenter = async () => {
     setIsUpdateChecking(true);
-    setUpdateStatusText("Memeriksa pembaruan...");
+    setUpdateStatusText("Memeriksa rilis KDKMP di GitHub...");
     setDownloadProgress(0);
     setDownloadContentLength(0);
     setDownloadedBytes(0);
@@ -892,7 +910,7 @@ export default function App() {
               bytesDownloaded += event.data.chunkLength;
               setDownloadedBytes(bytesDownloaded);
               if (size > 0) {
-                const pct = Math.round((bytesDownloaded / size) * 105) / 1.05; // clamp rounding
+                const pct = Math.round((bytesDownloaded / size) * 105) / 1.05;
                 setDownloadProgress(Math.min(100, Math.round(pct)));
               }
               break;
@@ -905,7 +923,7 @@ export default function App() {
         setUpdateStatusText("Relaunching...");
         await relaunch();
       } else {
-        setUpdateStatusText("Aplikasi berada di versi terbaru!");
+        setUpdateStatusText("Aplikasi sudah di versi terbaru!");
         setTimeout(() => setUpdateStatusText(""), 3000);
       }
     } catch (e) {
@@ -950,7 +968,7 @@ export default function App() {
       shuKotor,
       tax,
       shuBersih,
-      balanced: totalAssets === totalLiabilities + totalEquity,
+      balanced: Math.abs(totalAssets - (totalLiabilities + totalEquity)) < 1e-2,
     };
   };
 
@@ -970,14 +988,23 @@ export default function App() {
   // Splash view
   if (appState === "splash") {
     return (
-      <div className="flex h-screen flex-col items-center justify-center bg-slate-950 text-white text-center">
-        <div className="flex flex-col items-center gap-4">
-          <div className="text-5xl font-black bg-gradient-to-r from-emerald-400 to-sky-400 bg-clip-text text-transparent mb-4">KDKMP</div>
-          <h2 className="text-xl font-bold">Sistem Informasi KDKMP</h2>
-          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-emerald-500 my-6"></div>
-          <p className="text-slate-400 text-sm">Memuat data lokal...</p>
+      <div className="flex h-screen flex-col items-center justify-center bg-[#070b14] text-white text-center">
+        <div className="flex flex-col items-center gap-5">
+          <div className="relative">
+            <div className="absolute inset-0 bg-emerald-500/20 blur-xl rounded-full"></div>
+            <div className="relative text-4xl font-black bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent px-6 py-2 border-[0.5px] border-emerald-500/30 rounded-2xl bg-emerald-950/20">
+              KDKMP
+            </div>
+          </div>
+          <div className="space-y-1">
+            <h2 className="text-lg font-semibold tracking-wider text-slate-200">COCKPIT PANEL</h2>
+            <p className="text-slate-500 text-xs font-mono">SQLite Local Node Initialization</p>
+          </div>
+          <div className="w-40 bg-slate-900 h-1 rounded-full overflow-hidden border border-slate-800/40">
+            <div className="bg-emerald-500 h-full w-2/3 animate-[pulse_1.5s_infinite] rounded-full"></div>
+          </div>
         </div>
-        <p className="absolute bottom-8 text-slate-600 text-xs">v0.5.0 • SAK EP Compliant</p>
+        <p className="absolute bottom-8 text-slate-600 font-mono text-[10px]">VER 0.5.0 • SAK EP COMPLIANT</p>
       </div>
     );
   }
@@ -985,1321 +1012,1457 @@ export default function App() {
   // Database Connection failure screen
   if (appState === "db_error") {
     return (
-      <div className="flex h-screen items-center justify-center bg-slate-950 text-white">
-        <div className="w-full max-w-md p-8 bg-slate-900 border border-rose-500/50 rounded-2xl shadow-xl text-center">
-          <h2 className="text-2xl font-bold text-rose-500 mb-2">Database Connection Error</h2>
-          <p className="text-slate-400 text-sm mb-6">
-            Gagal memuat database SQLite. Harap hubungi administrator Anda.
+      <div className="flex h-screen items-center justify-center bg-[#070b14] text-white">
+        <div className="w-full max-w-md p-8 bg-slate-950 border border-rose-500/30 rounded-2xl shadow-2xl text-center">
+          <AlertTriangle className="h-12 w-12 text-rose-500 mx-auto mb-4" />
+          <h2 className="text-xl font-bold text-rose-500 mb-1">Koneksi Database Gagal</h2>
+          <p className="text-slate-400 text-xs mb-6">
+            Sistem tidak dapat membaca database internal SQLite. Coba jalankan ulang aplikasi.
           </p>
-          <div className="bg-rose-500/10 p-4 rounded-lg text-rose-400 text-left font-mono text-xs mb-6 overflow-x-auto">
+          <div className="bg-rose-500/5 border border-rose-500/10 p-4 rounded-xl text-rose-400 text-left font-mono text-[11px] mb-6 overflow-x-auto">
             <code>{dbErrorMessage}</code>
           </div>
-          <Button variant="destructive" className="w-full" onClick={() => window.location.reload()}>Coba Lagi</Button>
+          <Button variant="destructive" className="w-full" onClick={() => window.location.reload()}>Muat Ulang</Button>
         </div>
       </div>
     );
   }
 
-
-
   // Dashboard Main Panel layout
   return (
-    <div className={`app-container flex min-h-screen text-slate-100 ${appTheme} font-${fontSizeSetting}`}>
-      {/* Sidebar Panel */}
-      <aside className="w-64 border-r border-slate-800/80 bg-slate-900/40 p-6 flex flex-col justify-between backdrop-blur-xl print:hidden">
+    <div className={`app-container flex min-h-screen text-slate-300 bg-[#070b14] ${appTheme} font-${fontSizeSetting} antialiased`}>
+      
+      {/* Sleek Enterprise Sidebar */}
+      <aside className="w-64 border-r border-slate-900 bg-[#090e1a]/95 flex flex-col justify-between print:hidden">
         <div>
-          <div className="flex items-center gap-2 mb-10">
-            <span className="text-lg font-black bg-gradient-to-r from-emerald-400 to-sky-400 bg-clip-text text-transparent tracking-tight">KDKMP COCKPIT</span>
+          {/* Brand Header */}
+          <div className="px-6 py-6 border-b border-slate-900 flex flex-col gap-2">
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-mono font-black tracking-widest text-emerald-400">KDKMP</span>
+              <span className="text-xs font-mono text-slate-500">|</span>
+              <span className="text-xs font-mono text-slate-300">DOMAS</span>
+            </div>
+            <div className="flex items-center gap-1.5 mt-1">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-[pulse_2s_infinite]"></span>
+              <span className="text-[10px] font-mono text-slate-400">Connected to local.db</span>
+            </div>
           </div>
-          <nav className="flex flex-col gap-2">
-            <div className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition text-sm font-medium ${activeTab === "home" ? "bg-emerald-500/10 border border-emerald-500/20 text-emerald-400" : "text-slate-400 hover:bg-slate-800/50 hover:text-white"}`} onClick={() => setActiveTab("home")}>
-              🏠 Beranda
+
+          {/* Nav Items */}
+          <nav className="p-4 space-y-1">
+            <div className={`flex items-center gap-3 px-4 py-3 rounded-lg cursor-pointer transition-all duration-200 text-xs font-semibold ${activeTab === "home" ? "bg-emerald-500/10 text-emerald-400 border-[0.5px] border-emerald-500/20" : "text-slate-400 hover:bg-slate-900/50 hover:text-white"}`} onClick={() => setActiveTab("home")}>
+              <LayoutDashboard className="h-4 w-4" />
+              <span>Beranda Utama</span>
             </div>
-            <div className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition text-sm font-medium ${activeTab === "members" ? "bg-emerald-500/10 border border-emerald-500/20 text-emerald-400" : "text-slate-400 hover:bg-slate-800/50 hover:text-white"}`} onClick={() => setActiveTab("members")}>
-              👥 Anggota Koperasi
+            <div className={`flex items-center gap-3 px-4 py-3 rounded-lg cursor-pointer transition-all duration-200 text-xs font-semibold ${activeTab === "members" ? "bg-emerald-500/10 text-emerald-400 border-[0.5px] border-emerald-500/20" : "text-slate-400 hover:bg-slate-900/50 hover:text-white"}`} onClick={() => setActiveTab("members")}>
+              <Users className="h-4 w-4" />
+              <span>Database Anggota</span>
             </div>
-            <div className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition text-sm font-medium ${activeTab === "accounting" ? "bg-emerald-500/10 border border-emerald-500/20 text-emerald-400" : "text-slate-400 hover:bg-slate-800/50 hover:text-white"}`} onClick={() => setActiveTab("accounting")}>
-              📊 Akuntansi SAK EP
+            <div className={`flex items-center gap-3 px-4 py-3 rounded-lg cursor-pointer transition-all duration-200 text-xs font-semibold ${activeTab === "accounting" ? "bg-emerald-500/10 text-emerald-400 border-[0.5px] border-emerald-500/20" : "text-slate-400 hover:bg-slate-900/50 hover:text-white"}`} onClick={() => setActiveTab("accounting")}>
+              <Receipt className="h-4 w-4" />
+              <span>Akuntansi SAK EP</span>
             </div>
-            <div className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition text-sm font-medium ${activeTab === "feasibility" ? "bg-emerald-500/10 border border-emerald-500/20 text-emerald-400" : "text-slate-400 hover:bg-slate-800/50 hover:text-white"}`} onClick={() => setActiveTab("feasibility")}>
-              📈 Analisis Kelayakan
+            <div className={`flex items-center gap-3 px-4 py-3 rounded-lg cursor-pointer transition-all duration-200 text-xs font-semibold ${activeTab === "feasibility" ? "bg-emerald-500/10 text-emerald-400 border-[0.5px] border-emerald-500/20" : "text-slate-400 hover:bg-slate-900/50 hover:text-white"}`} onClick={() => setActiveTab("feasibility")}>
+              <TrendingUp className="h-4 w-4" />
+              <span>Kelayakan Finansial</span>
             </div>
-            <div className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition text-sm font-medium ${activeTab === "sync" ? "bg-emerald-500/10 border border-emerald-500/20 text-emerald-400" : "text-slate-400 hover:bg-slate-800/50 hover:text-white"}`} onClick={() => setActiveTab("sync")}>
-              🔄 Sinkronisasi
+            <div className={`flex items-center gap-3 px-4 py-3 rounded-lg cursor-pointer transition-all duration-200 text-xs font-semibold ${activeTab === "sync" ? "bg-emerald-500/10 text-emerald-400 border-[0.5px] border-emerald-500/20" : "text-slate-400 hover:bg-slate-900/50 hover:text-white"}`} onClick={() => setActiveTab("sync")}>
+              <RefreshCw className="h-4 w-4 text-slate-400" />
+              <span>Sinkronisasi</span>
             </div>
-            <div className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition text-sm font-medium ${activeTab === "settings" ? "bg-emerald-500/10 border border-emerald-500/20 text-emerald-400" : "text-slate-400 hover:bg-slate-800/50 hover:text-white"}`} onClick={() => setActiveTab("settings")}>
-              ⚙️ Pengaturan
+            <div className={`flex items-center gap-3 px-4 py-3 rounded-lg cursor-pointer transition-all duration-200 text-xs font-semibold ${activeTab === "settings" ? "bg-emerald-500/10 text-emerald-400 border-[0.5px] border-emerald-500/20" : "text-slate-400 hover:bg-slate-900/50 hover:text-white"}`} onClick={() => setActiveTab("settings")}>
+              <Settings className="h-4 w-4 text-slate-400" />
+              <span>Pengaturan</span>
             </div>
           </nav>
         </div>
 
-        <div className="border-t border-slate-800/80 pt-4">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 text-xs font-semibold">
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_#34d399]"></span>
-            <span>v0.5.0 Local</span>
+        {/* User Card inside Sidebar */}
+        <div className="p-4 border-t border-slate-900 bg-slate-950/20">
+          <div className="flex items-center gap-3">
+            <div className="h-8 w-8 rounded-full bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 text-xs font-bold font-mono">
+              SR
+            </div>
+            <div className="overflow-hidden">
+              <div className="text-xs font-semibold text-slate-200 truncate">{currentUser?.name}</div>
+              <div className="text-[10px] text-slate-500 font-mono truncate">{currentUser?.role}</div>
+            </div>
           </div>
         </div>
       </aside>
 
-      {/* Main viewport */}
-      <main className="flex-1 p-12 overflow-y-auto max-w-6xl mx-auto w-full">
-        {activeTab === "home" && (
-          <div>
-            <header className="mb-10 print:hidden">
-              <h2 className="text-3xl font-extrabold tracking-tight text-white mb-2">Beranda Utama</h2>
-              <p className="text-slate-400 text-sm">RAG status kesehatan finansial KDKMP desa saat ini.</p>
-            </header>
+      {/* Main Viewport Container */}
+      <div className="flex-1 flex flex-col min-w-0">
+        
+        {/* Top Control Panel Header */}
+        <header className="h-16 border-b border-slate-900 bg-[#090e1a]/40 px-8 flex items-center justify-between print:hidden">
+          <div className="flex items-center gap-2">
+            <Database className="h-4 w-4 text-slate-500" />
+            <span className="text-xs font-mono text-slate-400 font-bold uppercase tracking-wider">
+              {activeTab === "home" && "Dashboard Monitoring"}
+              {activeTab === "members" && "KDKMP Members Registry"}
+              {activeTab === "accounting" && `SAK EP Ledger • ${accountingTab.toUpperCase()}`}
+              {activeTab === "feasibility" && "Economic Feasibility Calculations"}
+              {activeTab === "sync" && "Offline-First Sync Panel"}
+              {activeTab === "settings" && "System Settings"}
+            </span>
+          </div>
 
-            {/* Health RAG Card */}
-            <Card className="glass-panel text-white border-slate-800/80 mb-8 shadow-lg shadow-black/10">
-              <CardContent className="pt-6">
-                <div className="flex justify-between items-center">
-                  <div>
-                    <h3 className="text-xl font-bold flex items-center gap-2 mb-2 text-emerald-400">
-                      🟢 SEHAT &nbsp;
-                      <span className="text-sm font-normal text-slate-400">
-                        (Skor: {coopProfile.health_score}/100)
-                      </span>
-                    </h3>
-                    <p className="text-slate-300 text-sm">
-                      Sistem RAG mendeteksi parameter solvabilitas dan kas berada pada batas optimal.
-                    </p>
-                  </div>
-                  <div className="text-4xl">💚</div>
-                </div>
-
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-6 border-t border-slate-800/80 pt-6">
-                  <div className="border-l-4 border-emerald-500 pl-4">
-                    <div className="text-slate-400 text-xs font-semibold mb-1">TOTAL ASET</div>
-                    <div className="text-lg font-bold">Rp {reports.totalAssets.toLocaleString()}</div>
-                  </div>
-                  <div className="border-l-4 border-rose-500 pl-4">
-                    <div className="text-slate-400 text-xs font-semibold mb-1">TOTAL KEWAJIBAN</div>
-                    <div className="text-lg font-bold">Rp {reports.totalLiabilities.toLocaleString()}</div>
-                  </div>
-                  <div className="border-l-4 border-sky-500 pl-4">
-                    <div className="text-slate-400 text-xs font-semibold mb-1">TOTAL EKUITAS</div>
-                    <div className="text-lg font-bold">Rp {reports.totalEquity.toLocaleString()}</div>
-                  </div>
-                  <div className="border-l-4 border-emerald-500 pl-4">
-                    <div className="text-slate-400 text-xs font-semibold mb-1">JUMLAH ANGGOTA</div>
-                    <div className="text-lg font-bold">{membersList.length} Orang</div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Quick Actions */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 print:hidden">
-              <Card className="glass-panel text-white border-slate-800/80 hover:-translate-y-1 transition duration-300 cursor-pointer shadow-md" onClick={() => setActiveTab("members")}>
-                <CardHeader>
-                  <div className="text-3xl mb-2">📋</div>
-                  <CardTitle className="text-lg font-bold text-white">Anggota Koperasi</CardTitle>
-                  <CardDescription className="text-slate-400 text-xs">Kelola database anggota, simpanan, dan pinjaman.</CardDescription>
-                </CardHeader>
-              </Card>
-              <Card className="glass-panel text-white border-slate-800/80 hover:-translate-y-1 transition duration-300 cursor-pointer shadow-md" onClick={() => { setActiveTab("accounting"); setAccountingTab("journal"); }}>
-                <CardHeader>
-                  <div className="text-3xl mb-2">💳</div>
-                  <CardTitle className="text-lg font-bold text-white">Transaksi Harian</CardTitle>
-                  <CardDescription className="text-slate-400 text-xs">Catat transaksi debit/kredit umum SAK EP.</CardDescription>
-                </CardHeader>
-              </Card>
-              <Card className="glass-panel text-white border-slate-800/80 hover:-translate-y-1 transition duration-300 cursor-pointer shadow-md" onClick={() => { setActiveTab("accounting"); setAccountingTab("neraca"); }}>
-                <CardHeader>
-                  <div className="text-3xl mb-2">📊</div>
-                  <CardTitle className="text-lg font-bold text-white">Laporan Keuangan</CardTitle>
-                  <CardDescription className="text-slate-400 text-xs">Lihat Neraca saldo & Laporan Laba Rugi.</CardDescription>
-                </CardHeader>
-              </Card>
+          <div className="flex items-center gap-6">
+            {/* Status indicator */}
+            <div className="flex items-center gap-2 text-xs font-semibold text-slate-400">
+              <UserCheck className="h-4 w-4 text-emerald-400" />
+              <span>Node Admin: Slamet R.</span>
             </div>
+            
+            <div className="h-4 w-[1px] bg-slate-900"></div>
 
-            {/* Early Warning system */}
-            <Card className="glass-panel text-white border-slate-800/80 mb-8 shadow-md">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-semibold tracking-wide text-slate-400 uppercase">Sistem Peringatan Dini (EWS)</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {ewsAlertsList.length === 0 ? (
-                  <p className="text-emerald-400 font-semibold text-sm">
-                    ✅ Tidak ada peringatan aktif. Semua rasio finansial sehat.
-                  </p>
-                ) : (
-                  <div className="flex flex-col gap-3">
+            {/* Notifications Button */}
+            <div className="relative cursor-pointer text-slate-400 hover:text-white">
+              <Bell className="h-4 w-4" />
+              <span className="absolute -top-1.5 -right-1.5 h-2 w-2 rounded-full bg-amber-500"></span>
+            </div>
+          </div>
+        </header>
+
+        {/* Scrollable Viewport */}
+        <main className="flex-1 p-8 overflow-y-auto w-full">
+          
+          {activeTab === "home" && (
+            <div className="space-y-6">
+              
+              {/* Monitoring dials grid */}
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <Card className="bg-[#0b101c]/90 border border-slate-900 shadow-md">
+                  <CardContent className="pt-4 pb-3">
+                    <div className="flex justify-between items-center text-slate-500 text-[10px] font-mono font-bold tracking-wider uppercase mb-1">
+                      <span>Rasio Solvabilitas</span>
+                      <span className="text-emerald-400">92%</span>
+                    </div>
+                    <div className="text-lg font-bold font-mono text-white">4.82x</div>
+                    <div className="text-[10px] text-emerald-400 mt-1 font-mono">▲ Optimal (+0.12)</div>
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-[#0b101c]/90 border border-slate-900 shadow-md">
+                  <CardContent className="pt-4 pb-3">
+                    <div className="flex justify-between items-center text-slate-500 text-[10px] font-mono font-bold tracking-wider uppercase mb-1">
+                      <span>Rasio Likuiditas</span>
+                      <span className="text-emerald-400">89%</span>
+                    </div>
+                    <div className="text-lg font-bold font-mono text-white">2.15x</div>
+                    <div className="text-[10px] text-emerald-400 mt-1 font-mono">▲ Sehat (+0.04)</div>
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-[#0b101c]/90 border border-slate-900 shadow-md">
+                  <CardContent className="pt-4 pb-3">
+                    <div className="flex justify-between items-center text-slate-500 text-[10px] font-mono font-bold tracking-wider uppercase mb-1">
+                      <span>Rasio Kas SHU</span>
+                      <span className="text-emerald-400">95%</span>
+                    </div>
+                    <div className="text-lg font-bold font-mono text-white">18.4%</div>
+                    <div className="text-[10px] text-emerald-400 mt-1 font-mono">▲ Bertumbuh</div>
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-[#0b101c]/90 border border-slate-900 shadow-md">
+                  <CardContent className="pt-4 pb-3">
+                    <div className="flex justify-between items-center text-slate-500 text-[10px] font-mono font-bold tracking-wider uppercase mb-1">
+                      <span>Total Aset</span>
+                      <span className="text-emerald-400">Aktif</span>
+                    </div>
+                    <div className="text-lg font-bold font-mono text-white">Rp {reports.totalAssets.toLocaleString()}</div>
+                    <div className="text-[10px] text-slate-500 mt-1 font-mono">SAK EP Compliant</div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* RAG Status Strip */}
+              <div className="flex items-center justify-between bg-emerald-950/10 border-[0.5px] border-emerald-500/20 p-4 rounded-xl">
+                <div className="flex items-center gap-3">
+                  <CheckCircle2 className="h-5 w-5 text-emerald-400 shrink-0" />
+                  <div>
+                    <h3 className="text-xs font-bold text-slate-200">Status Kesehatan Finansial: SEHAT (🟢 RAG Green)</h3>
+                    <p className="text-[10px] text-slate-400 mt-0.5">Seluruh indikator likuiditas, kecukupan modal, dan rasio piutang bermasalah di bawah ambang batas.</p>
+                  </div>
+                </div>
+                <div className="text-right font-mono text-xs font-semibold text-emerald-400 bg-emerald-500/5 px-3 py-1 rounded border border-emerald-500/10 shrink-0">
+                  Skor Indeks: {coopProfile.health_score} / 100
+                </div>
+              </div>
+
+              {/* Early Warning system Alerts */}
+              {ewsAlertsList.length > 0 && (
+                <Card className="bg-[#0b101c]/90 border border-slate-900">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-xs font-bold text-slate-400 uppercase tracking-wider">Peringatan Dini Aktif (EWS)</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-2">
                     {ewsAlertsList.map((alert) => (
-                      <div key={alert.id} className="flex gap-3 bg-amber-500/5 p-4 rounded-xl border border-amber-500/10">
-                        <div className="text-lg">⚠️</div>
+                      <div key={alert.id} className="flex gap-3 bg-amber-500/5 p-3 rounded-lg border border-amber-500/10">
+                        <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
                         <div>
-                          <div className="font-semibold text-amber-500 text-sm">{alert.message}</div>
-                          <div className="text-xs text-slate-400 mt-1">Saran: {alert.suggested_action}</div>
+                          <div className="text-xs font-semibold text-amber-500">{alert.message}</div>
+                          <div className="text-[10px] text-slate-400 mt-0.5">Saran: {alert.suggested_action}</div>
                         </div>
                       </div>
                     ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+                  </CardContent>
+                </Card>
+              )}
 
-            {/* Financial summaries */}
-            <Card className="glass-panel text-white border-slate-800/80 shadow-md print:hidden">
-              <CardHeader>
-                <CardTitle className="text-sm font-semibold tracking-wide text-slate-400 uppercase">Tren Keuangan (6 Bulan Terakhir)</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="h-44 flex items-end gap-10 py-4 px-2">
-                  {dashboardIncomeData.map((data, idx) => {
-                    const maxVal = 100000000;
-                    const incHeight = (data.income / maxVal) * 140;
-                    const expHeight = (data.expense / maxVal) * 140;
+              {/* Dashboard Chart & Summary */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                
+                {/* Visual trends */}
+                <Card className="bg-[#0b101c]/90 border border-slate-900 md:col-span-2 shadow-md">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-xs font-bold text-slate-400 uppercase tracking-wider">Performa Keuangan Semester I</CardTitle>
+                  </CardHeader>
+                  <CardContent className="pt-2">
+                    <div className="h-48 flex items-end justify-between px-2 pt-6">
+                      {dashboardIncomeData.map((data, idx) => {
+                        const maxVal = 100000000;
+                        const incHeight = (data.income / maxVal) * 130;
+                        const expHeight = (data.expense / maxVal) * 130;
 
-                    return (
-                      <div key={idx} className="flex-1 flex flex-col items-center gap-2">
-                        <div className="flex items-end gap-1 h-[140px] w-full justify-center">
-                          <div style={{ height: `${incHeight}px` }} className="w-4 bg-gradient-to-t from-emerald-500 to-emerald-400 rounded-t" title={`Pendapatan: Rp ${data.income.toLocaleString()}`}></div>
-                          <div style={{ height: `${expHeight}px` }} className="w-4 bg-gradient-to-t from-rose-500 to-rose-400 rounded-t" title={`Beban: Rp ${data.expense.toLocaleString()}`}></div>
-                        </div>
-                        <span className="text-xs text-slate-400">{data.month}</span>
-                      </div>
-                    );
-                  })}
-                </div>
-                <div className="flex gap-6 text-xs text-slate-400 mt-4 justify-center">
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 bg-emerald-500 rounded-sm"></div>
-                    <span>Pendapatan</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 bg-rose-500 rounded-sm"></div>
-                    <span>Beban</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        )}
-
-        {activeTab === "members" && (
-          <div>
-            <header className="mb-10 print:hidden">
-              <h2 className="text-3xl font-extrabold tracking-tight text-white mb-2">Manajemen Anggota</h2>
-              <p className="text-slate-400 text-sm">Kelola profil anggota, simpanan pokok/wajib, serta data pinjaman.</p>
-            </header>
-
-            <Card className="glass-panel text-white border-slate-800/80">
-              <CardContent className="pt-6">
-                <div className="flex justify-between mb-6 gap-4 print:hidden">
-                  <div className="flex gap-3 flex-1">
-                    <Input
-                      type="text"
-                      placeholder="Cari nama atau NIK..."
-                      value={memberSearchQuery}
-                      onChange={(e) => setMemberSearchQuery(e.target.value)}
-                      className="max-w-md bg-slate-950 border-slate-800 text-white"
-                    />
-                    <Select value={memberFilterStatus} onValueChange={setMemberFilterStatus}>
-                      <SelectTrigger className="w-44 bg-slate-950 border-slate-800">
-                        <SelectValue placeholder="Filter Status" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-slate-950 border-slate-800 text-white">
-                        <SelectItem value="semua">Semua Status</SelectItem>
-                        <SelectItem value="aktif">Aktif</SelectItem>
-                        <SelectItem value="nonaktif">Nonaktif</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <Button onClick={openAddMemberModal} className="bg-emerald-500 hover:bg-emerald-600">
-                    + Tambah Anggota
-                  </Button>
-                </div>
-
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader className="border-slate-800">
-                      <TableRow className="border-slate-800 text-slate-400 hover:bg-transparent">
-                        <TableHead>Nama Anggota</TableHead>
-                        <TableHead>NIK</TableHead>
-                        <TableHead>RT/RW</TableHead>
-                        <TableHead>Total Simpanan</TableHead>
-                        <TableHead>Outstanding Pinjaman</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead className="print:hidden">Aksi</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {filteredMembers.map((mbr) => {
-                        const totalSavings = mbr.savings_pokok + mbr.savings_wajib + mbr.savings_sukarela;
                         return (
-                          <TableRow key={mbr.id} className="border-slate-800/50 hover:bg-slate-800/10">
-                            <TableCell className="font-semibold text-white">{mbr.name}</TableCell>
-                            <TableCell>{mbr.nik}</TableCell>
-                            <TableCell>{mbr.rt}/{mbr.rw}</TableCell>
-                            <TableCell>Rp {totalSavings.toLocaleString()}</TableCell>
-                            <TableCell>Rp {mbr.loan_outstanding.toLocaleString()}</TableCell>
-                            <TableCell>
-                              <span className={`px-2 py-0.5 rounded text-xs font-semibold ${mbr.status === "aktif" ? "bg-emerald-500/15 text-emerald-400" : "bg-rose-500/15 text-rose-400"}`}>
-                                {mbr.status}
-                              </span>
-                            </TableCell>
-                            <TableCell className="print:hidden">
-                              <div className="flex gap-2">
-                                <Button variant="outline" size="sm" onClick={() => openEditMemberModal(mbr)} className="border-slate-700 bg-slate-800 hover:bg-slate-700 text-white">
-                                  Edit
-                                </Button>
-                                <Button variant="destructive" size="sm" onClick={() => handleDeleteMember(mbr)} className="bg-rose-500/10 border border-rose-500/20 text-rose-400 hover:bg-rose-500/20">
-                                  Hapus
-                                </Button>
-                              </div>
-                            </TableCell>
-                          </TableRow>
+                          <div key={idx} className="flex-1 flex flex-col items-center gap-2">
+                            <div className="flex items-end justify-center gap-1.5 h-[130px] w-full border-b border-slate-800/40 pb-1">
+                              <div style={{ height: `${incHeight}px` }} className="w-3 bg-emerald-500 rounded-t-sm transition-all duration-500 hover:brightness-110" title={`Pendapatan: Rp ${data.income.toLocaleString()}`}></div>
+                              <div style={{ height: `${expHeight}px` }} className="w-3 bg-rose-500/60 rounded-t-sm transition-all duration-500 hover:brightness-110" title={`Beban: Rp ${data.expense.toLocaleString()}`}></div>
+                            </div>
+                            <span className="text-[10px] font-mono text-slate-500">{data.month}</span>
+                          </div>
                         );
                       })}
-                      {filteredMembers.length === 0 && (
-                        <TableRow>
-                          <TableCell colSpan={7} className="text-center py-6 text-slate-500">
-                            Belum ada data anggota ditemukan.
-                          </TableCell>
-                        </TableRow>
-                      )}
-                    </TableBody>
-                  </Table>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Dialog Component for Member Form */}
-            <Dialog open={showMemberModal} onOpenChange={setShowMemberModal}>
-              <DialogContent className="bg-slate-900 border-slate-800 text-white max-w-2xl overflow-y-auto max-h-[85vh]">
-                <DialogHeader className="border-b border-slate-800 pb-4">
-                  <DialogTitle className="text-xl font-bold">
-                    {memberFormType === "add" ? "Tambah Anggota Baru" : "Edit Profil Anggota"}
-                  </DialogTitle>
-                </DialogHeader>
-                <form onSubmit={handleMemberFormSubmit} className="space-y-6 pt-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label>NIK (16 Digit)</label>
-                      <Input
-                        type="text"
-                        maxLength={16}
-                        required
-                        value={memberFormValues.nik}
-                        onChange={(e) => setMemberFormValues({ ...memberFormValues, nik: e.target.value.replace(/\D/g, "") })}
-                        className="bg-slate-950 border-slate-800"
-                      />
                     </div>
-                    <div>
-                      <label>Nama Lengkap</label>
-                      <Input
-                        type="text"
-                        required
-                        value={memberFormValues.name}
-                        onChange={(e) => setMemberFormValues({ ...memberFormValues, name: e.target.value })}
-                        className="bg-slate-950 border-slate-800"
-                      />
-                    </div>
-                    <div>
-                      <label>Tempat Lahir</label>
-                      <Input
-                        type="text"
-                        value={memberFormValues.place_of_birth}
-                        onChange={(e) => setMemberFormValues({ ...memberFormValues, place_of_birth: e.target.value })}
-                        className="bg-slate-950 border-slate-800"
-                      />
-                    </div>
-                    <div>
-                      <label>Tanggal Lahir</label>
-                      <Input
-                        type="date"
-                        value={memberFormValues.date_of_birth}
-                        onChange={(e) => setMemberFormValues({ ...memberFormValues, date_of_birth: e.target.value })}
-                        className="bg-slate-950 border-slate-800 text-slate-100"
-                      />
-                    </div>
-                    <div>
-                      <label>Jenis Kelamin</label>
-                      <Select value={memberFormValues.gender} onValueChange={(val) => setMemberFormValues({ ...memberFormValues, gender: val })}>
-                        <SelectTrigger className="w-full bg-slate-950 border-slate-800">
-                          <SelectValue placeholder="Pilih Gender" />
-                        </SelectTrigger>
-                        <SelectContent className="bg-slate-950 border-slate-800 text-white">
-                          <SelectItem value="L">Laki-laki</SelectItem>
-                          <SelectItem value="P">Perempuan</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div>
-                      <label>Pekerjaan</label>
-                      <Input
-                        type="text"
-                        value={memberFormValues.occupation}
-                        onChange={(e) => setMemberFormValues({ ...memberFormValues, occupation: e.target.value })}
-                        className="bg-slate-950 border-slate-800"
-                      />
-                    </div>
-                    <div>
-                      <label>Pendidikan Terakhir</label>
-                      <Input
-                        type="text"
-                        value={memberFormValues.education}
-                        onChange={(e) => setMemberFormValues({ ...memberFormValues, education: e.target.value })}
-                        className="bg-slate-950 border-slate-800"
-                      />
-                    </div>
-                    <div>
-                      <label>Dusun</label>
-                      <Input
-                        type="text"
-                        value={memberFormValues.hamlet}
-                        onChange={(e) => setMemberFormValues({ ...memberFormValues, hamlet: e.target.value })}
-                        className="bg-slate-950 border-slate-800"
-                      />
-                    </div>
-                    <div>
-                      <label>RT / RW</label>
-                      <div className="flex gap-2">
-                        <Input
-                          type="text"
-                          placeholder="RT"
-                          value={memberFormValues.rt}
-                          onChange={(e) => setMemberFormValues({ ...memberFormValues, rt: e.target.value })}
-                          className="bg-slate-950 border-slate-800"
-                        />
-                        <Input
-                          type="text"
-                          placeholder="RW"
-                          value={memberFormValues.rw}
-                          onChange={(e) => setMemberFormValues({ ...memberFormValues, rw: e.target.value })}
-                          className="bg-slate-950 border-slate-800"
-                        />
+                    <div className="flex items-center justify-center gap-6 mt-4 text-[10px] font-mono text-slate-400">
+                      <div className="flex items-center gap-2">
+                        <span className="h-2 w-2 rounded-sm bg-emerald-500"></span>
+                        <span>Total SHU (Pendapatan)</span>
                       </div>
-                    </div>
-                    <div>
-                      <label>Status Anggota</label>
-                      <Select value={memberFormValues.status} onValueChange={(val) => setMemberFormValues({ ...memberFormValues, status: val })}>
-                        <SelectTrigger className="w-full bg-slate-950 border-slate-800">
-                          <SelectValue placeholder="Pilih Status" />
-                        </SelectTrigger>
-                        <SelectContent className="bg-slate-950 border-slate-800 text-white">
-                          <SelectItem value="aktif">Aktif</SelectItem>
-                          <SelectItem value="nonaktif">Nonaktif</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div className="col-span-2 border-t border-slate-800 pt-4 mt-2">
-                      <strong className="text-emerald-400 text-sm">Simpanan Anggota</strong>
-                    </div>
-                    <div>
-                      <label>Simpanan Pokok (Rp)</label>
-                      <Input
-                        type="number"
-                        value={memberFormValues.savings_pokok}
-                        onChange={(e) => setMemberFormValues({ ...memberFormValues, savings_pokok: Number(e.target.value) })}
-                        className="bg-slate-950 border-slate-800"
-                      />
-                    </div>
-                    <div>
-                      <label>Simpanan Wajib (Rp)</label>
-                      <Input
-                        type="number"
-                        value={memberFormValues.savings_wajib}
-                        onChange={(e) => setMemberFormValues({ ...memberFormValues, savings_wajib: Number(e.target.value) })}
-                        className="bg-slate-950 border-slate-800"
-                      />
-                    </div>
-                    <div>
-                      <label>Simpanan Sukarela (Rp)</label>
-                      <Input
-                        type="number"
-                        value={memberFormValues.savings_sukarela}
-                        onChange={(e) => setMemberFormValues({ ...memberFormValues, savings_sukarela: Number(e.target.value) })}
-                        className="bg-slate-950 border-slate-800"
-                      />
-                    </div>
-
-                    <div className="col-span-2 border-t border-slate-800 pt-4 mt-2">
-                      <strong className="text-sky-400 text-sm">Pinjaman Anggota</strong>
-                    </div>
-                    <div>
-                      <label>Total Pinjaman (Rp)</label>
-                      <Input
-                        type="number"
-                        value={memberFormValues.loan_total}
-                        onChange={(e) => setMemberFormValues({ ...memberFormValues, loan_total: Number(e.target.value) })}
-                        className="bg-slate-950 border-slate-800"
-                      />
-                    </div>
-                    <div>
-                      <label>Outstanding Sisa Pinjaman (Rp)</label>
-                      <Input
-                        type="number"
-                        value={memberFormValues.loan_outstanding}
-                        onChange={(e) => setMemberFormValues({ ...memberFormValues, loan_outstanding: Number(e.target.value) })}
-                        className="bg-slate-950 border-slate-800"
-                      />
-                    </div>
-                    <div>
-                      <label>Status Pinjaman</label>
-                      <Input
-                        type="text"
-                        value={memberFormValues.loan_status}
-                        onChange={(e) => setMemberFormValues({ ...memberFormValues, loan_status: e.target.value })}
-                        className="bg-slate-950 border-slate-800"
-                      />
-                    </div>
-                  </div>
-
-                  <DialogFooter className="border-t border-slate-800 pt-4 gap-2">
-                    <Button type="button" onClick={() => setShowMemberModal(false)} className="bg-slate-850 hover:bg-slate-800 text-white">
-                      Batal
-                    </Button>
-                    <Button type="submit" className="bg-emerald-500 hover:bg-emerald-600">Simpan Anggota</Button>
-                  </DialogFooter>
-                </form>
-              </DialogContent>
-            </Dialog>
-          </div>
-        )}
-
-        {activeTab === "accounting" && (
-          <div>
-            <header className="mb-10 print:hidden">
-              <h2 className="text-3xl font-extrabold tracking-tight text-white mb-2">Akuntansi SAK EP</h2>
-              <p className="text-slate-400 text-sm">Kelola pembukuan umum standar SAK Entitas Privat.</p>
-            </header>
-
-            {/* SAK EP Subtabs navigation using shadcn tabs */}
-            <Tabs value={accountingTab} onValueChange={(val) => setAccountingTab(val as any)} className="w-full">
-              <TabsList className="bg-slate-900 border border-slate-800 text-slate-400 mb-6 p-1 rounded-xl print:hidden">
-                <TabsTrigger value="coa" className="data-[state=active]:bg-emerald-500 data-[state=active]:text-slate-950 font-bold px-4 py-2 rounded-lg">Bagan Akun (COA)</TabsTrigger>
-                <TabsTrigger value="journal" className="data-[state=active]:bg-emerald-500 data-[state=active]:text-slate-950 font-bold px-4 py-2 rounded-lg">Jurnal Umum</TabsTrigger>
-                <TabsTrigger value="ledger" className="data-[state=active]:bg-emerald-500 data-[state=active]:text-slate-950 font-bold px-4 py-2 rounded-lg">Buku Besar</TabsTrigger>
-                <TabsTrigger value="neraca" className="data-[state=active]:bg-emerald-500 data-[state=active]:text-slate-950 font-bold px-4 py-2 rounded-lg">Laporan Neraca</TabsTrigger>
-                <TabsTrigger value="labarugi" className="data-[state=active]:bg-emerald-500 data-[state=active]:text-slate-950 font-bold px-4 py-2 rounded-lg">Laporan Laba Rugi</TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="coa">
-                <Card className="glass-panel text-white border-slate-800/80">
-                  <CardHeader className="flex flex-row justify-between items-center">
-                    <div>
-                      <CardTitle className="text-lg font-bold text-white">Daftar Bagan Rekening</CardTitle>
-                      <CardDescription className="text-slate-400">SAK EP Chart of Accounts standar.</CardDescription>
-                    </div>
-                    <Button onClick={() => setShowCoaModal(true)} className="bg-emerald-500 hover:bg-emerald-600">
-                      + Tambah Akun
-                    </Button>
-                  </CardHeader>
-                  <CardContent>
-                    <Table>
-                      <TableHeader className="border-slate-800">
-                        <TableRow className="border-slate-800 text-slate-400 hover:bg-transparent">
-                          <TableHead>Kode Rekening</TableHead>
-                          <TableHead>Nama Rekening</TableHead>
-                          <TableHead>Klasifikasi Tipe</TableHead>
-                          <TableHead>Saldo Normal</TableHead>
-                          <TableHead>Saldo Saat Ini</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {coaAccounts.map((acc) => (
-                          <TableRow key={acc.code} className="border-slate-800/50 hover:bg-slate-800/10">
-                            <TableCell className="font-mono text-white">{acc.code}</TableCell>
-                            <TableCell className="font-semibold">{acc.name}</TableCell>
-                            <TableCell className="capitalize">{acc.type}</TableCell>
-                            <TableCell className="capitalize">{acc.normal_balance}</TableCell>
-                            <TableCell>Rp {acc.balance.toLocaleString()}</TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </CardContent>
-                </Card>
-
-                {/* Dialog Form for New Account */}
-                <Dialog open={showCoaModal} onOpenChange={setShowCoaModal}>
-                  <DialogContent className="bg-slate-900 border-slate-800 text-white">
-                    <DialogHeader>
-                      <DialogTitle className="text-xl font-bold">Tambah Akun Baru</DialogTitle>
-                    </DialogHeader>
-                    <form onSubmit={handleCreateCoaSubmit} className="space-y-4 pt-4">
-                      <div>
-                        <label>Kode Rekening (Contoh: 1.1.05)</label>
-                        <Input type="text" required value={newCoaValues.code} onChange={(e) => setNewCoaValues({ ...newCoaValues, code: e.target.value })} className="bg-slate-950 border-slate-800" />
+                      <div className="flex items-center gap-2">
+                        <span className="h-2 w-2 rounded-sm bg-rose-500/60"></span>
+                        <span>Beban Usaha</span>
                       </div>
-                      <div>
-                        <label>Nama Akun</label>
-                        <Input type="text" required value={newCoaValues.name} onChange={(e) => setNewCoaValues({ ...newCoaValues, name: e.target.value })} className="bg-slate-950 border-slate-800" />
-                      </div>
-                      <div>
-                        <label>Klasifikasi Tipe</label>
-                        <Select value={newCoaValues.type} onValueChange={(val) => setNewCoaValues({ ...newCoaValues, type: val as any })}>
-                          <SelectTrigger className="w-full bg-slate-950 border-slate-800">
-                            <SelectValue placeholder="Pilih Tipe" />
-                          </SelectTrigger>
-                          <SelectContent className="bg-slate-950 border-slate-800 text-white">
-                            <SelectItem value="aset">Aset</SelectItem>
-                            <SelectItem value="kewajiban">Kewajiban</SelectItem>
-                            <SelectItem value="ekuitas">Ekuitas</SelectItem>
-                            <SelectItem value="pendapatan">Pendapatan</SelectItem>
-                            <SelectItem value="beban">Beban</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div>
-                        <label>Saldo Normal</label>
-                        <Select value={newCoaValues.normal_balance} onValueChange={(val) => setNewCoaValues({ ...newCoaValues, normal_balance: val as any })}>
-                          <SelectTrigger className="w-full bg-slate-950 border-slate-800">
-                            <SelectValue placeholder="Saldo Normal" />
-                          </SelectTrigger>
-                          <SelectContent className="bg-slate-950 border-slate-800 text-white">
-                            <SelectItem value="debit">Debit</SelectItem>
-                            <SelectItem value="kredit">Kredit</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div>
-                        <label>Saldo Awal (Rp)</label>
-                        <Input type="number" value={newCoaValues.balance} onChange={(e) => setNewCoaValues({ ...newCoaValues, balance: Number(e.target.value) })} className="bg-slate-950 border-slate-800" />
-                      </div>
-                      <DialogFooter className="pt-4 border-t border-slate-800 gap-2">
-                        <Button type="button" onClick={() => setShowCoaModal(false)} className="bg-slate-850 hover:bg-slate-800 text-white">Batal</Button>
-                        <Button type="submit" className="bg-emerald-500 hover:bg-emerald-600">Tambah Akun</Button>
-                      </DialogFooter>
-                    </form>
-                  </DialogContent>
-                </Dialog>
-              </TabsContent>
-
-              <TabsContent value="journal">
-                <Card className="glass-panel text-white border-slate-800/80">
-                  <CardHeader className="flex flex-row justify-between items-center">
-                    <div>
-                      <CardTitle className="text-lg font-bold text-white">Buku Jurnal Umum</CardTitle>
-                      <CardDescription className="text-slate-400">Catat debit dan kredit secara berpasangan.</CardDescription>
-                    </div>
-                    <Button onClick={() => setShowJournalModal(true)} className="bg-emerald-500 hover:bg-emerald-600">
-                      + Jurnal Baru
-                    </Button>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex flex-col gap-4">
-                      {journalEntries.map((entry) => (
-                        <div key={entry.id} className="bg-slate-950/40 p-5 rounded-2xl border border-slate-800/80 shadow-sm">
-                          <div className="flex justify-between border-b border-slate-800 pb-3 mb-3">
-                            <span className="font-bold text-sky-400">{entry.number}</span>
-                            <span className="text-slate-400 text-xs">{entry.date}</span>
-                          </div>
-                          <div className="text-sm text-slate-200 mb-4">{entry.description}</div>
-                          
-                          <div className="pl-6 space-y-2">
-                            {entry.lines.map((line, idx) => (
-                              <div key={idx} className="flex justify-between text-xs font-mono">
-                                <span className={line.credit > 0 ? "pl-8 text-slate-400" : "text-slate-200 font-semibold"}>
-                                  {line.account_code} - {line.name}
-                                </span>
-                                <span>
-                                  {line.debit > 0 ? `Rp ${line.debit.toLocaleString()} (D)` : `Rp ${line.credit.toLocaleString()} (K)`}
-                                </span>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      ))}
                     </div>
                   </CardContent>
                 </Card>
 
-                {/* Dialog Box for Adding Journal Posting */}
-                <Dialog open={showJournalModal} onOpenChange={setShowJournalModal}>
-                  <DialogContent className="bg-slate-900 border-slate-800 text-white max-w-3xl overflow-y-auto max-h-[85vh]">
-                    <DialogHeader className="border-b border-slate-800 pb-4">
-                      <DialogTitle className="text-xl font-bold">Buat Entri Jurnal Baru</DialogTitle>
-                    </DialogHeader>
-                    <form onSubmit={handleJournalEntrySubmit} className="space-y-6 pt-4">
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <label>Tanggal Transaksi</label>
-                          <Input type="date" required value={journalForm.date} onChange={(e) => setJournalForm({ ...journalForm, date: e.target.value })} className="bg-slate-950 border-slate-800 text-white" />
-                        </div>
-                        <div>
-                          <label>Nomor Bukti (No. Ref)</label>
-                          <Input type="text" required placeholder="Contoh: JU-2026-07-001" value={journalForm.number} onChange={(e) => setJournalForm({ ...journalForm, number: e.target.value })} className="bg-slate-950 border-slate-800" />
-                        </div>
-                        <div className="col-span-2">
-                          <label>Keterangan Transaksi</label>
-                          <Input type="text" required placeholder="Contoh: Penerimaan angsuran bulanan..." value={journalForm.description} onChange={(e) => setJournalForm({ ...journalForm, description: e.target.value })} className="bg-slate-950 border-slate-800" />
-                        </div>
-                      </div>
-
-                      <div>
-                        <strong className="text-emerald-400 text-sm">Baris Transaksi (Debit & Kredit)</strong>
-                        <div className="overflow-x-auto mt-2">
-                          <Table>
-                            <TableHeader className="border-slate-800">
-                              <TableRow className="border-slate-800 text-slate-400 hover:bg-transparent">
-                                <TableHead className="w-1/2">Akun Rekening</TableHead>
-                                <TableHead>Debit (Rp)</TableHead>
-                                <TableHead>Kredit (Rp)</TableHead>
-                                <TableHead></TableHead>
-                              </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                              {journalForm.lines.map((line, idx) => (
-                                <TableRow key={idx} className="border-slate-800/40 hover:bg-transparent">
-                                  <TableCell className="p-2">
-                                    <Select value={line.accountCode} onValueChange={(val) => handleJournalLineChange(idx, "accountCode", val)}>
-                                      <SelectTrigger className="w-full bg-slate-950 border-slate-800 text-white">
-                                        <SelectValue />
-                                      </SelectTrigger>
-                                      <SelectContent className="bg-slate-950 border-slate-800 text-white">
-                                        {coaAccounts.map((a) => (
-                                          <SelectItem key={a.code} value={a.code}>{a.code} - {a.name}</SelectItem>
-                                        ))}
-                                      </SelectContent>
-                                    </Select>
-                                  </TableCell>
-                                  <TableCell className="p-2">
-                                    <Input
-                                      type="number"
-                                      value={line.debit}
-                                      onChange={(e) => handleJournalLineChange(idx, "debit", Number(e.target.value))}
-                                      className="bg-slate-950 border-slate-800 w-full"
-                                    />
-                                  </TableCell>
-                                  <TableCell className="p-2">
-                                    <Input
-                                      type="number"
-                                      value={line.credit}
-                                      onChange={(e) => handleJournalLineChange(idx, "credit", Number(e.target.value))}
-                                      className="bg-slate-950 border-slate-800 w-full"
-                                    />
-                                  </TableCell>
-                                  <TableCell className="p-2">
-                                    <Button type="button" onClick={() => removeJournalLineRow(idx)} className="bg-transparent border-0 hover:bg-rose-500/10 text-rose-500 px-2 py-1 shadow-none">
-                                      ❌
-                                    </Button>
-                                  </TableCell>
-                                </TableRow>
-                              ))}
-                            </TableBody>
-                          </Table>
-                        </div>
-                        <Button type="button" onClick={addJournalLineRow} className="bg-slate-800 hover:bg-slate-700 text-white mt-4 text-xs shadow-none">
-                          + Tambah Baris
-                        </Button>
-                      </div>
-
-                      <DialogFooter className="pt-4 border-t border-slate-800 gap-2">
-                        <Button type="button" onClick={() => setShowJournalModal(false)} className="bg-slate-850 hover:bg-slate-800 text-white">Batal</Button>
-                        <Button type="submit" className="bg-emerald-500 hover:bg-emerald-600">Simpan Transaksi</Button>
-                      </DialogFooter>
-                    </form>
-                  </DialogContent>
-                </Dialog>
-              </TabsContent>
-
-              <TabsContent value="ledger">
-                <Card className="glass-panel text-white border-slate-800/80">
-                  <CardHeader>
-                    <div className="w-72">
-                      <label>Pilih Rekening Akun</label>
-                      <Select value={ledgerSelectedCode} onValueChange={setLedgerSelectedCode}>
-                        <SelectTrigger className="w-full bg-slate-950 border-slate-800 text-white mt-1">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent className="bg-slate-950 border-slate-800 text-white">
-                          {coaAccounts.map((a) => (
-                            <SelectItem key={a.code} value={a.code}>{a.code} - {a.name}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
+                {/* Quick Profile Summary Card */}
+                <Card className="bg-[#0b101c]/90 border border-slate-900 shadow-md">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-xs font-bold text-slate-400 uppercase tracking-wider">Informasi Koperasi</CardTitle>
                   </CardHeader>
-                  <CardContent>
-                    <div className="flex justify-between border-b border-slate-850 pb-3 mb-6 text-sm text-slate-400">
-                      <span>Saldo Awal: <strong className="text-white">Rp {ledgerBalanceStart.toLocaleString()}</strong></span>
-                      <span>Saldo Akhir: <strong className="text-white">Rp {ledgerBalanceEnd.toLocaleString()}</strong></span>
+                  <CardContent className="space-y-4 pt-2">
+                    <div className="space-y-1">
+                      <span className="text-[10px] font-mono text-slate-500 uppercase">Badan Hukum</span>
+                      <p className="text-xs font-semibold text-slate-200">{coopProfile.legal_id}</p>
                     </div>
-
-                    <Table>
-                      <TableHeader className="border-slate-800">
-                        <TableRow className="border-slate-800 text-slate-400 hover:bg-transparent">
-                          <TableHead>Tanggal</TableHead>
-                          <TableHead>No. Ref</TableHead>
-                          <TableHead>Keterangan</TableHead>
-                          <TableHead>Debit (D)</TableHead>
-                          <TableHead>Kredit (K)</TableHead>
-                          <TableHead>Saldo Berjalan</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {ledgerEntries.map((line, idx) => (
-                          <TableRow key={idx} className="border-slate-800/40 hover:bg-slate-850/10">
-                            <TableCell>{line.date}</TableCell>
-                            <TableCell className="font-mono text-sky-400">{line.number}</TableCell>
-                            <TableCell>{line.entry_desc}</TableCell>
-                            <TableCell className="text-emerald-400">{line.debit > 0 ? `Rp ${line.debit.toLocaleString()}` : "—"}</TableCell>
-                            <TableCell className="text-rose-400">{line.credit > 0 ? `Rp ${line.credit.toLocaleString()}` : "—"}</TableCell>
-                            <TableCell className="font-bold text-white">Rp {line.runningBalance.toLocaleString()}</TableCell>
-                          </TableRow>
-                        ))}
-                        {ledgerEntries.length === 0 && (
-                          <TableRow>
-                            <TableCell colSpan={6} className="text-center py-6 text-slate-500">
-                              Tidak ada mutasi transaksi untuk rekening ini.
-                            </TableCell>
-                          </TableRow>
-                        )}
-                      </TableBody>
-                    </Table>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-
-              <TabsContent value="neraca">
-                <Card className="glass-panel text-white border-slate-800/80 p-8">
-                  <div className="text-center mb-10">
-                    <h3 className="text-2xl font-black tracking-tight text-white mb-1">KOPERASI MAJU BERSAMA</h3>
-                    <h4 className="text-sm font-semibold text-slate-400 tracking-wider uppercase mb-1">LAPORAN NERACA FINANSIAL</h4>
-                    <p className="text-xs text-slate-500">Per 30 Juni 2026 • SAK EP Standard</p>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-                    {/* Left: Assets */}
-                    <div>
-                      <h5 className="border-b-2 border-emerald-500 pb-2 text-emerald-400 font-extrabold text-sm tracking-wider uppercase mb-4">ASET (AKTIVA)</h5>
-                      <div className="space-y-3">
-                        {coaAccounts.filter(a => a.type === "aset").map(acc => (
-                          <div key={acc.code} className="flex justify-between text-sm">
-                            <span className="text-slate-300">{acc.name}</span>
-                            <span className="font-mono">{acc.balance >= 0 ? `Rp ${acc.balance.toLocaleString()}` : `(Rp ${Math.abs(acc.balance).toLocaleString()})`}</span>
-                          </div>
-                        ))}
-                        <div className="flex justify-between font-bold text-white border-t border-slate-800 pt-3 mt-4 text-base">
-                          <span>TOTAL ASET</span>
-                          <span>Rp {reports.totalAssets.toLocaleString()}</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Right: Liabilities & Equities */}
-                    <div>
-                      <h5 className="border-b-2 border-sky-500 pb-2 text-sky-400 font-extrabold text-sm tracking-wider uppercase mb-4">PASSIVA (KEWAJIBAN & EKUITAS)</h5>
-                      
-                      <strong className="text-xs text-slate-500 uppercase tracking-wider block mb-2">Kewajiban</strong>
-                      <div className="space-y-3 mb-6">
-                        {coaAccounts.filter(a => a.type === "kewajiban").map(acc => (
-                          <div key={acc.code} className="flex justify-between text-sm">
-                            <span className="text-slate-300">{acc.name}</span>
-                            <span className="font-mono">Rp {acc.balance.toLocaleString()}</span>
-                          </div>
-                        ))}
-                        <div className="flex justify-between font-semibold text-slate-300 border-t border-slate-800/50 pt-2 text-sm">
-                          <span>Total Kewajiban</span>
-                          <span>Rp {reports.totalLiabilities.toLocaleString()}</span>
-                        </div>
-                      </div>
-
-                      <strong className="text-xs text-slate-500 uppercase tracking-wider block mb-2">Ekuitas</strong>
-                      <div className="space-y-3">
-                        {coaAccounts.filter(a => a.type === "ekuitas").map(acc => (
-                          <div key={acc.code} className="flex justify-between text-sm">
-                            <span className="text-slate-300">{acc.name}</span>
-                            <span className="font-mono">Rp {acc.balance.toLocaleString()}</span>
-                          </div>
-                        ))}
-                        <div className="flex justify-between font-semibold text-slate-300 border-t border-slate-800/50 pt-2 text-sm">
-                          <span>Total Ekuitas</span>
-                          <span>Rp {reports.totalEquity.toLocaleString()}</span>
-                        </div>
-                      </div>
-
-                      <div className="flex justify-between font-bold text-white border-t border-slate-800 pt-3 mt-6 text-base">
-                        <span>TOTAL PASSIVA</span>
-                        <span>Rp {(reports.totalLiabilities + reports.totalEquity).toLocaleString()}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="mt-12 border-t border-slate-800/80 pt-6 flex justify-between items-center print:hidden">
-                    <div>
-                      {reports.balanced ? (
-                        <span className="text-emerald-400 font-bold text-sm">🟢 Seimbang (Balanced)</span>
-                      ) : (
-                        <span className="text-rose-400 font-bold text-sm">🔴 Tidak Seimbang (Unbalanced)</span>
-                      )}
-                    </div>
-                    <Button onClick={() => window.print()} className="bg-slate-800 hover:bg-slate-700 text-white">
-                      Cetak Laporan
-                    </Button>
-                  </div>
-                </Card>
-              </TabsContent>
-
-              <TabsContent value="labarugi">
-                <Card className="glass-panel text-white border-slate-800/80 p-8">
-                  <div className="text-center mb-10">
-                    <h3 className="text-2xl font-black tracking-tight text-white mb-1">KOPERASI MAJU BERSAMA</h3>
-                    <h4 className="text-sm font-semibold text-slate-400 tracking-wider uppercase mb-1">LAPORAN LABA RUGI (SHU)</h4>
-                    <p className="text-xs text-slate-500">Periode 01 Jan - 30 Juni 2026 • SAK EP Standard</p>
-                  </div>
-
-                  <div className="max-w-xl mx-auto space-y-8">
-                    <div>
-                      <h5 className="border-b-2 border-emerald-500 pb-2 text-emerald-400 font-extrabold text-sm tracking-wider uppercase mb-4">PENDAPATAN</h5>
-                      <div className="space-y-3">
-                        {coaAccounts.filter(a => a.type === "pendapatan").map(acc => (
-                          <div key={acc.code} className="flex justify-between text-sm">
-                            <span className="text-slate-300">{acc.name}</span>
-                            <span className="font-mono">Rp {acc.balance.toLocaleString()}</span>
-                          </div>
-                        ))}
-                        <div className="flex justify-between font-bold text-white border-t border-slate-800 pt-3 mt-3">
-                          <span>TOTAL PENDAPATAN</span>
-                          <span>Rp {reports.totalRevenue.toLocaleString()}</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div>
-                      <h5 className="border-b-2 border-rose-500 pb-2 text-rose-400 font-extrabold text-sm tracking-wider uppercase mb-4">BEBAN OPERASIONAL</h5>
-                      <div className="space-y-3">
-                        {coaAccounts.filter(a => a.type === "beban").map(acc => (
-                          <div key={acc.code} className="flex justify-between text-sm">
-                            <span className="text-slate-300">{acc.name}</span>
-                            <span className="font-mono">Rp {acc.balance.toLocaleString()}</span>
-                          </div>
-                        ))}
-                        <div className="flex justify-between font-bold text-white border-t border-slate-800 pt-3 mt-3">
-                          <span>TOTAL BEBAN</span>
-                          <span>Rp {reports.totalExpense.toLocaleString()}</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="border-t-2 border-slate-600 pt-6 mt-8">
-                      <div className="flex justify-between font-bold text-lg mb-2">
-                        <span>SHU Kotor</span>
-                        <span>Rp {reports.shuKotor.toLocaleString()}</span>
-                      </div>
-                      <div className="flex justify-between text-slate-400 text-sm mb-2">
-                        <span>Pajak (10%)</span>
-                        <span>Rp {reports.tax.toLocaleString()}</span>
-                      </div>
-                      <div className="flex justify-between font-extrabold text-xl text-emerald-400">
-                        <span>SHU Bersih</span>
-                        <span>Rp {reports.shuBersih.toLocaleString()}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="mt-12 border-t border-slate-800/80 pt-6 flex justify-end print:hidden">
-                    <Button onClick={() => window.print()} className="bg-slate-800 hover:bg-slate-700 text-white">
-                      Cetak Laporan
-                    </Button>
-                  </div>
-                </Card>
-              </TabsContent>
-            </Tabs>
-          </div>
-        )}
-
-        {activeTab === "feasibility" && (
-          <div>
-            <header className="mb-10 print:hidden">
-              <h2 className="text-3xl font-extrabold tracking-tight text-white mb-2">Analisis Kelayakan Bisnis</h2>
-              <p className="text-slate-400 text-sm">Hitung proyeksi investasi dan kelayakan menggunakan indikator ENPV, EIRR, dan EBCR.</p>
-            </header>
-
-            <Tabs value={feasibilityActiveTab} onValueChange={(val) => setFeasibilityActiveTab(val as any)} className="w-full">
-              <TabsList className="bg-slate-900 border border-slate-800 text-slate-400 p-1 rounded-xl mb-6 print:hidden">
-                <TabsTrigger value="calculator" className="data-[state=active]:bg-emerald-500 data-[state=active]:text-slate-950 font-bold px-4 py-2 rounded-lg">Kalkulator Kelayakan</TabsTrigger>
-                <TabsTrigger value="sensitivity" className="data-[state=active]:bg-emerald-500 data-[state=active]:text-slate-950 font-bold px-4 py-2 rounded-lg">Analisis Sensitivitas</TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="calculator">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  {/* Parameter Entry Card */}
-                  <Card className="glass-panel text-white border-slate-800/80">
-                    <CardHeader>
-                      <CardTitle className="text-white text-base">Parameter Proyeksi Investasi</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div>
-                        <label>Investasi Awal (Rp)</label>
-                        <Input
-                          type="number"
-                          value={feasibilityParams.initialInvestment}
-                          onChange={(e) => setFeasibilityParams({ ...feasibilityParams, initialInvestment: Number(e.target.value) })}
-                          className="bg-slate-950 border-slate-800"
-                        />
-                      </div>
-                      <div>
-                        <label>Tahun Proyeksi</label>
-                        <Select value={String(feasibilityParams.projectionYears)} onValueChange={(val) => setFeasibilityParams({ ...feasibilityParams, projectionYears: Number(val) })}>
-                          <SelectTrigger className="w-full bg-slate-950 border-slate-800 text-white">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent className="bg-slate-950 border-slate-800 text-white">
-                            <SelectItem value="3">3 Tahun</SelectItem>
-                            <SelectItem value="5">5 Tahun</SelectItem>
-                            <SelectItem value="10">10 Tahun</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div>
-                        <label>Arus Kas Masuk Bersih (Pisahkan dengan koma)</label>
-                        <Input
-                          type="text"
-                          value={feasibilityParams.cashFlows}
-                          onChange={(e) => setFeasibilityParams({ ...feasibilityParams, cashFlows: e.target.value })}
-                          className="bg-slate-950 border-slate-800"
-                        />
-                        <span className="text-slate-500 text-xs mt-1 block">Contoh: 18000000,22000000,25000000,28000000,30000000</span>
-                      </div>
-                      <div>
-                        <label>Discount Rate (%)</label>
-                        <Input
-                          type="number"
-                          step={0.1}
-                          value={feasibilityParams.discountRate}
-                          onChange={(e) => setFeasibilityParams({ ...feasibilityParams, discountRate: Number(e.target.value) })}
-                          className="bg-slate-950 border-slate-800"
-                        />
-                      </div>
-                      <div>
-                        <label>Opportunity Cost (%)</label>
-                        <Input
-                          type="number"
-                          step={0.1}
-                          value={feasibilityParams.opportunityCost}
-                          onChange={(e) => setFeasibilityParams({ ...feasibilityParams, opportunityCost: Number(e.target.value) })}
-                          className="bg-slate-950 border-slate-800"
-                        />
-                      </div>
-                      <Button onClick={calculateFeasibility} className="w-full bg-emerald-500 hover:bg-emerald-600 mt-2">
-                        Hitung Kelayakan
-                      </Button>
-                    </CardContent>
-                  </Card>
-
-                  {/* Calculations breakdown Card */}
-                  <Card className="glass-panel text-white border-slate-800/80">
-                    <CardHeader>
-                      <CardTitle className="text-white text-base">Hasil Kelayakan Finansial</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      {feasibilityResults ? (
-                        <div className="space-y-6">
-                          <div className={`text-center p-6 rounded-xl border ${feasibilityResults.tierColor === "green" ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400" : feasibilityResults.tierColor === "amber" ? "bg-amber-500/10 border-amber-500/20 text-amber-400" : "bg-rose-500/10 border-rose-500/20 text-rose-400"}`}>
-                            <span className="text-xs uppercase font-semibold text-slate-400">Rekomendasi</span>
-                            <h3 className="text-2xl font-bold my-1">{feasibilityResults.tierLabel}</h3>
-                            <span className="text-xs text-slate-400">Tier Kelayakan: <strong>Tier {feasibilityResults.tier}</strong></span>
-                          </div>
-
-                          <div className="space-y-4 font-mono text-sm">
-                            <div className="flex justify-between border-b border-slate-800 pb-2">
-                              <span className="text-slate-400">Economic NPV (ENPV)</span>
-                              <span className="font-bold text-white">
-                                Rp {Math.round(feasibilityResults.enpv).toLocaleString()} &nbsp;
-                                {feasibilityResults.isNPVPass ? "✅" : "❌"}
-                              </span>
-                            </div>
-                            <div className="flex justify-between border-b border-slate-800 pb-2">
-                              <span className="text-slate-400">Internal Rate (EIRR)</span>
-                              <span className="font-bold text-white">
-                                {feasibilityResults.eirr.toFixed(2)}% &nbsp;
-                                {feasibilityResults.isIRRPass ? "✅" : "❌"}
-                              </span>
-                            </div>
-                            <div className="flex justify-between border-b border-slate-800 pb-2">
-                              <span className="text-slate-400">Benefit-Cost Ratio (EBCR)</span>
-                              <span className="font-bold text-white">
-                                {feasibilityResults.ebcr.toFixed(2)} &nbsp;
-                                {feasibilityResults.isBCRPass ? "✅" : "❌"}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                      ) : (
-                        <p className="text-center text-slate-500 py-12">
-                          Silakan isi form parameter investasi dan klik tombol hitung kelayakan.
-                        </p>
-                      )}
-                    </CardContent>
-                  </Card>
-                </div>
-              </TabsContent>
-
-              <TabsContent value="sensitivity">
-                <Card className="glass-panel text-white border-slate-800/80">
-                  <CardHeader className="border-b border-slate-850 pb-4 print:hidden">
-                    <div className="flex gap-2">
-                      <Button onClick={() => handleSensitivityScenarioChange("optimis")} className={`shadow-none ${sensitivityScenario === "optimis" ? "bg-emerald-500 text-slate-950 font-bold" : "bg-slate-800 hover:bg-slate-700 text-white"}`}>
-                        Optimis (+15% Arus Kas)
-                      </Button>
-                      <Button onClick={() => handleSensitivityScenarioChange("moderat")} className={`shadow-none ${sensitivityScenario === "moderat" ? "bg-emerald-500 text-slate-950 font-bold" : "bg-slate-800 hover:bg-slate-700 text-white"}`}>
-                        Moderat (Base Case)
-                      </Button>
-                      <Button onClick={() => handleSensitivityScenarioChange("pesimis")} className={`shadow-none ${sensitivityScenario === "pesimis" ? "bg-emerald-500 text-slate-950 font-bold" : "bg-slate-800 hover:bg-slate-700 text-white"}`}>
-                        Pesimis (-30% Gagal Panen)
-                      </Button>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="pt-6">
-                    {sensitivityPresetResults ? (
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <div>
-                          <h4 className="text-base font-bold capitalize text-sky-400 mb-2">Skenario: {sensitivityScenario}</h4>
-                          <p className="text-sm text-slate-300 leading-relaxed">
-                            {sensitivityScenario === "optimis" && "Variabel cuaca dan fluktuasi komoditas stabil, hasil unit usaha diproyeksikan tumbuh 15%."}
-                            {sensitivityScenario === "moderat" && "Base Case proyeksi awal tanpa modifikasi variabel eksternal."}
-                            {sensitivityScenario === "pesimis" && "Gagal panen, perubahan iklim, dan fluktuasi harga komoditas menekan arus kas masuk sebesar 30%."}
-                          </p>
-                        </div>
-                        <div className="border-l border-slate-850 pl-6 space-y-4 font-mono text-sm">
-                          <div className="flex justify-between">
-                            <span className="text-slate-400 font-sans">Investasi Awal</span>
-                            <span>Rp {Math.round(sensitivityPresetResults.investment).toLocaleString()}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-slate-400 font-sans">Hasil ENPV</span>
-                            <span style={{ color: sensitivityPresetResults.enpv > 0 ? "#34d399" : "#fb7185" }}>
-                              Rp {Math.round(sensitivityPresetResults.enpv).toLocaleString()}
-                            </span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-slate-400 font-sans">Hasil EIRR</span>
-                            <span>{sensitivityPresetResults.eirr.toFixed(2)}%</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-slate-400 font-sans">Hasil EBCR</span>
-                            <span>{sensitivityPresetResults.ebcr.toFixed(2)}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-slate-400 font-sans">Hasil Rekomendasi</span>
-                            <span className="font-bold text-white">{sensitivityPresetResults.tierLabel}</span>
-                          </div>
-                        </div>
-                      </div>
-                    ) : (
-                      <p className="text-center text-slate-500 py-12">
-                        Hitung kelayakan proyeksi awal (Kalkulator Kelayakan) terlebih dahulu untuk mengaktifkan skenario.
+                    <div className="space-y-1">
+                      <span className="text-[10px] font-mono text-slate-500 uppercase">Alamat Node</span>
+                      <p className="text-xs font-semibold text-slate-200">
+                        Desa {coopProfile.village}, {coopProfile.district}, {coopProfile.regency}
                       </p>
-                    )}
+                    </div>
+                    <div className="space-y-1">
+                      <span className="text-[10px] font-mono text-slate-500 uppercase">Unit Bisnis Aktif</span>
+                      <div className="flex flex-wrap gap-1.5 mt-1">
+                        {JSON.parse(coopProfile.business_units || "[]").map((unit: string, idx: number) => (
+                          <span key={idx} className="text-[9px] font-mono text-emerald-400 bg-emerald-950/20 px-2 py-0.5 border border-emerald-500/10 rounded">
+                            {unit.replace("unit_", "").toUpperCase()}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
                   </CardContent>
                 </Card>
-              </TabsContent>
-            </Tabs>
-          </div>
-        )}
+              </div>
+            </div>
+          )}
 
-        {activeTab === "sync" && (
-          <div>
-            <header className="mb-10 print:hidden">
-              <h2 className="text-3xl font-extrabold tracking-tight text-white mb-2">Sinkronisasi Jaringan</h2>
-              <p className="text-slate-400 text-sm">Aggregasi data berjenjang dari Desa KDKMP ke Kabupaten/Provinsi secara offline-first.</p>
-            </header>
-
-            <Card className="glass-panel text-white border-slate-800/80 mb-8">
-              <CardHeader>
-                <CardTitle className="text-white text-base">Manual Sinkronisasi</CardTitle>
-                <CardDescription className="text-slate-400">
-                  Target Server Node Kabupaten: <strong>{syncServerUrl}</strong>
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="flex items-center gap-4">
-                <Button onClick={handleSyncNow} disabled={isSyncing} className="bg-emerald-500 hover:bg-emerald-600">
-                  {isSyncing ? "Menyinkronkan..." : "Sinkronkan Sekarang"}
+          {activeTab === "members" && (
+            <div className="space-y-6">
+              
+              {/* Toolbar */}
+              <div className="flex items-center justify-between gap-4 print:hidden">
+                <div className="flex gap-2 flex-1 max-w-xl">
+                  <div className="relative flex-1">
+                    <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-500" />
+                    <Input
+                      type="text"
+                      placeholder="Cari berdasarkan nama atau NIK anggota..."
+                      value={memberSearchQuery}
+                      onChange={(e) => setMemberSearchQuery(e.target.value)}
+                      className="pl-9 bg-[#0b101c]/60 border-slate-900 text-xs text-white"
+                    />
+                  </div>
+                  <Select value={memberFilterStatus} onValueChange={setMemberFilterStatus}>
+                    <SelectTrigger className="w-44 bg-[#0b101c]/60 border-slate-900 text-xs text-slate-300">
+                      <SelectValue placeholder="Status Keanggotaan" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-[#0b101c] border-slate-900 text-xs text-white">
+                      <SelectItem value="semua">Semua Status</SelectItem>
+                      <SelectItem value="aktif">Status Aktif</SelectItem>
+                      <SelectItem value="nonaktif">Status Nonaktif</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <Button onClick={openAddMemberModal} className="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold text-xs h-9">
+                  <Plus className="h-4 w-4 mr-1 text-slate-950" /> Tambah Anggota
                 </Button>
-                {syncProgress && <span className="text-sky-400 text-sm font-semibold">{syncProgress}</span>}
-              </CardContent>
-            </Card>
+              </div>
 
-            <Card className="glass-panel text-white border-slate-800/80">
-              <CardHeader>
-                <CardTitle className="text-slate-400 text-sm font-semibold uppercase">Riwayat Sinkronisasi Lokal</CardTitle>
-              </CardHeader>
-              <CardContent>
+              {/* Members Table */}
+              <Card className="bg-[#0b101c]/90 border border-slate-900 overflow-hidden shadow-md">
                 <Table>
-                  <TableHeader className="border-slate-800">
-                    <TableRow className="border-slate-800 text-slate-400 hover:bg-transparent">
-                      <TableHead>Tanggal Selesai</TableHead>
-                      <TableHead>Aliran Transaksi</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Jumlah Entri</TableHead>
+                  <TableHeader className="bg-slate-950/40 border-slate-900">
+                    <TableRow className="border-slate-900 hover:bg-transparent">
+                      <TableHead className="text-slate-500 font-mono text-[10px] font-bold uppercase tracking-wider">Nama Lengkap</TableHead>
+                      <TableHead className="text-slate-500 font-mono text-[10px] font-bold uppercase tracking-wider">NIK</TableHead>
+                      <TableHead className="text-slate-500 font-mono text-[10px] font-bold uppercase tracking-wider">Alamat</TableHead>
+                      <TableHead className="text-slate-500 font-mono text-[10px] font-bold uppercase tracking-wider">Total Simpanan</TableHead>
+                      <TableHead className="text-slate-500 font-mono text-[10px] font-bold uppercase tracking-wider">Outstanding Pinjaman</TableHead>
+                      <TableHead className="text-slate-500 font-mono text-[10px] font-bold uppercase tracking-wider">Status</TableHead>
+                      <TableHead className="text-slate-500 font-mono text-[10px] font-bold uppercase tracking-wider text-right print:hidden">Operasi</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {syncHistoryList.map((hist) => (
-                      <TableRow key={hist.id} className="border-slate-800/40 hover:bg-slate-850/10">
-                        <TableCell>{hist.completed_at}</TableCell>
-                        <TableCell className="capitalize">{hist.direction}</TableCell>
-                        <TableCell>
-                          <span className={`font-semibold ${hist.status === "success" ? "text-emerald-400" : "text-rose-400"}`}>
-                            {hist.status === "success" ? "Berhasil" : "Gagal"}
-                          </span>
-                        </TableCell>
-                        <TableCell>{hist.entity_count} entri</TableCell>
-                      </TableRow>
-                    ))}
-                    {syncHistoryList.length === 0 && (
+                    {filteredMembers.map((mbr) => {
+                      const totalSavings = mbr.savings_pokok + mbr.savings_wajib + mbr.savings_sukarela;
+                      return (
+                        <TableRow key={mbr.id} className="border-slate-900 hover:bg-slate-900/10">
+                          <TableCell className="font-semibold text-slate-200 text-xs">{mbr.name}</TableCell>
+                          <TableCell className="font-mono text-slate-400 text-xs">{mbr.nik}</TableCell>
+                          <TableCell className="text-xs text-slate-400">
+                            Rt. {mbr.rt} / Rw. {mbr.rw} - {mbr.hamlet}
+                          </TableCell>
+                          <TableCell className="font-mono text-xs text-slate-300">Rp {totalSavings.toLocaleString()}</TableCell>
+                          <TableCell className="font-mono text-xs text-slate-300">Rp {mbr.loan_outstanding.toLocaleString()}</TableCell>
+                          <TableCell>
+                            <span className={`inline-flex px-2 py-0.5 rounded text-[9px] font-mono font-bold uppercase tracking-wider ${mbr.status === "aktif" ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/15" : "bg-rose-500/10 text-rose-400 border border-rose-500/15"}`}>
+                              {mbr.status}
+                            </span>
+                          </TableCell>
+                          <TableCell className="text-right print:hidden">
+                            <div className="flex gap-1.5 justify-end">
+                              <Button variant="outline" size="sm" onClick={() => openEditMemberModal(mbr)} className="h-7 w-7 p-0 border-slate-900 bg-slate-950/20 hover:bg-slate-800 text-slate-300">
+                                <Edit2 className="h-3 w-3" />
+                              </Button>
+                              <Button variant="destructive" size="sm" onClick={() => handleDeleteMember(mbr)} className="h-7 w-7 p-0 bg-rose-500/5 hover:bg-rose-500/10 border border-rose-500/20 text-rose-400 shadow-none">
+                                <Trash2 className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                    {filteredMembers.length === 0 && (
                       <TableRow>
-                        <TableCell colSpan={4} className="text-center py-6 text-slate-500">
-                          Belum ada riwayat sinkronisasi.
+                        <TableCell colSpan={7} className="text-center py-8 text-slate-500 text-xs font-mono">
+                          Tidak ada data anggota ditemukan.
                         </TableCell>
                       </TableRow>
                     )}
                   </TableBody>
                 </Table>
-              </CardContent>
-            </Card>
-          </div>
-        )}
+              </Card>
 
-        {activeTab === "settings" && (
-          <div>
-            <header className="mb-10 print:hidden">
-              <h2 className="text-3xl font-extrabold tracking-tight text-white mb-2">Pengaturan Cockpit</h2>
-              <p className="text-slate-400 text-sm">Sesuaikan preferensi desktop app, keamanan PIN, dan pembaruan OTA.</p>
-            </header>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {/* Profile setup card */}
-              <form className="glass-panel text-white border-slate-800/80 rounded-2xl p-6 md:col-span-2" onSubmit={handleSaveProfile}>
-                <h4 className="text-base font-bold text-white border-b border-slate-850 pb-3 mb-4">Profil Pengurus Koperasi</h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label>Nama Koperasi</label>
-                    <Input type="text" value={coopProfile.name} onChange={(e) => handleProfileFieldChange("name", e.target.value)} className="bg-slate-950 border-slate-800" />
-                  </div>
-                  <div>
-                    <label>No. Legal Badan Hukum</label>
-                    <Input type="text" value={coopProfile.legal_id} onChange={(e) => handleProfileFieldChange("legal_id", e.target.value)} className="bg-slate-950 border-slate-800" />
-                  </div>
-                  <div>
-                    <label>Nama Ketua</label>
-                    <Input
-                      type="text"
-                      value={JSON.parse(coopProfile.officers || "{}").chairman || ""}
-                      onChange={(e) => {
-                        const parsed = JSON.parse(coopProfile.officers || "{}");
-                        parsed.chairman = e.target.value;
-                        handleProfileFieldChange("officers", JSON.stringify(parsed));
-                      }}
-                      className="bg-slate-950 border-slate-800"
-                    />
-                  </div>
-                  <div>
-                    <label>Nama Sekretaris</label>
-                    <Input
-                      type="text"
-                      value={JSON.parse(coopProfile.officers || "{}").secretary || ""}
-                      onChange={(e) => {
-                        const parsed = JSON.parse(coopProfile.officers || "{}");
-                        parsed.secretary = e.target.value;
-                        handleProfileFieldChange("officers", JSON.stringify(parsed));
-                      }}
-                      className="bg-slate-950 border-slate-800"
-                    />
-                  </div>
-                  <div>
-                    <label>Nama Bendahara</label>
-                    <Input
-                      type="text"
-                      value={JSON.parse(coopProfile.officers || "{}").treasurer || ""}
-                      onChange={(e) => {
-                        const parsed = JSON.parse(coopProfile.officers || "{}");
-                        parsed.treasurer = e.target.value;
-                        handleProfileFieldChange("officers", JSON.stringify(parsed));
-                      }}
-                      className="bg-slate-950 border-slate-800"
-                    />
-                  </div>
-                  <div>
-                    <label>Nama Pengawas (Auditor)</label>
-                    <Input
-                      type="text"
-                      value={JSON.parse(coopProfile.officers || "{}").supervisor || ""}
-                      onChange={(e) => {
-                        const parsed = JSON.parse(coopProfile.officers || "{}");
-                        parsed.supervisor = e.target.value;
-                        handleProfileFieldChange("officers", JSON.stringify(parsed));
-                      }}
-                      className="bg-slate-950 border-slate-800"
-                    />
-                  </div>
-                </div>
-                <Button type="submit" className="bg-emerald-500 hover:bg-emerald-600 mt-6">Simpan Profil</Button>
-              </form>
-
-              {/* Pembaruan updates */}
-              <Card className="glass-panel text-white border-slate-800/80 md:col-span-2">
-                <CardHeader>
-                  <CardTitle className="text-white text-base">Pembaruan Sistem OTA</CardTitle>
-                  <CardDescription className="text-slate-400">
-                    Memeriksa rilis KDKMP terbaru di GitHub.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <Button onClick={checkUpdateCenter} disabled={isUpdateChecking} className="w-full bg-emerald-500 hover:bg-emerald-600">
-                    {isUpdateChecking ? "Checking..." : "Periksa Pembaruan Sekarang"}
-                  </Button>
-                  {updateStatusText && <span className="text-emerald-400 text-sm font-semibold block text-center">{updateStatusText}</span>}
-
-                  {downloadContentLength > 0 && (
-                    <div className="space-y-2 mt-4">
-                      <div className="flex justify-between text-xs text-slate-400">
-                        <span>Mengunduh: {(downloadedBytes / 1024 / 1024).toFixed(2)} MB / {(downloadContentLength / 1024 / 1024).toFixed(2)} MB</span>
-                        <span>{downloadProgress}%</span>
-                      </div>
-                      <div className="w-full bg-slate-950 rounded-full h-2 border border-slate-800">
-                        <div
-                          className="bg-emerald-500 h-1.5 rounded-full transition-all duration-300"
-                          style={{ width: `${downloadProgress}%` }}
-                        ></div>
+              {/* Member Modification Dialog */}
+              <Dialog open={showMemberModal} onOpenChange={setShowMemberModal}>
+                <DialogContent className="bg-[#0b101c] border-slate-900 text-slate-100 max-w-2xl overflow-y-auto max-h-[85vh]">
+                  <DialogHeader className="border-b border-slate-900 pb-3">
+                    <DialogTitle className="text-sm font-bold font-mono tracking-wider uppercase text-slate-300">
+                      {memberFormType === "add" ? "Registrasi Anggota Baru" : "Update Profil Anggota"}
+                    </DialogTitle>
+                  </DialogHeader>
+                  <form onSubmit={handleMemberFormSubmit} className="space-y-6 pt-4 text-xs">
+                    
+                    {/* Biodata Section */}
+                    <div className="space-y-3">
+                      <h4 className="font-bold text-[10px] font-mono tracking-wider uppercase text-emerald-400 border-b border-slate-900 pb-1">Biodata Kependudukan</h4>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-1">
+                          <label className="text-slate-400 font-mono text-[9px] uppercase">Nomor NIK (16 Digit)</label>
+                          <Input
+                            type="text"
+                            maxLength={16}
+                            required
+                            value={memberFormValues.nik}
+                            onChange={(e) => setMemberFormValues({ ...memberFormValues, nik: e.target.value.replace(/\D/g, "") })}
+                            className="bg-slate-950 border-slate-900 text-xs"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-slate-400 font-mono text-[9px] uppercase">Nama Lengkap</label>
+                          <Input
+                            type="text"
+                            required
+                            value={memberFormValues.name}
+                            onChange={(e) => setMemberFormValues({ ...memberFormValues, name: e.target.value })}
+                            className="bg-slate-950 border-slate-900 text-xs"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-slate-400 font-mono text-[9px] uppercase">Tempat Lahir</label>
+                          <Input
+                            type="text"
+                            value={memberFormValues.place_of_birth}
+                            onChange={(e) => setMemberFormValues({ ...memberFormValues, place_of_birth: e.target.value })}
+                            className="bg-slate-950 border-slate-900 text-xs"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-slate-400 font-mono text-[9px] uppercase">Tanggal Lahir</label>
+                          <Input
+                            type="date"
+                            value={memberFormValues.date_of_birth}
+                            onChange={(e) => setMemberFormValues({ ...memberFormValues, date_of_birth: e.target.value })}
+                            className="bg-slate-950 border-slate-900 text-xs text-white"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-slate-400 font-mono text-[9px] uppercase">Jenis Kelamin</label>
+                          <Select value={memberFormValues.gender} onValueChange={(val) => setMemberFormValues({ ...memberFormValues, gender: val })}>
+                            <SelectTrigger className="w-full bg-slate-950 border-slate-900 text-xs">
+                              <SelectValue placeholder="Gender" />
+                            </SelectTrigger>
+                            <SelectContent className="bg-slate-950 border-slate-900 text-white text-xs">
+                              <SelectItem value="L">Laki-laki</SelectItem>
+                              <SelectItem value="P">Perempuan</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-slate-400 font-mono text-[9px] uppercase">Pekerjaan</label>
+                          <Input
+                            type="text"
+                            value={memberFormValues.occupation}
+                            onChange={(e) => setMemberFormValues({ ...memberFormValues, occupation: e.target.value })}
+                            className="bg-slate-950 border-slate-900 text-xs"
+                          />
+                        </div>
                       </div>
                     </div>
-                  )}
+
+                    {/* Alamat Section */}
+                    <div className="space-y-3">
+                      <h4 className="font-bold text-[10px] font-mono tracking-wider uppercase text-emerald-400 border-b border-slate-900 pb-1">Alamat Domisili</h4>
+                      <div className="grid grid-cols-3 gap-4">
+                        <div className="space-y-1">
+                          <label className="text-slate-400 font-mono text-[9px] uppercase">Dusun</label>
+                          <Input
+                            type="text"
+                            value={memberFormValues.hamlet}
+                            onChange={(e) => setMemberFormValues({ ...memberFormValues, hamlet: e.target.value })}
+                            className="bg-slate-950 border-slate-900 text-xs"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-slate-400 font-mono text-[9px] uppercase">RT</label>
+                          <Input
+                            type="text"
+                            value={memberFormValues.rt}
+                            onChange={(e) => setMemberFormValues({ ...memberFormValues, rt: e.target.value })}
+                            className="bg-slate-950 border-slate-900 text-xs"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-slate-400 font-mono text-[9px] uppercase">RW</label>
+                          <Input
+                            type="text"
+                            value={memberFormValues.rw}
+                            onChange={(e) => setMemberFormValues({ ...memberFormValues, rw: e.target.value })}
+                            className="bg-slate-950 border-slate-900 text-xs"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Keuangan Section */}
+                    <div className="grid grid-cols-2 gap-6 pt-2 border-t border-slate-900">
+                      
+                      {/* Simpanan */}
+                      <div className="space-y-3">
+                        <h4 className="font-bold text-[10px] font-mono tracking-wider uppercase text-emerald-400 border-b border-slate-900 pb-1">Neraca Simpanan</h4>
+                        <div className="space-y-2">
+                          <div className="space-y-1">
+                            <label className="text-slate-500 font-mono text-[9px] uppercase">Simpanan Pokok (Rp)</label>
+                            <Input
+                              type="number"
+                              value={memberFormValues.savings_pokok}
+                              onChange={(e) => setMemberFormValues({ ...memberFormValues, savings_pokok: Number(e.target.value) })}
+                              className="bg-slate-950 border-slate-900 text-xs font-mono"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-slate-500 font-mono text-[9px] uppercase">Simpanan Wajib (Rp)</label>
+                            <Input
+                              type="number"
+                              value={memberFormValues.savings_wajib}
+                              onChange={(e) => setMemberFormValues({ ...memberFormValues, savings_wajib: Number(e.target.value) })}
+                              className="bg-slate-950 border-slate-900 text-xs font-mono"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-slate-500 font-mono text-[9px] uppercase">Simpanan Sukarela (Rp)</label>
+                            <Input
+                              type="number"
+                              value={memberFormValues.savings_sukarela}
+                              onChange={(e) => setMemberFormValues({ ...memberFormValues, savings_sukarela: Number(e.target.value) })}
+                              className="bg-slate-950 border-slate-900 text-xs font-mono"
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Pinjaman */}
+                      <div className="space-y-3">
+                        <h4 className="font-bold text-[10px] font-mono tracking-wider uppercase text-sky-400 border-b border-slate-900 pb-1">Status Pinjaman</h4>
+                        <div className="space-y-2">
+                          <div className="space-y-1">
+                            <label className="text-slate-500 font-mono text-[9px] uppercase">Plafon Pinjaman (Rp)</label>
+                            <Input
+                              type="number"
+                              value={memberFormValues.loan_total}
+                              onChange={(e) => setMemberFormValues({ ...memberFormValues, loan_total: Number(e.target.value) })}
+                              className="bg-slate-950 border-slate-900 text-xs font-mono"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-slate-500 font-mono text-[9px] uppercase">Outstanding Pinjaman (Rp)</label>
+                            <Input
+                              type="number"
+                              value={memberFormValues.loan_outstanding}
+                              onChange={(e) => setMemberFormValues({ ...memberFormValues, loan_outstanding: Number(e.target.value) })}
+                              className="bg-slate-950 border-slate-900 text-xs font-mono"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-slate-400 font-mono text-[9px] uppercase">Kategori Kolektibilitas</label>
+                            <Input
+                              type="text"
+                              value={memberFormValues.loan_status}
+                              onChange={(e) => setMemberFormValues({ ...memberFormValues, loan_status: e.target.value })}
+                              className="bg-slate-950 border-slate-900 text-xs"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Status Dropdown */}
+                    <div className="border-t border-slate-900 pt-4 flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <label className="text-slate-400 font-mono text-[9px] uppercase">Status Anggota</label>
+                        <Select value={memberFormValues.status} onValueChange={(val) => setMemberFormValues({ ...memberFormValues, status: val })}>
+                          <SelectTrigger className="w-36 bg-slate-950 border-slate-900 text-xs">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent className="bg-slate-950 border-slate-900 text-white text-xs">
+                            <SelectItem value="aktif">AKTIF</SelectItem>
+                            <SelectItem value="nonaktif">NONAKTIF</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <DialogFooter className="gap-2">
+                        <Button type="button" onClick={() => setShowMemberModal(false)} className="bg-slate-900 hover:bg-slate-800 text-slate-300 text-xs">
+                          Batal
+                        </Button>
+                        <Button type="submit" className="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold text-xs">Simpan Data</Button>
+                      </DialogFooter>
+                    </div>
+
+                  </form>
+                </DialogContent>
+              </Dialog>
+
+            </div>
+          )}
+
+          {activeTab === "accounting" && (
+            <div className="space-y-6">
+              
+              {/* SAK EP Navigation tab row */}
+              <Tabs value={accountingTab} onValueChange={(val) => setAccountingTab(val as any)} className="w-full">
+                <TabsList className="bg-[#090e1a] border border-slate-900 text-slate-400 mb-6 p-0.5 rounded-lg flex w-fit print:hidden">
+                  <TabsTrigger value="coa" className="data-[state=active]:bg-emerald-500 data-[state=active]:text-slate-950 font-bold text-xs px-4 py-1.5 rounded">
+                    Bagan Akun (COA)
+                  </TabsTrigger>
+                  <TabsTrigger value="journal" className="data-[state=active]:bg-emerald-500 data-[state=active]:text-slate-950 font-bold text-xs px-4 py-1.5 rounded">
+                    Buku Jurnal Umum
+                  </TabsTrigger>
+                  <TabsTrigger value="ledger" className="data-[state=active]:bg-emerald-500 data-[state=active]:text-slate-950 font-bold text-xs px-4 py-1.5 rounded">
+                    Buku Besar
+                  </TabsTrigger>
+                  <TabsTrigger value="neraca" className="data-[state=active]:bg-emerald-500 data-[state=active]:text-slate-950 font-bold text-xs px-4 py-1.5 rounded">
+                    Neraca Keuangan
+                  </TabsTrigger>
+                  <TabsTrigger value="labarugi" className="data-[state=active]:bg-emerald-500 data-[state=active]:text-slate-950 font-bold text-xs px-4 py-1.5 rounded">
+                    Laporan SHU (Laba Rugi)
+                  </TabsTrigger>
+                </TabsList>
+
+                {/* Bagan Akun */}
+                <TabsContent value="coa">
+                  <Card className="bg-[#0b101c]/90 border border-slate-900">
+                    <CardHeader className="flex flex-row justify-between items-center border-b border-slate-900/60 pb-4">
+                      <div>
+                        <CardTitle className="text-xs font-bold text-slate-400 uppercase tracking-wider">Chart of Accounts (Bagan Perkiraan)</CardTitle>
+                        <CardDescription className="text-[10px] text-slate-500">Struktur penomoran akun perkiraan akuntansi standar SAK Entitas Privat.</CardDescription>
+                      </div>
+                      <Button onClick={() => setShowCoaModal(true)} className="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold text-xs h-8">
+                        <Plus className="h-4 w-4 mr-1 text-slate-950" /> Tambah Akun
+                      </Button>
+                    </CardHeader>
+                    <CardContent className="pt-4">
+                      <Table>
+                        <TableHeader className="bg-slate-950/20 border-slate-900">
+                          <TableRow className="border-slate-900 hover:bg-transparent">
+                            <TableHead className="text-slate-500 font-mono text-[10px] uppercase">Kode Akun</TableHead>
+                            <TableHead className="text-slate-500 font-mono text-[10px] uppercase">Nama Perkiraan</TableHead>
+                            <TableHead className="text-slate-500 font-mono text-[10px] uppercase">Klasifikasi</TableHead>
+                            <TableHead className="text-slate-500 font-mono text-[10px] uppercase">Saldo Normal</TableHead>
+                            <TableHead className="text-slate-500 font-mono text-[10px] uppercase">Saldo Buku</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {coaAccounts.map((acc) => (
+                            <TableRow key={acc.code} className="border-slate-900 hover:bg-slate-900/10">
+                              <TableCell className="font-mono text-xs text-emerald-400">{acc.code}</TableCell>
+                              <TableCell className="font-semibold text-slate-200 text-xs">{acc.name}</TableCell>
+                              <TableCell className="text-xs text-slate-400 capitalize">{acc.type}</TableCell>
+                              <TableCell className="text-xs text-slate-400 capitalize">{acc.normal_balance}</TableCell>
+                              <TableCell className="font-mono text-xs text-slate-200">Rp {acc.balance.toLocaleString()}</TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </CardContent>
+                  </Card>
+
+                  {/* COA Add Dialog */}
+                  <Dialog open={showCoaModal} onOpenChange={setShowCoaModal}>
+                    <DialogContent className="bg-[#0b101c] border-slate-900 text-slate-100 max-w-md">
+                      <DialogHeader>
+                        <DialogTitle className="text-sm font-bold font-mono tracking-wider uppercase text-slate-300">Buat Perkiraan Baru</DialogTitle>
+                      </DialogHeader>
+                      <form onSubmit={handleCreateCoaSubmit} className="space-y-4 pt-4 text-xs">
+                        <div className="space-y-1">
+                          <label className="text-slate-400 font-mono text-[9px] uppercase">Kode Rekening (Contoh: 1.1.04)</label>
+                          <Input type="text" required value={newCoaValues.code} onChange={(e) => setNewCoaValues({ ...newCoaValues, code: e.target.value })} className="bg-slate-950 border-slate-900 text-xs" />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-slate-400 font-mono text-[9px] uppercase">Nama Perkiraan</label>
+                          <Input type="text" required value={newCoaValues.name} onChange={(e) => setNewCoaValues({ ...newCoaValues, name: e.target.value })} className="bg-slate-950 border-slate-900 text-xs" />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-slate-400 font-mono text-[9px] uppercase">Klasifikasi Tipe</label>
+                          <Select value={newCoaValues.type} onValueChange={(val) => setNewCoaValues({ ...newCoaValues, type: val as any })}>
+                            <SelectTrigger className="w-full bg-slate-950 border-slate-900 text-xs">
+                              <SelectValue placeholder="Tipe Akun" />
+                            </SelectTrigger>
+                            <SelectContent className="bg-slate-950 border-slate-900 text-white text-xs">
+                              <SelectItem value="aset">ASET</SelectItem>
+                              <SelectItem value="kewajiban">KEWAJIBAN</SelectItem>
+                              <SelectItem value="ekuitas">EKUITAS</SelectItem>
+                              <SelectItem value="pendapatan">PENDAPATAN</SelectItem>
+                              <SelectItem value="beban">BEBAN OPERASIONAL</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-slate-400 font-mono text-[9px] uppercase">Saldo Normal</label>
+                          <Select value={newCoaValues.normal_balance} onValueChange={(val) => setNewCoaValues({ ...newCoaValues, normal_balance: val as any })}>
+                            <SelectTrigger className="w-full bg-slate-950 border-slate-900 text-xs">
+                              <SelectValue placeholder="Saldo Normal" />
+                            </SelectTrigger>
+                            <SelectContent className="bg-slate-950 border-slate-900 text-white text-xs">
+                              <SelectItem value="debit">DEBIT</SelectItem>
+                              <SelectItem value="kredit">KREDIT</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-slate-400 font-mono text-[9px] uppercase">Saldo Awal Awal (Rp)</label>
+                          <Input type="number" value={newCoaValues.balance} onChange={(e) => setNewCoaValues({ ...newCoaValues, balance: Number(e.target.value) })} className="bg-slate-950 border-slate-900 text-xs font-mono" />
+                        </div>
+                        <DialogFooter className="pt-4 border-t border-slate-900 gap-2">
+                          <Button type="button" onClick={() => setShowCoaModal(false)} className="bg-slate-900 hover:bg-slate-800 text-slate-300 text-xs">Batal</Button>
+                          <Button type="submit" className="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold text-xs">Tambah Akun</Button>
+                        </DialogFooter>
+                      </form>
+                    </DialogContent>
+                  </Dialog>
+                </TabsContent>
+
+                {/* Buku Jurnal */}
+                <TabsContent value="journal">
+                  <Card className="bg-[#0b101c]/90 border border-slate-900 shadow-md">
+                    <CardHeader className="flex flex-row justify-between items-center border-b border-slate-900/60 pb-4">
+                      <div>
+                        <CardTitle className="text-xs font-bold text-slate-400 uppercase tracking-wider">Jurnal Transaksi Harian</CardTitle>
+                        <CardDescription className="text-[10px] text-slate-500">Rekapitulasi posting debit dan kredit umum.</CardDescription>
+                      </div>
+                      <Button onClick={() => setShowJournalModal(true)} className="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold text-xs h-8">
+                        <Plus className="h-4 w-4 mr-1 text-slate-950" /> Buat Jurnal Baru
+                      </Button>
+                    </CardHeader>
+                    <CardContent className="pt-6">
+                      <div className="space-y-4">
+                        {journalEntries.map((entry) => (
+                          <div key={entry.id} className="bg-slate-950/40 p-4 rounded-xl border border-slate-900 shadow-sm">
+                            <div className="flex justify-between border-b border-slate-900/60 pb-2 mb-2 text-xs font-mono">
+                              <span className="font-bold text-emerald-400">{entry.number}</span>
+                              <span className="text-slate-500 flex items-center gap-1">
+                                <CalendarDays className="h-3 w-3" /> {entry.date}
+                              </span>
+                            </div>
+                            <div className="text-xs text-slate-200 mb-3 font-semibold">{entry.description}</div>
+                            
+                            <div className="pl-4 space-y-1.5 border-l-[2px] border-slate-800">
+                              {entry.lines.map((line, idx) => (
+                                <div key={idx} className="flex justify-between text-[11px] font-mono">
+                                  <span className={line.credit > 0 ? "pl-8 text-slate-500" : "text-slate-300"}>
+                                    {line.account_code} - {line.name}
+                                  </span>
+                                  <span className="text-slate-400">
+                                    {line.debit > 0 ? (
+                                      <span className="text-emerald-400/90">Rp {line.debit.toLocaleString()} (D)</span>
+                                    ) : (
+                                      <span className="text-slate-500">Rp {line.credit.toLocaleString()} (K)</span>
+                                    )}
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Journal Input Dialog */}
+                  <Dialog open={showJournalModal} onOpenChange={setShowJournalModal}>
+                    <DialogContent className="bg-[#0b101c] border-slate-900 text-slate-100 max-w-3xl overflow-y-auto max-h-[85vh]">
+                      <DialogHeader className="border-b border-slate-900 pb-3">
+                        <DialogTitle className="text-sm font-bold font-mono tracking-wider uppercase text-slate-300">Posting Jurnal Berpasangan</DialogTitle>
+                      </DialogHeader>
+                      <form onSubmit={handleJournalEntrySubmit} className="space-y-6 pt-4 text-xs">
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-1">
+                            <label className="text-slate-400 font-mono text-[9px] uppercase">Tanggal Transaksi</label>
+                            <Input type="date" required value={journalForm.date} onChange={(e) => setJournalForm({ ...journalForm, date: e.target.value })} className="bg-slate-950 border-slate-900 text-white text-xs" />
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-slate-400 font-mono text-[9px] uppercase">Nomor Bukti Transaksi (No. Ref)</label>
+                            <Input type="text" required placeholder="Contoh: JM-2026-07-002" value={journalForm.number} onChange={(e) => setJournalForm({ ...journalForm, number: e.target.value })} className="bg-slate-950 border-slate-900 text-xs font-mono" />
+                          </div>
+                          <div className="col-span-2 space-y-1">
+                            <label className="text-slate-400 font-mono text-[9px] uppercase">Keterangan Ringkas</label>
+                            <Input type="text" required placeholder="Contoh: Penerimaan pembayaran angsuran toko..." value={journalForm.description} onChange={(e) => setJournalForm({ ...journalForm, description: e.target.value })} className="bg-slate-950 border-slate-900 text-xs" />
+                          </div>
+                        </div>
+
+                        <div className="space-y-3">
+                          <strong className="text-[10px] font-mono tracking-wider uppercase text-emerald-400 border-b border-slate-900 pb-1 block">Baris Rekening Ledger</strong>
+                          <div className="overflow-x-auto">
+                            <Table>
+                              <TableHeader className="bg-slate-950/20 border-slate-900">
+                                <TableRow className="border-slate-900 hover:bg-transparent">
+                                  <TableHead className="text-slate-500 font-mono text-[10px] uppercase w-1/2">Nama Akun / Rekening</TableHead>
+                                  <TableHead className="text-slate-500 font-mono text-[10px] uppercase">Debit (Rp)</TableHead>
+                                  <TableHead className="text-slate-500 font-mono text-[10px] uppercase">Kredit (Rp)</TableHead>
+                                  <TableHead className="w-10"></TableHead>
+                                </TableRow>
+                              </TableHeader>
+                              <TableBody>
+                                {journalForm.lines.map((line, idx) => (
+                                  <TableRow key={idx} className="border-slate-900 hover:bg-transparent">
+                                    <TableCell className="p-1">
+                                      <Select value={line.accountCode} onValueChange={(val) => handleJournalLineChange(idx, "accountCode", val)}>
+                                        <SelectTrigger className="w-full bg-slate-950 border-slate-900 text-xs text-white">
+                                          <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent className="bg-slate-950 border-slate-900 text-white text-xs">
+                                          {coaAccounts.map((a) => (
+                                            <SelectItem key={a.code} value={a.code}>{a.code} - {a.name}</SelectItem>
+                                          ))}
+                                        </SelectContent>
+                                      </Select>
+                                    </TableCell>
+                                    <TableCell className="p-1">
+                                      <Input
+                                        type="number"
+                                        value={line.debit}
+                                        onChange={(e) => handleJournalLineChange(idx, "debit", Number(e.target.value))}
+                                        className="bg-slate-950 border-slate-900 text-xs font-mono w-full"
+                                      />
+                                    </TableCell>
+                                    <TableCell className="p-1">
+                                      <Input
+                                        type="number"
+                                        value={line.credit}
+                                        onChange={(e) => handleJournalLineChange(idx, "credit", Number(e.target.value))}
+                                        className="bg-slate-950 border-slate-900 text-xs font-mono w-full"
+                                      />
+                                    </TableCell>
+                                    <TableCell className="p-1 text-center">
+                                      <Button type="button" onClick={() => removeJournalLineRow(idx)} className="bg-transparent border-0 hover:bg-rose-500/10 text-rose-500 p-1 shadow-none">
+                                        <Trash2 className="h-4 w-4" />
+                                      </Button>
+                                    </TableCell>
+                                  </TableRow>
+                                ))}
+                              </TableBody>
+                            </Table>
+                          </div>
+                          <Button type="button" onClick={addJournalLineRow} className="bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 text-[10px] h-7 shadow-none px-3">
+                            + Tambah Baris
+                          </Button>
+                        </div>
+
+                        <DialogFooter className="pt-4 border-t border-slate-900 gap-2">
+                          <Button type="button" onClick={() => setShowJournalModal(false)} className="bg-slate-900 hover:bg-slate-800 text-slate-300 text-xs">Batal</Button>
+                          <Button type="submit" className="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold text-xs">Simpan Transaksi</Button>
+                        </DialogFooter>
+                      </form>
+                    </DialogContent>
+                  </Dialog>
+                </TabsContent>
+
+                {/* Buku Besar */}
+                <TabsContent value="ledger">
+                  <Card className="bg-[#0b101c]/90 border border-slate-900 shadow-md">
+                    <CardHeader className="border-b border-slate-900/60 pb-4">
+                      <div className="w-80">
+                        <label className="text-slate-400 font-mono text-[9px] uppercase block mb-1">Filter Rekening Buku Besar</label>
+                        <Select value={ledgerSelectedCode} onValueChange={setLedgerSelectedCode}>
+                          <SelectTrigger className="w-full bg-slate-950 border-slate-900 text-xs text-white">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent className="bg-slate-950 border-slate-900 text-white text-xs">
+                            {coaAccounts.map((a) => (
+                              <SelectItem key={a.code} value={a.code}>{a.code} - {a.name}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="pt-4">
+                      <div className="flex justify-between border-b border-slate-900 pb-3 mb-6 text-xs text-slate-400 font-mono">
+                        <span>Saldo Awal: <strong className="text-slate-200">Rp {ledgerBalanceStart.toLocaleString()}</strong></span>
+                        <span>Saldo Akhir: <strong className="text-emerald-400">Rp {ledgerBalanceEnd.toLocaleString()}</strong></span>
+                      </div>
+
+                      <Table>
+                        <TableHeader className="bg-slate-950/20 border-slate-900">
+                          <TableRow className="border-slate-900 hover:bg-transparent">
+                            <TableHead className="text-slate-500 font-mono text-[10px] uppercase">Tanggal</TableHead>
+                            <TableHead className="text-slate-500 font-mono text-[10px] uppercase">Nomor Bukti</TableHead>
+                            <TableHead className="text-slate-500 font-mono text-[10px] uppercase">Keterangan Posting</TableHead>
+                            <TableHead className="text-slate-500 font-mono text-[10px] uppercase">Debit (D)</TableHead>
+                            <TableHead className="text-slate-500 font-mono text-[10px] uppercase">Kredit (K)</TableHead>
+                            <TableHead className="text-slate-500 font-mono text-[10px] uppercase">Saldo Kumulatif</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {ledgerEntries.map((line, idx) => (
+                            <TableRow key={idx} className="border-slate-900 hover:bg-slate-900/10">
+                              <TableCell className="text-xs">{line.date}</TableCell>
+                              <TableCell className="font-mono text-xs text-emerald-400">{line.number}</TableCell>
+                              <TableCell className="text-xs text-slate-300">{line.entry_desc}</TableCell>
+                              <TableCell className="font-mono text-xs text-emerald-400">{line.debit > 0 ? `Rp ${line.debit.toLocaleString()}` : "—"}</TableCell>
+                              <TableCell className="font-mono text-xs text-slate-500">{line.credit > 0 ? `Rp ${line.credit.toLocaleString()}` : "—"}</TableCell>
+                              <TableCell className="font-mono text-xs text-slate-200 font-bold">Rp {line.runningBalance.toLocaleString()}</TableCell>
+                            </TableRow>
+                          ))}
+                          {ledgerEntries.length === 0 && (
+                            <TableRow>
+                              <TableCell colSpan={6} className="text-center py-8 text-slate-500 text-xs font-mono">
+                                Tidak ada mutasi transaksi untuk perkiraan ini.
+                              </TableCell>
+                            </TableRow>
+                          )}
+                        </TableBody>
+                      </Table>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+
+                {/* Neraca Laporan */}
+                <TabsContent value="neraca">
+                  <Card className="bg-[#0b101c]/90 border border-slate-900 p-8 shadow-md">
+                    
+                    {/* Financial Statement Header */}
+                    <div className="text-center mb-8 border-b border-slate-900 pb-6">
+                      <h3 className="text-lg font-black tracking-wider text-white uppercase">{coopProfile.name.toUpperCase()}</h3>
+                      <h4 className="text-[10px] font-mono font-bold text-slate-400 tracking-widest uppercase mt-1">LAPORAN NERACA KEUANGAN KDKMP</h4>
+                      <p className="text-[10px] font-mono text-slate-500 mt-0.5">Per 30 Juni 2026 • SAK Entitas Privat Compliant</p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-12 text-xs">
+                      {/* Left Column: Aktiva */}
+                      <div>
+                        <h5 className="border-b border-emerald-500/30 pb-2 text-emerald-400 font-bold font-mono tracking-widest uppercase mb-4 text-[10px]">ASET (AKTIVA)</h5>
+                        <div className="space-y-2">
+                          {coaAccounts.filter(a => a.type === "aset").map(acc => (
+                            <div key={acc.code} className="flex justify-between border-b border-slate-900/40 pb-1.5 font-mono">
+                              <span className="text-slate-400 text-xs font-sans">{acc.name}</span>
+                              <span className="text-slate-200">{acc.balance >= 0 ? `Rp ${acc.balance.toLocaleString()}` : `(Rp ${Math.abs(acc.balance).toLocaleString()})`}</span>
+                            </div>
+                          ))}
+                          <div className="flex justify-between font-bold text-white border-t border-slate-800 pt-3 mt-4 text-xs font-mono">
+                            <span>TOTAL ASET</span>
+                            <span className="border-b-[3px] border-double border-white">Rp {reports.totalAssets.toLocaleString()}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Right Column: Passiva */}
+                      <div>
+                        <h5 className="border-b border-sky-500/30 pb-2 text-sky-400 font-bold font-mono tracking-widest uppercase mb-4 text-[10px]">KEWAJIBAN & EKUITAS (PASSIVA)</h5>
+                        
+                        <strong className="text-[9px] font-mono text-slate-500 uppercase tracking-widest block mb-2">Kewajiban Jangka Pendek/Panjang</strong>
+                        <div className="space-y-2 mb-6">
+                          {coaAccounts.filter(a => a.type === "kewajiban").map(acc => (
+                            <div key={acc.code} className="flex justify-between border-b border-slate-900/40 pb-1.5 font-mono">
+                              <span className="text-slate-400 text-xs font-sans">{acc.name}</span>
+                              <span className="text-slate-200">Rp {acc.balance.toLocaleString()}</span>
+                            </div>
+                          ))}
+                          <div className="flex justify-between text-slate-400 border-t border-slate-900/40 pt-2 text-xs font-mono">
+                            <span className="font-sans text-[11px] italic">Jumlah Kewajiban</span>
+                            <span>Rp {reports.totalLiabilities.toLocaleString()}</span>
+                          </div>
+                        </div>
+
+                        <strong className="text-[9px] font-mono text-slate-500 uppercase tracking-widest block mb-2">Modal & Ekuitas Desa</strong>
+                        <div className="space-y-2">
+                          {coaAccounts.filter(a => a.type === "ekuitas").map(acc => (
+                            <div key={acc.code} className="flex justify-between border-b border-slate-900/40 pb-1.5 font-mono">
+                              <span className="text-slate-400 text-xs font-sans">{acc.name}</span>
+                              <span className="text-slate-200">Rp {acc.balance.toLocaleString()}</span>
+                            </div>
+                          ))}
+                          <div className="flex justify-between text-slate-400 border-t border-slate-900/40 pt-2 text-xs font-mono">
+                            <span className="font-sans text-[11px] italic">Jumlah Ekuitas</span>
+                            <span>Rp {reports.totalEquity.toLocaleString()}</span>
+                          </div>
+                        </div>
+
+                        <div className="flex justify-between font-bold text-white border-t border-slate-800 pt-3 mt-6 text-xs font-mono">
+                          <span>TOTAL PASSIVA</span>
+                          <span className="border-b-[3px] border-double border-white">Rp {(reports.totalLiabilities + reports.totalEquity).toLocaleString()}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="mt-8 border-t border-slate-900 pt-6 flex justify-between items-center print:hidden">
+                      <div>
+                        {reports.balanced ? (
+                          <span className="inline-flex items-center gap-1 text-[11px] font-mono font-bold text-emerald-400 bg-emerald-950/20 px-2.5 py-1 border border-emerald-500/10 rounded">
+                            <CheckCircle2 className="h-3.5 w-3.5" /> AKTIVA & PASSIVA SEIMBANG
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 text-[11px] font-mono font-bold text-rose-400 bg-rose-950/20 px-2.5 py-1 border border-rose-500/10 rounded">
+                            <XCircle className="h-3.5 w-3.5" /> SELISIH AKTIVA/PASSIVA TERDETEKSI
+                          </span>
+                        )}
+                      </div>
+                      <Button onClick={() => window.print()} className="bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 text-xs h-8">
+                        Cetak Laporan
+                      </Button>
+                    </div>
+                  </Card>
+                </TabsContent>
+
+                {/* Laba Rugi */}
+                <TabsContent value="labarugi">
+                  <Card className="bg-[#0b101c]/90 border border-slate-900 p-8 shadow-md">
+                    
+                    {/* Laba Rugi Header */}
+                    <div className="text-center mb-8 border-b border-slate-900 pb-6">
+                      <h3 className="text-lg font-black tracking-wider text-white uppercase">{coopProfile.name.toUpperCase()}</h3>
+                      <h4 className="text-[10px] font-mono font-bold text-slate-400 tracking-widest uppercase mt-1">LAPORAN LABA RUGI / SHU</h4>
+                      <p className="text-[10px] font-mono text-slate-500 mt-0.5">Periode 1 Januari - 30 Juni 2026 • SAK EP Standard</p>
+                    </div>
+
+                    <div className="max-w-xl mx-auto space-y-6 text-xs">
+                      
+                      {/* Pendapatan */}
+                      <div>
+                        <h5 className="border-b border-emerald-500/30 pb-1 text-emerald-400 font-bold font-mono tracking-widest uppercase mb-3 text-[10px]">PENDAPATAN USAHA</h5>
+                        <div className="space-y-2">
+                          {coaAccounts.filter(a => a.type === "pendapatan").map(acc => (
+                            <div key={acc.code} className="flex justify-between border-b border-slate-900/40 pb-1.5 font-mono">
+                              <span className="text-slate-400 font-sans">{acc.name}</span>
+                              <span className="text-slate-200">Rp {acc.balance.toLocaleString()}</span>
+                            </div>
+                          ))}
+                          <div className="flex justify-between font-bold text-white border-t border-slate-800 pt-2.5 mt-2 font-mono">
+                            <span>TOTAL PENDAPATAN</span>
+                            <span>Rp {reports.totalRevenue.toLocaleString()}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Beban */}
+                      <div>
+                        <h5 className="border-b border-rose-500/30 pb-1 text-rose-400 font-bold font-mono tracking-widest uppercase mb-3 text-[10px]">BEBAN OPERASIONAL</h5>
+                        <div className="space-y-2">
+                          {coaAccounts.filter(a => a.type === "beban").map(acc => (
+                            <div key={acc.code} className="flex justify-between border-b border-slate-900/40 pb-1.5 font-mono">
+                              <span className="text-slate-400 font-sans">{acc.name}</span>
+                              <span className="text-slate-200">Rp {acc.balance.toLocaleString()}</span>
+                            </div>
+                          ))}
+                          <div className="flex justify-between font-bold text-white border-t border-slate-800 pt-2.5 mt-2 font-mono">
+                            <span>TOTAL BEBAN OPERASIONAL</span>
+                            <span>Rp {reports.totalExpense.toLocaleString()}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* SHU Aggregation */}
+                      <div className="border-t-[2px] border-slate-700 pt-5 mt-6 font-mono">
+                        <div className="flex justify-between text-xs mb-1.5">
+                          <span className="font-bold text-slate-300">SHU SEBELUM PAJAK</span>
+                          <span className="font-bold text-slate-200">Rp {reports.shuKotor.toLocaleString()}</span>
+                        </div>
+                        <div className="flex justify-between text-xs text-slate-500 mb-3">
+                          <span>Pajak Penghasilan (10%)</span>
+                          <span>(Rp {reports.tax.toLocaleString()})</span>
+                        </div>
+                        <div className="flex justify-between text-sm font-extrabold text-emerald-400 border-t border-slate-900 pt-3">
+                          <span>SHU BERSIH TAHUN BERJALAN</span>
+                          <span className="border-b-[3px] border-double border-emerald-400">Rp {reports.shuBersih.toLocaleString()}</span>
+                        </div>
+                      </div>
+
+                    </div>
+
+                    <div className="mt-8 border-t border-slate-900 pt-6 flex justify-end print:hidden">
+                      <Button onClick={() => window.print()} className="bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 text-xs h-8">
+                        Cetak Laporan
+                      </Button>
+                    </div>
+
+                  </Card>
+                </TabsContent>
+              </Tabs>
+            </div>
+          )}
+
+          {activeTab === "feasibility" && (
+            <div className="space-y-6">
+              
+              <Tabs value={feasibilityActiveTab} onValueChange={(val) => setFeasibilityActiveTab(val as any)} className="w-full">
+                <TabsList className="bg-[#090e1a] border border-slate-900 text-slate-400 mb-6 p-0.5 rounded-lg flex w-fit print:hidden">
+                  <TabsTrigger value="calculator" className="data-[state=active]:bg-emerald-500 data-[state=active]:text-slate-950 font-bold text-xs px-4 py-1.5 rounded">
+                    Kalkulator Kelayakan
+                  </TabsTrigger>
+                  <TabsTrigger value="sensitivity" className="data-[state=active]:bg-emerald-500 data-[state=active]:text-slate-950 font-bold text-xs px-4 py-1.5 rounded">
+                    Analisis Sensitivitas
+                  </TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="calculator" className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    
+                    {/* Parameter input */}
+                    <Card className="bg-[#0b101c]/90 border border-slate-900 shadow-md">
+                      <CardHeader>
+                        <CardTitle className="text-xs font-bold text-slate-400 uppercase tracking-wider">Variabel Investasi Unit Usaha</CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-4 pt-2 text-xs">
+                        <div className="space-y-1">
+                          <label className="text-slate-400 font-mono text-[9px] uppercase">Investasi Kapital Awal (Rp)</label>
+                          <Input
+                            type="number"
+                            value={feasibilityParams.initialInvestment}
+                            onChange={(e) => setFeasibilityParams({ ...feasibilityParams, initialInvestment: Number(e.target.value) })}
+                            className="bg-slate-950 border-slate-900 text-xs font-mono"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-slate-400 font-mono text-[9px] uppercase">Tahun Horison Proyeksi</label>
+                          <Select value={String(feasibilityParams.projectionYears)} onValueChange={(val) => setFeasibilityParams({ ...feasibilityParams, projectionYears: Number(val) })}>
+                            <SelectTrigger className="w-full bg-slate-950 border-slate-900 text-xs text-slate-300">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent className="bg-[#0b101c] border-slate-900 text-xs text-white">
+                              <SelectItem value="3">3 Tahun Operasional</SelectItem>
+                              <SelectItem value="5">5 Tahun Operasional</SelectItem>
+                              <SelectItem value="10">10 Tahun Operasional</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-slate-400 font-mono text-[9px] uppercase">Aliran Arus Kas Masuk Bersih (Pisahkan dengan koma)</label>
+                          <Input
+                            type="text"
+                            value={feasibilityParams.cashFlows}
+                            onChange={(e) => setFeasibilityParams({ ...feasibilityParams, cashFlows: e.target.value })}
+                            className="bg-slate-950 border-slate-900 text-xs font-mono"
+                          />
+                          <span className="text-[10px] text-slate-500 font-mono mt-1 block">Format: tahun1, tahun2, tahun3, ...</span>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-1">
+                            <label className="text-slate-400 font-mono text-[9px] uppercase">Discount Rate (%)</label>
+                            <Input
+                              type="number"
+                              step={0.1}
+                              value={feasibilityParams.discountRate}
+                              onChange={(e) => setFeasibilityParams({ ...feasibilityParams, discountRate: Number(e.target.value) })}
+                              className="bg-slate-950 border-slate-900 text-xs font-mono"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-slate-400 font-mono text-[9px] uppercase">Opportunity Cost (%)</label>
+                            <Input
+                              type="number"
+                              step={0.1}
+                              value={feasibilityParams.opportunityCost}
+                              onChange={(e) => setFeasibilityParams({ ...feasibilityParams, opportunityCost: Number(e.target.value) })}
+                              className="bg-slate-950 border-slate-900 text-xs font-mono"
+                            />
+                          </div>
+                        </div>
+                        <Button onClick={calculateFeasibility} className="w-full bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold text-xs h-9 mt-4 shadow-none">
+                          Hitung Rasio Kelayakan
+                        </Button>
+                      </CardContent>
+                    </Card>
+
+                    {/* Results metrics */}
+                    <Card className="bg-[#0b101c]/90 border border-slate-900 shadow-md">
+                      <CardHeader>
+                        <CardTitle className="text-xs font-bold text-slate-400 uppercase tracking-wider">Hasil Uji Indikator Kelayakan</CardTitle>
+                      </CardHeader>
+                      <CardContent className="pt-2">
+                        {feasibilityResults ? (
+                          <div className="space-y-6 text-xs">
+                            
+                            {/* Recommendation banner */}
+                            <div className={`p-4 rounded-xl border text-center font-mono ${feasibilityResults.tierColor === "green" ? "bg-emerald-500/5 border-emerald-500/20 text-emerald-400" : feasibilityResults.tierColor === "amber" ? "bg-amber-500/5 border-amber-500/20 text-amber-400" : "bg-rose-500/5 border-rose-500/20 text-rose-400"}`}>
+                              <span className="text-[10px] text-slate-500 uppercase block tracking-widest mb-1">Rekomendasi Uji</span>
+                              <h4 className="text-lg font-bold uppercase tracking-wider">{feasibilityResults.tierLabel}</h4>
+                              <span className="text-[10px] text-slate-400 mt-1 block">Tier Level: <strong>Tier {feasibilityResults.tier}</strong></span>
+                            </div>
+
+                            {/* Details table */}
+                            <div className="space-y-3 font-mono text-[11px]">
+                              <div className="flex justify-between border-b border-slate-900 pb-2">
+                                <span className="text-slate-500">Economic NPV (ENPV)</span>
+                                <span className="font-bold text-slate-200">
+                                  Rp {Math.round(feasibilityResults.enpv).toLocaleString()} &nbsp;
+                                  {feasibilityResults.isNPVPass ? "🟢 PASS" : "🔴 FAIL"}
+                                </span>
+                              </div>
+                              <div className="flex justify-between border-b border-slate-900 pb-2">
+                                <span className="text-slate-500">Internal Rate (EIRR)</span>
+                                <span className="font-bold text-slate-200">
+                                  {feasibilityResults.eirr.toFixed(2)}% &nbsp;
+                                  {feasibilityResults.isIRRPass ? "🟢 PASS" : "🔴 FAIL"}
+                                </span>
+                              </div>
+                              <div className="flex justify-between border-b border-slate-900 pb-2">
+                                <span className="text-slate-500">Benefit-Cost Ratio (EBCR)</span>
+                                <span className="font-bold text-slate-200">
+                                  {feasibilityResults.ebcr.toFixed(2)} &nbsp;
+                                  {feasibilityResults.isBCRPass ? "🟢 PASS" : "🔴 FAIL"}
+                                </span>
+                              </div>
+                            </div>
+
+                          </div>
+                        ) : (
+                          <div className="text-center text-slate-500 py-16 text-xs font-mono">
+                            <Info className="h-6 w-6 mx-auto mb-2 text-slate-600" />
+                            Silakan masukkan parameter investasi desa untuk memulai simulasi.
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="sensitivity">
+                  <Card className="bg-[#0b101c]/90 border border-slate-900 shadow-md">
+                    <CardHeader className="border-b border-slate-900 pb-4 print:hidden">
+                      <div className="flex gap-2">
+                        <Button onClick={() => handleSensitivityScenarioChange("optimis")} className={`text-xs h-8 px-4 font-mono shadow-none ${sensitivityScenario === "optimis" ? "bg-emerald-500 text-slate-950 font-bold" : "bg-slate-950/40 border border-slate-900 text-slate-400 hover:text-white"}`}>
+                          Optimis (+15% Kas Masuk)
+                        </Button>
+                        <Button onClick={() => handleSensitivityScenarioChange("moderat")} className={`text-xs h-8 px-4 font-mono shadow-none ${sensitivityScenario === "moderat" ? "bg-emerald-500 text-slate-950 font-bold" : "bg-slate-950/40 border border-slate-900 text-slate-400 hover:text-white"}`}>
+                          Moderat (Base Case)
+                        </Button>
+                        <Button onClick={() => handleSensitivityScenarioChange("pesimis")} className={`text-xs h-8 px-4 font-mono shadow-none ${sensitivityScenario === "pesimis" ? "bg-emerald-500 text-slate-950 font-bold" : "bg-slate-950/40 border border-slate-900 text-slate-400 hover:text-white"}`}>
+                          Pesimis (-30% Shock Pertanian)
+                        </Button>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="pt-6">
+                      {sensitivityPresetResults ? (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs">
+                          <div>
+                            <h4 className="text-xs font-bold font-mono tracking-wider uppercase text-emerald-400 mb-2">Kondisi Variabel Skenario</h4>
+                            <p className="text-slate-400 leading-relaxed">
+                              {sensitivityScenario === "optimis" && "Cuaca optimal dan panen raya desa melimpah. Arus kas masuk unit usaha diproyeksikan meningkat 15% di atas perkiraan dasar."}
+                              {sensitivityScenario === "moderat" && "Perkiraan dasar (Base Case) tanpa fluktuasi harga komoditas atau kejadian alam ekstrim di desa."}
+                              {sensitivityScenario === "pesimis" && "Gagal panen sawah desa akibat cuaca kering berkepanjangan menekan daya beli dan menyusutkan pendapatan usaha hingga 30%."}
+                            </p>
+                          </div>
+                          <div className="border-l border-slate-900 pl-6 space-y-3 font-mono text-[11px]">
+                            <div className="flex justify-between">
+                              <span className="text-slate-500">Kapital Skenario</span>
+                              <span>Rp {Math.round(sensitivityPresetResults.investment).toLocaleString()}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-slate-500">NPV Sensitivitas</span>
+                              <span style={{ color: sensitivityPresetResults.enpv > 0 ? "#34d399" : "#fb7185" }}>
+                                Rp {Math.round(sensitivityPresetResults.enpv).toLocaleString()}
+                              </span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-slate-500">IRR Sensitivitas</span>
+                              <span>{sensitivityPresetResults.eirr.toFixed(2)}%</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-slate-500">BCR Sensitivitas</span>
+                              <span>{sensitivityPresetResults.ebcr.toFixed(2)}</span>
+                            </div>
+                            <div className="flex justify-between font-bold text-slate-200">
+                              <span className="text-slate-500">Rekomendasi Akhir</span>
+                              <span>{sensitivityPresetResults.tierLabel}</span>
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="text-center text-slate-500 py-16 text-xs font-mono">
+                          <Info className="h-6 w-6 mx-auto mb-2 text-slate-600" />
+                          Hitung kelayakan proyeksi awal (Kalkulator Kelayakan) terlebih dahulu untuk mengaktifkan skenario.
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+
+              </Tabs>
+            </div>
+          )}
+
+          {activeTab === "sync" && (
+            <div className="space-y-6">
+              
+              <Card className="bg-[#0b101c]/90 border border-slate-900 shadow-md">
+                <CardHeader>
+                  <CardTitle className="text-xs font-bold text-slate-400 uppercase tracking-wider">Pintu Gerbang Sinkronisasi Kabupaten</CardTitle>
+                  <CardDescription className="text-[10px] text-slate-500">
+                    Koneksi Node Local SQLite database ke portal aggregasi kabupaten: <strong className="text-slate-300 font-mono">{syncServerUrl}</strong>
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="flex items-center gap-4">
+                  <Button onClick={handleSyncNow} disabled={isSyncing} className="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold text-xs h-9">
+                    {isSyncing ? "Menghubungkan..." : "Mulai Sinkronisasi Sekarang"}
+                  </Button>
+                  {syncProgress && <span className="text-emerald-400 text-xs font-mono font-semibold">{syncProgress}</span>}
                 </CardContent>
               </Card>
 
-              {/* Theme preference settings */}
-              <Card className="glass-panel text-white border-slate-800/80 md:col-span-2">
+              {/* Sync History */}
+              <Card className="bg-[#0b101c]/90 border border-slate-900 shadow-md">
                 <CardHeader>
-                  <CardTitle className="text-white text-base">Preferensi Tampilan</CardTitle>
+                  <CardTitle className="text-xs font-bold text-slate-400 uppercase tracking-wider">Log Riwayat Aggregasi Sinkronisasi</CardTitle>
                 </CardHeader>
-                <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label>Tema Warna</label>
-                    <Select value={appTheme} onValueChange={(val) => setAppTheme(val as any)}>
-                      <SelectTrigger className="w-full bg-slate-950 border-slate-800 text-white">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent className="bg-slate-950 border-slate-800 text-white">
-                        <SelectItem value="dark">🌙 Mode Gelap</SelectItem>
-                        <SelectItem value="light">☀️ Mode Terang</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <label>Ukuran Font</label>
-                    <Select value={fontSizeSetting} onValueChange={(val) => setFontSizeSetting(val as any)}>
-                      <SelectTrigger className="w-full bg-slate-950 border-slate-800 text-white">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent className="bg-slate-950 border-slate-800 text-white">
-                        <SelectItem value="normal">Normal (Disarankan)</SelectItem>
-                        <SelectItem value="large">Besar (Untuk Membaca Lebih Mudah)</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
+                <CardContent>
+                  <Table>
+                    <TableHeader className="bg-slate-950/20 border-slate-900">
+                      <TableRow className="border-slate-900 hover:bg-transparent">
+                        <TableHead className="text-slate-500 font-mono text-[10px] uppercase">Waktu Sinkronisasi</TableHead>
+                        <TableHead className="text-slate-500 font-mono text-[10px] uppercase">Tipe Data</TableHead>
+                        <TableHead className="text-slate-500 font-mono text-[10px] uppercase">Status Koneksi</TableHead>
+                        <TableHead className="text-slate-500 font-mono text-[10px] uppercase">Jumlah Muatan</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {syncHistoryList.map((hist) => (
+                        <TableRow key={hist.id} className="border-slate-900 hover:bg-slate-900/10">
+                          <TableCell className="text-xs font-mono">{hist.completed_at}</TableCell>
+                          <TableCell className="text-xs capitalize">{hist.direction}</TableCell>
+                          <TableCell>
+                            <span className={`font-mono text-xs font-bold ${hist.status === "success" ? "text-emerald-400" : "text-rose-400"}`}>
+                              {hist.status === "success" ? "BERHASIL" : "GAGAL"}
+                            </span>
+                          </TableCell>
+                          <TableCell className="text-xs font-mono">{hist.entity_count} entri data</TableCell>
+                        </TableRow>
+                      ))}
+                      {syncHistoryList.length === 0 && (
+                        <TableRow>
+                          <TableCell colSpan={4} className="text-center py-8 text-slate-500 text-xs font-mono">
+                            Belum ada riwayat sinkronisasi terdaftar di database.
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
                 </CardContent>
               </Card>
+
             </div>
-          </div>
-        )}
-      </main>
+          )}
+
+          {activeTab === "settings" && (
+            <div className="space-y-6">
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                
+                {/* Profile Form */}
+                <form className="bg-[#0b101c]/90 border border-slate-900 rounded-xl p-6 md:col-span-2 shadow-md" onSubmit={handleSaveProfile}>
+                  <h4 className="text-xs font-bold text-slate-400 font-mono tracking-wider uppercase border-b border-slate-900 pb-3 mb-4">Profil Organisasi Koperasi Desa</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                    <div className="space-y-1">
+                      <label className="text-slate-500 font-mono text-[9px] uppercase">Nama Koperasi</label>
+                      <Input type="text" value={coopProfile.name} onChange={(e) => handleProfileFieldChange("name", e.target.value)} className="bg-slate-950 border-slate-900 text-xs" />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-slate-500 font-mono text-[9px] uppercase">Nomor Legal Hukum</label>
+                      <Input type="text" value={coopProfile.legal_id} onChange={(e) => handleProfileFieldChange("legal_id", e.target.value)} className="bg-slate-950 border-slate-900 text-xs font-mono" />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-slate-500 font-mono text-[9px] uppercase">Nama Ketua Pengurus</label>
+                      <Input
+                        type="text"
+                        value={JSON.parse(coopProfile.officers || "{}").chairman || ""}
+                        onChange={(e) => {
+                          const parsed = JSON.parse(coopProfile.officers || "{}");
+                          parsed.chairman = e.target.value;
+                          handleProfileFieldChange("officers", JSON.stringify(parsed));
+                        }}
+                        className="bg-slate-950 border-slate-900 text-xs"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-slate-500 font-mono text-[9px] uppercase">Nama Sekretaris</label>
+                      <Input
+                        type="text"
+                        value={JSON.parse(coopProfile.officers || "{}").secretary || ""}
+                        onChange={(e) => {
+                          const parsed = JSON.parse(coopProfile.officers || "{}");
+                          parsed.secretary = e.target.value;
+                          handleProfileFieldChange("officers", JSON.stringify(parsed));
+                        }}
+                        className="bg-slate-950 border-slate-900 text-xs"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-slate-500 font-mono text-[9px] uppercase">Nama Bendahara</label>
+                      <Input
+                        type="text"
+                        value={JSON.parse(coopProfile.officers || "{}").treasurer || ""}
+                        onChange={(e) => {
+                          const parsed = JSON.parse(coopProfile.officers || "{}");
+                          parsed.treasurer = e.target.value;
+                          handleProfileFieldChange("officers", JSON.stringify(parsed));
+                        }}
+                        className="bg-slate-950 border-slate-900 text-xs"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-slate-500 font-mono text-[9px] uppercase">Nama Dewan Pengawas</label>
+                      <Input
+                        type="text"
+                        value={JSON.parse(coopProfile.officers || "{}").supervisor || ""}
+                        onChange={(e) => {
+                          const parsed = JSON.parse(coopProfile.officers || "{}");
+                          parsed.supervisor = e.target.value;
+                          handleProfileFieldChange("officers", JSON.stringify(parsed));
+                        }}
+                        className="bg-slate-950 border-slate-900 text-xs"
+                      />
+                    </div>
+                  </div>
+                  <Button type="submit" className="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold text-xs h-9 mt-6">Simpan Profil Koperasi</Button>
+                </form>
+
+                {/* Updater */}
+                <Card className="bg-[#0b101c]/90 border border-slate-900 md:col-span-2 shadow-md">
+                  <CardHeader>
+                    <CardTitle className="text-xs font-bold text-slate-400 uppercase tracking-wider">Pemeliharaan Aplikasi & Update OTA</CardTitle>
+                    <CardDescription className="text-[10px] text-slate-500">
+                      Sambungkan ke repositori GitHub untuk mengunduh update biner rilis KDKMP secara langsung.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4 pt-2 text-xs">
+                    <Button onClick={checkUpdateCenter} disabled={isUpdateChecking} className="w-full bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold text-xs h-9">
+                      {isUpdateChecking ? "Menghubungi Repositori..." : "Cek Pembaruan Sistem Sekarang"}
+                    </Button>
+                    {updateStatusText && <span className="text-emerald-400 text-xs font-mono font-semibold block text-center mt-2">{updateStatusText}</span>}
+
+                    {downloadContentLength > 0 && (
+                      <div className="space-y-2 mt-4 font-mono text-[10px]">
+                        <div className="flex justify-between text-slate-400">
+                          <span>Progress: {(downloadedBytes / 1024 / 1024).toFixed(2)} MB / {(downloadContentLength / 1024 / 1024).toFixed(2)} MB</span>
+                          <span className="font-bold text-emerald-400">{downloadProgress}%</span>
+                        </div>
+                        <div className="w-full bg-slate-950 rounded-full h-1.5 border border-slate-900 overflow-hidden">
+                          <div
+                            className="bg-emerald-500 h-full transition-all duration-300"
+                            style={{ width: `${downloadProgress}%` }}
+                          ></div>
+                        </div>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+
+                {/* Preference card */}
+                <Card className="bg-[#0b101c]/90 border border-slate-900 md:col-span-2 shadow-md">
+                  <CardHeader>
+                    <CardTitle className="text-xs font-bold text-slate-400 uppercase tracking-wider">Preferensi Interface</CardTitle>
+                  </CardHeader>
+                  <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2 text-xs">
+                    <div className="space-y-1">
+                      <label className="text-slate-500 font-mono text-[9px] uppercase">Tema Warna Cockpit</label>
+                      <Select value={appTheme} onValueChange={(val) => setAppTheme(val as any)}>
+                        <SelectTrigger className="w-full bg-slate-950 border-slate-900 text-xs text-slate-300">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="bg-[#0b101c] border-slate-900 text-white text-xs">
+                          <SelectItem value="dark">🌙 MODE GELAP (DEEP GRAPHITE)</SelectItem>
+                          <SelectItem value="light">☀️ MODE TERANG (HIGH CONTRAST)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-slate-500 font-mono text-[9px] uppercase">Ukuran Skala Huruf</label>
+                      <Select value={fontSizeSetting} onValueChange={(val) => setFontSizeSetting(val as any)}>
+                        <SelectTrigger className="w-full bg-slate-950 border-slate-900 text-xs text-slate-300">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="bg-[#0b101c] border-slate-900 text-white text-xs">
+                          <SelectItem value="normal">NORMAL (DENSITY OPTIMIZED)</SelectItem>
+                          <SelectItem value="large">BESAR (EASE OF READING)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </CardContent>
+                </Card>
+
+              </div>
+            </div>
+          )}
+
+        </main>
+      </div>
+
     </div>
   );
 }
