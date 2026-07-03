@@ -290,14 +290,14 @@ export async function initDb(): Promise<void> {
       { code: "5.02", name: "Beban Listrik", type: "beban", normal_balance: "debit", balance: 9600000 },
       { code: "5.03", name: "Beban Penyusutan", type: "beban", normal_balance: "debit", balance: 12500000 },
       { code: "5.04", name: "Beban Operasional", type: "beban", normal_balance: "debit", balance: 15000000 },
-      { code: "5.05", name: "Beban Lain-lain", type: "beban", normal_balance: "debit", balance: 8900000 }
+      { code: "5.05", name: "Beban Lain-lain", type: "beban", normal_balance: "debit", balance: 8900000 },
     ];
 
     for (const acc of accounts) {
       await db.execute(
         `INSERT INTO coa_accounts (code, cooperative_id, name, type, normal_balance, balance) 
          VALUES (?, 'kdp-001', ?, ?, ?, ?)`,
-        [acc.code, acc.name, acc.type, acc.normal_balance, acc.balance]
+        [acc.code, acc.name, acc.type, acc.normal_balance, acc.balance],
       );
     }
   }
@@ -312,14 +312,15 @@ export async function initDb(): Promise<void> {
       { id: "unit_penggilingan", name: "Penggilingan Padi", icon: "🌾" },
       { id: "unit_pemasaran", name: "Pemasaran Hasil Tani", icon: "📦" },
       { id: "operasional", name: "Operasional", icon: "⚙️" },
-      { id: "investasi", name: "Investasi", icon: "📈" }
+      { id: "investasi", name: "Investasi", icon: "📈" },
     ];
 
     for (const cat of categoriesList) {
-      await db.execute(
-        "INSERT INTO categories (id, cooperative_id, name, icon) VALUES (?, 'kdp-001', ?, ?)",
-        [cat.id, cat.name, cat.icon]
-      );
+      await db.execute("INSERT INTO categories (id, cooperative_id, name, icon) VALUES (?, 'kdp-001', ?, ?)", [
+        cat.id,
+        cat.name,
+        cat.icon,
+      ]);
     }
   }
 }

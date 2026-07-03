@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { initDb, getDb } from "./db";
 import { check } from "@tauri-apps/plugin-updater";
 import { relaunch } from "@tauri-apps/plugin-process";
+import { ToastProvider, useToast } from "@/hooks/useToast";
 
 // Import Lucide Icons
 import {
@@ -22,42 +23,17 @@ import {
   CalendarDays,
   Database,
   UserCheck,
-  Info
+  Info,
 } from "lucide-react";
 
 // Import shadcn/ui components
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 // Interface Definitions
 interface Member {
@@ -112,6 +88,14 @@ interface JournalEntryWithLines {
 }
 
 export default function App() {
+  return (
+    <ToastProvider>
+      <AppContent />
+    </ToastProvider>
+  );
+}
+
+function AppContent() {
   // Navigation & Core States
   const [appState, setAppState] = useState<"splash" | "main" | "db_error">("splash");
   const [dbErrorMessage, setDbErrorMessage] = useState("");
@@ -123,7 +107,9 @@ export default function App() {
   const [downloadedBytes, setDownloadedBytes] = useState(0);
 
   // Dashboard Data States
-  const [activeTab, setActiveTab] = useState<"home" | "members" | "accounting" | "feasibility" | "sync" | "settings">("home");
+  const [activeTab, setActiveTab] = useState<"home" | "members" | "accounting" | "feasibility" | "sync" | "settings">(
+    "home",
+  );
   const [coopProfile, setCoopProfile] = useState<any>({
     name: "Koperasi Maju Bersama",
     legal_id: "AHU-098872.AH.01.26.2026",
@@ -136,7 +122,8 @@ export default function App() {
     phone: "081234567890",
     email: "majubersama@domas.desa.id",
     business_units: '["unit_simpan_pinjam", "unit_toko_desa"]',
-    officers: '{"chairman": "H. Slamet Riyadi", "secretary": "Anang Hermansyah", "treasurer": "Siti Aminah", "supervisor": "Bambang Soesatyo"}',
+    officers:
+      '{"chairman": "H. Slamet Riyadi", "secretary": "Anang Hermansyah", "treasurer": "Siti Aminah", "supervisor": "Bambang Soesatyo"}',
     health_score: 94,
     rag_status: "green",
   });
@@ -225,6 +212,8 @@ export default function App() {
   const [updateStatusText, setUpdateStatusText] = useState("");
   const [isUpdateChecking, setIsUpdateChecking] = useState(false);
 
+  const toast = useToast();
+
   // Database Initialization Hook
   useEffect(() => {
     async function loadDatabase() {
@@ -253,6 +242,7 @@ export default function App() {
       loadLedgerData();
       loadSyncHistoryData();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- loadLedgerData is intentionally not memoized in this prototype
   }, [appState]);
 
   // General Ledger Update Hook when selection changes
@@ -260,6 +250,7 @@ export default function App() {
     if (appState === "main") {
       loadLedgerData();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- loadLedgerData is intentionally not memoized in this prototype
   }, [ledgerSelectedCode]);
 
   // Loaders
@@ -326,7 +317,7 @@ export default function App() {
            FROM journal_lines jl
            LEFT JOIN coa_accounts ca ON jl.account_code = ca.code
            WHERE jl.journal_entry_id = ?`,
-          [entry.id]
+          [entry.id],
         );
         mapped.push({ ...entry, lines });
       }
@@ -349,7 +340,7 @@ export default function App() {
          INNER JOIN journal_entries je ON jl.journal_entry_id = je.id
          WHERE jl.account_code = ?
          ORDER BY je.date ASC, je.created_at ASC`,
-        [ledgerSelectedCode]
+        [ledgerSelectedCode],
       );
 
       let debSum = 0;
@@ -358,17 +349,19 @@ export default function App() {
         debSum += line.debit;
         credSum += line.credit;
       }
-      
-      const accInfo = await db.select<any[]>("SELECT normal_balance FROM coa_accounts WHERE code = ?", [ledgerSelectedCode]);
+
+      const accInfo = await db.select<any[]>("SELECT normal_balance FROM coa_accounts WHERE code = ?", [
+        ledgerSelectedCode,
+      ]);
       const normalBal = accInfo.length > 0 ? accInfo[0].normal_balance : "debit";
-      
-      const netActivity = normalBal === "debit" ? (debSum - credSum) : (credSum - debSum);
+
+      const netActivity = normalBal === "debit" ? debSum - credSum : credSum - debSum;
       const balanceStart = balanceEnd - netActivity;
       setLedgerBalanceStart(balanceStart);
 
       let running = balanceStart;
       const computedLines = lines.map((line) => {
-        const change = normalBal === "debit" ? (line.debit - line.credit) : (line.credit - line.debit);
+        const change = normalBal === "debit" ? line.debit - line.credit : line.credit - line.debit;
         running += change;
         return { ...line, runningBalance: running };
       });
@@ -413,12 +406,12 @@ export default function App() {
           coopProfile.email,
           coopProfile.business_units,
           coopProfile.officers,
-        ]
+        ],
       );
-      alert("Profil Koperasi disimpan successfully!");
+      toast.success("Profil Koperasi berhasil disimpan!");
       loadProfileData();
     } catch (err) {
-      alert(`Save Profile Gagal: ${err}`);
+      toast.error(`Gagal menyimpan profil: ${err}`);
     }
   };
 
@@ -461,11 +454,11 @@ export default function App() {
   const handleMemberFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (memberFormValues.nik.length !== 16) {
-      alert("Error: NIK harus 16 digit.");
+      toast.error("Error: NIK harus 16 digit.");
       return;
     }
     if (!memberFormValues.name.trim()) {
-      alert("Error: Nama harus diisi.");
+      toast.error("Error: Nama harus diisi.");
       return;
     }
 
@@ -498,7 +491,7 @@ export default function App() {
             Number(memberFormValues.loan_total),
             Number(memberFormValues.loan_outstanding),
             memberFormValues.loan_status,
-          ]
+          ],
         );
       } else {
         await db.execute(
@@ -527,22 +520,22 @@ export default function App() {
             Number(memberFormValues.loan_outstanding),
             memberFormValues.loan_status,
             currentMemberId,
-          ]
+          ],
         );
       }
       setShowMemberModal(false);
       loadMembersData();
     } catch (err: any) {
-      alert(`Gagal menyimpan anggota: ${err.message || err}`);
+      toast.error(`Gagal menyimpan anggota: ${err.message || err}`);
     }
   };
 
   const handleDeleteMember = async (member: Member) => {
     if (member.loan_outstanding > 0) {
-      alert("Error: Tidak dapat menghapus anggota dengan pinjaman aktif.");
+      toast.error("Error: Tidak dapat menghapus anggota dengan pinjaman aktif.");
       return;
     }
-    const yes = confirm(`Apakah Anda yakin ingin menghapus anggota ${member.name}?`);
+    const yes = await toast.confirm(`Apakah Anda yakin ingin menghapus anggota ${member.name}?`);
     if (!yes) return;
 
     try {
@@ -550,7 +543,7 @@ export default function App() {
       await db.execute("DELETE FROM members WHERE id = ?", [member.id]);
       loadMembersData();
     } catch (err) {
-      alert(`Delete Gagal: ${err}`);
+      toast.error(`Gagal menghapus anggota: ${err}`);
     }
   };
 
@@ -558,7 +551,7 @@ export default function App() {
   const handleCreateCoaSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newCoaValues.code || !newCoaValues.name) {
-      alert("Error: Kode dan Nama Akun harus diisi.");
+      toast.error("Error: Kode dan Nama Akun harus diisi.");
       return;
     }
     try {
@@ -572,12 +565,12 @@ export default function App() {
           newCoaValues.type,
           newCoaValues.normal_balance,
           Number(newCoaValues.balance),
-        ]
+        ],
       );
       setShowCoaModal(false);
       loadAccountsData();
     } catch (err: any) {
-      alert(`Gagal menambah akun: ${err.message || err}`);
+      toast.error(`Gagal menambah akun: ${err.message || err}`);
     }
   };
 
@@ -607,7 +600,7 @@ export default function App() {
   const handleJournalEntrySubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!journalForm.number || !journalForm.description) {
-      alert("Error: Nomor Bukti dan Keterangan harus diisi.");
+      toast.error("Error: Nomor Bukti dan Keterangan harus diisi.");
       return;
     }
 
@@ -619,11 +612,11 @@ export default function App() {
     }
 
     if (totalDebit !== totalCredit) {
-      alert(`Error: Jurnal tidak seimbang. Selisih: Rp ${Math.abs(totalDebit - totalCredit).toLocaleString()}`);
+      toast.error(`Error: Jurnal tidak seimbang. Selisih: Rp ${Math.abs(totalDebit - totalCredit).toLocaleString()}`);
       return;
     }
     if (totalDebit === 0) {
-      alert("Error: Jumlah transaksi tidak boleh Rp 0.");
+      toast.error("Error: Jumlah transaksi tidak boleh Rp 0.");
       return;
     }
 
@@ -642,7 +635,7 @@ export default function App() {
           journalForm.reference,
           journalForm.category,
           currentUser?.id || "usr-001",
-        ]
+        ],
       );
 
       for (const line of journalForm.lines) {
@@ -650,7 +643,7 @@ export default function App() {
         await db.execute(
           `INSERT INTO journal_lines (id, journal_entry_id, account_code, debit, credit)
            VALUES (?, ?, ?, ?, ?)`,
-          [lineId, newEntryId, line.accountCode, Number(line.debit), Number(line.credit)]
+          [lineId, newEntryId, line.accountCode, Number(line.debit), Number(line.credit)],
         );
 
         const account = await db.select<any[]>("SELECT normal_balance, balance FROM coa_accounts WHERE code = ?", [
@@ -659,14 +652,15 @@ export default function App() {
         if (account.length > 0) {
           const norm = account[0].normal_balance;
           const currentBal = account[0].balance;
-          const delta = norm === "debit" ? (Number(line.debit) - Number(line.credit)) : (Number(line.credit) - Number(line.debit));
+          const delta =
+            norm === "debit" ? Number(line.debit) - Number(line.credit) : Number(line.credit) - Number(line.debit);
           const updatedBal = currentBal + delta;
 
           await db.execute("UPDATE coa_accounts SET balance = ? WHERE code = ?", [updatedBal, line.accountCode]);
         }
       }
 
-      alert("Transaksi Jurnal berhasil disimpan!");
+      toast.success("Transaksi Jurnal berhasil disimpan!");
       setShowJournalModal(false);
       setJournalForm({
         date: new Date().toISOString().split("T")[0],
@@ -684,7 +678,7 @@ export default function App() {
       loadAccountsData();
       loadLedgerData();
     } catch (err: any) {
-      alert(`Gagal menyimpan transaksi: ${err.message || err}`);
+      toast.error(`Gagal menyimpan transaksi: ${err.message || err}`);
     }
   };
 
@@ -695,7 +689,7 @@ export default function App() {
     const flows = cashFlows.split(",").map(Number);
 
     if (flows.length !== Number(projectionYears)) {
-      alert("Error: Jumlah elemen arus kas tidak sesuai dengan Tahun Proyeksi.");
+      toast.error("Error: Jumlah elemen arus kas tidak sesuai dengan Tahun Proyeksi.");
       return;
     }
 
@@ -717,14 +711,14 @@ export default function App() {
     const dNpvFunc = (r: number) => {
       let sum = 0;
       for (let t = 0; t < flows.length; t++) {
-        sum += (- (t + 1) * flows[t]) / Math.pow(1 + r, t + 2);
+        sum += (-(t + 1) * flows[t]) / Math.pow(1 + r, t + 2);
       }
       return sum;
     };
 
     let eirr = 0.1;
     let iterations = 0;
-    let error = 1e-6;
+    const error = 1e-6;
     let diff = 1;
 
     while (Math.abs(diff) > error && iterations < 100) {
@@ -804,7 +798,7 @@ export default function App() {
     const dNpvFunc = (r: number) => {
       let sum = 0;
       for (let t = 0; t < adjustedFlows.length; t++) {
-        sum += (- (t + 1) * adjustedFlows[t]) / Math.pow(1 + r, t + 2);
+        sum += (-(t + 1) * adjustedFlows[t]) / Math.pow(1 + r, t + 2);
       }
       return sum;
     };
@@ -850,13 +844,13 @@ export default function App() {
     if (isSyncing) return;
     setIsSyncing(true);
     setSyncProgress("Menghubungkan ke API server node Mojokerto...");
-    
+
     setTimeout(() => {
       setSyncProgress("Mengunggah log transaksi jurnal & anggota baru...");
-      
+
       setTimeout(async () => {
         setSyncProgress("Singkronisasi parameter rasio EWS kabupaten...");
-        
+
         setTimeout(async () => {
           try {
             const db = await getDb();
@@ -868,7 +862,7 @@ export default function App() {
             await db.execute(
               `INSERT INTO sync_history (id, cooperative_id, direction, status, entity_count, completed_at)
                VALUES (?, 'kdp-001', 'upload', 'success', ?, datetime('now'))`,
-              [syncId, count]
+              [syncId, count],
             );
 
             setSyncProgress("Sinkronisasi Selesai!");
@@ -896,7 +890,7 @@ export default function App() {
       const update = await check();
       if (update) {
         setUpdateStatusText(`Mengunduh update v${update.version}...`);
-        
+
         let bytesDownloaded = 0;
         let size = 0;
 
@@ -977,11 +971,8 @@ export default function App() {
   // Filtered members list
   const filteredMembers = membersList.filter((mbr) => {
     const matchesSearch =
-      mbr.name.toLowerCase().includes(memberSearchQuery.toLowerCase()) ||
-      mbr.nik.includes(memberSearchQuery);
-    const matchesFilter =
-      memberFilterStatus === "semua" ||
-      mbr.status === memberFilterStatus;
+      mbr.name.toLowerCase().includes(memberSearchQuery.toLowerCase()) || mbr.nik.includes(memberSearchQuery);
+    const matchesFilter = memberFilterStatus === "semua" || mbr.status === memberFilterStatus;
     return matchesSearch && matchesFilter;
   });
 
@@ -1022,7 +1013,9 @@ export default function App() {
           <div className="bg-rose-500/5 border border-rose-500/10 p-4 rounded-xl text-rose-400 text-left font-mono text-[11px] mb-6 overflow-x-auto">
             <code>{dbErrorMessage}</code>
           </div>
-          <Button variant="destructive" className="w-full" onClick={() => window.location.reload()}>Muat Ulang</Button>
+          <Button variant="destructive" className="w-full" onClick={() => window.location.reload()}>
+            Muat Ulang
+          </Button>
         </div>
       </div>
     );
@@ -1030,8 +1023,9 @@ export default function App() {
 
   // Dashboard Main Panel layout
   return (
-    <div className={`app-container flex min-h-screen text-slate-300 bg-[#070b14] ${appTheme} font-${fontSizeSetting} antialiased`}>
-      
+    <div
+      className={`app-container flex min-h-screen text-slate-300 bg-[#070b14] ${appTheme} font-${fontSizeSetting} antialiased`}
+    >
       {/* Sleek Enterprise Sidebar */}
       <aside className="w-64 border-r border-slate-900 bg-[#090e1a]/95 flex flex-col justify-between print:hidden">
         <div>
@@ -1050,27 +1044,45 @@ export default function App() {
 
           {/* Nav Items */}
           <nav className="p-4 space-y-1">
-            <div className={`flex items-center gap-3 px-4 py-3 rounded-lg cursor-pointer transition-all duration-200 text-xs font-semibold ${activeTab === "home" ? "bg-emerald-500/10 text-emerald-400 border-[0.5px] border-emerald-500/20" : "text-slate-400 hover:bg-slate-900/50 hover:text-white"}`} onClick={() => setActiveTab("home")}>
+            <div
+              className={`flex items-center gap-3 px-4 py-3 rounded-lg cursor-pointer transition-all duration-200 text-xs font-semibold ${activeTab === "home" ? "bg-emerald-500/10 text-emerald-400 border-[0.5px] border-emerald-500/20" : "text-slate-400 hover:bg-slate-900/50 hover:text-white"}`}
+              onClick={() => setActiveTab("home")}
+            >
               <LayoutDashboard className="h-4 w-4" />
               <span>Beranda Utama</span>
             </div>
-            <div className={`flex items-center gap-3 px-4 py-3 rounded-lg cursor-pointer transition-all duration-200 text-xs font-semibold ${activeTab === "members" ? "bg-emerald-500/10 text-emerald-400 border-[0.5px] border-emerald-500/20" : "text-slate-400 hover:bg-slate-900/50 hover:text-white"}`} onClick={() => setActiveTab("members")}>
+            <div
+              className={`flex items-center gap-3 px-4 py-3 rounded-lg cursor-pointer transition-all duration-200 text-xs font-semibold ${activeTab === "members" ? "bg-emerald-500/10 text-emerald-400 border-[0.5px] border-emerald-500/20" : "text-slate-400 hover:bg-slate-900/50 hover:text-white"}`}
+              onClick={() => setActiveTab("members")}
+            >
               <Users className="h-4 w-4" />
               <span>Database Anggota</span>
             </div>
-            <div className={`flex items-center gap-3 px-4 py-3 rounded-lg cursor-pointer transition-all duration-200 text-xs font-semibold ${activeTab === "accounting" ? "bg-emerald-500/10 text-emerald-400 border-[0.5px] border-emerald-500/20" : "text-slate-400 hover:bg-slate-900/50 hover:text-white"}`} onClick={() => setActiveTab("accounting")}>
+            <div
+              className={`flex items-center gap-3 px-4 py-3 rounded-lg cursor-pointer transition-all duration-200 text-xs font-semibold ${activeTab === "accounting" ? "bg-emerald-500/10 text-emerald-400 border-[0.5px] border-emerald-500/20" : "text-slate-400 hover:bg-slate-900/50 hover:text-white"}`}
+              onClick={() => setActiveTab("accounting")}
+            >
               <Receipt className="h-4 w-4" />
               <span>Akuntansi SAK EP</span>
             </div>
-            <div className={`flex items-center gap-3 px-4 py-3 rounded-lg cursor-pointer transition-all duration-200 text-xs font-semibold ${activeTab === "feasibility" ? "bg-emerald-500/10 text-emerald-400 border-[0.5px] border-emerald-500/20" : "text-slate-400 hover:bg-slate-900/50 hover:text-white"}`} onClick={() => setActiveTab("feasibility")}>
+            <div
+              className={`flex items-center gap-3 px-4 py-3 rounded-lg cursor-pointer transition-all duration-200 text-xs font-semibold ${activeTab === "feasibility" ? "bg-emerald-500/10 text-emerald-400 border-[0.5px] border-emerald-500/20" : "text-slate-400 hover:bg-slate-900/50 hover:text-white"}`}
+              onClick={() => setActiveTab("feasibility")}
+            >
               <TrendingUp className="h-4 w-4" />
               <span>Kelayakan Finansial</span>
             </div>
-            <div className={`flex items-center gap-3 px-4 py-3 rounded-lg cursor-pointer transition-all duration-200 text-xs font-semibold ${activeTab === "sync" ? "bg-emerald-500/10 text-emerald-400 border-[0.5px] border-emerald-500/20" : "text-slate-400 hover:bg-slate-900/50 hover:text-white"}`} onClick={() => setActiveTab("sync")}>
+            <div
+              className={`flex items-center gap-3 px-4 py-3 rounded-lg cursor-pointer transition-all duration-200 text-xs font-semibold ${activeTab === "sync" ? "bg-emerald-500/10 text-emerald-400 border-[0.5px] border-emerald-500/20" : "text-slate-400 hover:bg-slate-900/50 hover:text-white"}`}
+              onClick={() => setActiveTab("sync")}
+            >
               <RefreshCw className="h-4 w-4 text-slate-400" />
               <span>Sinkronisasi</span>
             </div>
-            <div className={`flex items-center gap-3 px-4 py-3 rounded-lg cursor-pointer transition-all duration-200 text-xs font-semibold ${activeTab === "settings" ? "bg-emerald-500/10 text-emerald-400 border-[0.5px] border-emerald-500/20" : "text-slate-400 hover:bg-slate-900/50 hover:text-white"}`} onClick={() => setActiveTab("settings")}>
+            <div
+              className={`flex items-center gap-3 px-4 py-3 rounded-lg cursor-pointer transition-all duration-200 text-xs font-semibold ${activeTab === "settings" ? "bg-emerald-500/10 text-emerald-400 border-[0.5px] border-emerald-500/20" : "text-slate-400 hover:bg-slate-900/50 hover:text-white"}`}
+              onClick={() => setActiveTab("settings")}
+            >
               <Settings className="h-4 w-4 text-slate-400" />
               <span>Pengaturan</span>
             </div>
@@ -1093,7 +1105,6 @@ export default function App() {
 
       {/* Main Viewport Container */}
       <div className="flex-1 flex flex-col min-w-0">
-        
         {/* Top Control Panel Header */}
         <header className="h-16 border-b border-slate-900 bg-[#090e1a]/40 px-8 flex items-center justify-between print:hidden">
           <div className="flex items-center gap-2">
@@ -1114,7 +1125,7 @@ export default function App() {
               <UserCheck className="h-4 w-4 text-emerald-400" />
               <span>Node Admin: Slamet R.</span>
             </div>
-            
+
             <div className="h-4 w-[1px] bg-slate-900"></div>
 
             {/* Notifications Button */}
@@ -1127,10 +1138,8 @@ export default function App() {
 
         {/* Scrollable Viewport */}
         <main className="flex-1 p-8 overflow-y-auto w-full">
-          
           {activeTab === "home" && (
             <div className="space-y-6">
-              
               {/* Monitoring dials grid */}
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <Card className="bg-[#0b101c]/90 border border-slate-900 shadow-md">
@@ -1172,7 +1181,9 @@ export default function App() {
                       <span>Total Aset</span>
                       <span className="text-emerald-400">Aktif</span>
                     </div>
-                    <div className="text-lg font-bold font-mono text-white">Rp {reports.totalAssets.toLocaleString()}</div>
+                    <div className="text-lg font-bold font-mono text-white">
+                      Rp {reports.totalAssets.toLocaleString()}
+                    </div>
                     <div className="text-[10px] text-slate-500 mt-1 font-mono">SAK EP Compliant</div>
                   </CardContent>
                 </Card>
@@ -1183,8 +1194,12 @@ export default function App() {
                 <div className="flex items-center gap-3">
                   <CheckCircle2 className="h-5 w-5 text-emerald-400 shrink-0" />
                   <div>
-                    <h3 className="text-xs font-bold text-slate-200">Status Kesehatan Finansial: SEHAT (🟢 RAG Green)</h3>
-                    <p className="text-[10px] text-slate-400 mt-0.5">Seluruh indikator likuiditas, kecukupan modal, dan rasio piutang bermasalah di bawah ambang batas.</p>
+                    <h3 className="text-xs font-bold text-slate-200">
+                      Status Kesehatan Finansial: SEHAT (🟢 RAG Green)
+                    </h3>
+                    <p className="text-[10px] text-slate-400 mt-0.5">
+                      Seluruh indikator likuiditas, kecukupan modal, dan rasio piutang bermasalah di bawah ambang batas.
+                    </p>
                   </div>
                 </div>
                 <div className="text-right font-mono text-xs font-semibold text-emerald-400 bg-emerald-500/5 px-3 py-1 rounded border border-emerald-500/10 shrink-0">
@@ -1196,11 +1211,16 @@ export default function App() {
               {ewsAlertsList.length > 0 && (
                 <Card className="bg-[#0b101c]/90 border border-slate-900">
                   <CardHeader className="pb-2">
-                    <CardTitle className="text-xs font-bold text-slate-400 uppercase tracking-wider">Peringatan Dini Aktif (EWS)</CardTitle>
+                    <CardTitle className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                      Peringatan Dini Aktif (EWS)
+                    </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-2">
                     {ewsAlertsList.map((alert) => (
-                      <div key={alert.id} className="flex gap-3 bg-amber-500/5 p-3 rounded-lg border border-amber-500/10">
+                      <div
+                        key={alert.id}
+                        className="flex gap-3 bg-amber-500/5 p-3 rounded-lg border border-amber-500/10"
+                      >
                         <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
                         <div>
                           <div className="text-xs font-semibold text-amber-500">{alert.message}</div>
@@ -1214,11 +1234,12 @@ export default function App() {
 
               {/* Dashboard Chart & Summary */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                
                 {/* Visual trends */}
                 <Card className="bg-[#0b101c]/90 border border-slate-900 md:col-span-2 shadow-md">
                   <CardHeader className="pb-2">
-                    <CardTitle className="text-xs font-bold text-slate-400 uppercase tracking-wider">Performa Keuangan Semester I</CardTitle>
+                    <CardTitle className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                      Performa Keuangan Semester I
+                    </CardTitle>
                   </CardHeader>
                   <CardContent className="pt-2">
                     <div className="h-48 flex items-end justify-between px-2 pt-6">
@@ -1230,8 +1251,16 @@ export default function App() {
                         return (
                           <div key={idx} className="flex-1 flex flex-col items-center gap-2">
                             <div className="flex items-end justify-center gap-1.5 h-[130px] w-full border-b border-slate-800/40 pb-1">
-                              <div style={{ height: `${incHeight}px` }} className="w-3 bg-emerald-500 rounded-t-sm transition-all duration-500 hover:brightness-110" title={`Pendapatan: Rp ${data.income.toLocaleString()}`}></div>
-                              <div style={{ height: `${expHeight}px` }} className="w-3 bg-rose-500/60 rounded-t-sm transition-all duration-500 hover:brightness-110" title={`Beban: Rp ${data.expense.toLocaleString()}`}></div>
+                              <div
+                                style={{ height: `${incHeight}px` }}
+                                className="w-3 bg-emerald-500 rounded-t-sm transition-all duration-500 hover:brightness-110"
+                                title={`Pendapatan: Rp ${data.income.toLocaleString()}`}
+                              ></div>
+                              <div
+                                style={{ height: `${expHeight}px` }}
+                                className="w-3 bg-rose-500/60 rounded-t-sm transition-all duration-500 hover:brightness-110"
+                                title={`Beban: Rp ${data.expense.toLocaleString()}`}
+                              ></div>
                             </div>
                             <span className="text-[10px] font-mono text-slate-500">{data.month}</span>
                           </div>
@@ -1254,7 +1283,9 @@ export default function App() {
                 {/* Quick Profile Summary Card */}
                 <Card className="bg-[#0b101c]/90 border border-slate-900 shadow-md">
                   <CardHeader className="pb-2">
-                    <CardTitle className="text-xs font-bold text-slate-400 uppercase tracking-wider">Informasi Koperasi</CardTitle>
+                    <CardTitle className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                      Informasi Koperasi
+                    </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4 pt-2">
                     <div className="space-y-1">
@@ -1271,7 +1302,10 @@ export default function App() {
                       <span className="text-[10px] font-mono text-slate-500 uppercase">Unit Bisnis Aktif</span>
                       <div className="flex flex-wrap gap-1.5 mt-1">
                         {JSON.parse(coopProfile.business_units || "[]").map((unit: string, idx: number) => (
-                          <span key={idx} className="text-[9px] font-mono text-emerald-400 bg-emerald-950/20 px-2 py-0.5 border border-emerald-500/10 rounded">
+                          <span
+                            key={idx}
+                            className="text-[9px] font-mono text-emerald-400 bg-emerald-950/20 px-2 py-0.5 border border-emerald-500/10 rounded"
+                          >
                             {unit.replace("unit_", "").toUpperCase()}
                           </span>
                         ))}
@@ -1285,7 +1319,6 @@ export default function App() {
 
           {activeTab === "members" && (
             <div className="space-y-6">
-              
               {/* Toolbar */}
               <div className="flex items-center justify-between gap-4 print:hidden">
                 <div className="flex gap-2 flex-1 max-w-xl">
@@ -1310,7 +1343,10 @@ export default function App() {
                     </SelectContent>
                   </Select>
                 </div>
-                <Button onClick={openAddMemberModal} className="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold text-xs h-9">
+                <Button
+                  onClick={openAddMemberModal}
+                  className="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold text-xs h-9"
+                >
                   <Plus className="h-4 w-4 mr-1 text-slate-950" /> Tambah Anggota
                 </Button>
               </div>
@@ -1320,13 +1356,27 @@ export default function App() {
                 <Table>
                   <TableHeader className="bg-slate-950/40 border-slate-900">
                     <TableRow className="border-slate-900 hover:bg-transparent">
-                      <TableHead className="text-slate-500 font-mono text-[10px] font-bold uppercase tracking-wider">Nama Lengkap</TableHead>
-                      <TableHead className="text-slate-500 font-mono text-[10px] font-bold uppercase tracking-wider">NIK</TableHead>
-                      <TableHead className="text-slate-500 font-mono text-[10px] font-bold uppercase tracking-wider">Alamat</TableHead>
-                      <TableHead className="text-slate-500 font-mono text-[10px] font-bold uppercase tracking-wider">Total Simpanan</TableHead>
-                      <TableHead className="text-slate-500 font-mono text-[10px] font-bold uppercase tracking-wider">Outstanding Pinjaman</TableHead>
-                      <TableHead className="text-slate-500 font-mono text-[10px] font-bold uppercase tracking-wider">Status</TableHead>
-                      <TableHead className="text-slate-500 font-mono text-[10px] font-bold uppercase tracking-wider text-right print:hidden">Operasi</TableHead>
+                      <TableHead className="text-slate-500 font-mono text-[10px] font-bold uppercase tracking-wider">
+                        Nama Lengkap
+                      </TableHead>
+                      <TableHead className="text-slate-500 font-mono text-[10px] font-bold uppercase tracking-wider">
+                        NIK
+                      </TableHead>
+                      <TableHead className="text-slate-500 font-mono text-[10px] font-bold uppercase tracking-wider">
+                        Alamat
+                      </TableHead>
+                      <TableHead className="text-slate-500 font-mono text-[10px] font-bold uppercase tracking-wider">
+                        Total Simpanan
+                      </TableHead>
+                      <TableHead className="text-slate-500 font-mono text-[10px] font-bold uppercase tracking-wider">
+                        Outstanding Pinjaman
+                      </TableHead>
+                      <TableHead className="text-slate-500 font-mono text-[10px] font-bold uppercase tracking-wider">
+                        Status
+                      </TableHead>
+                      <TableHead className="text-slate-500 font-mono text-[10px] font-bold uppercase tracking-wider text-right print:hidden">
+                        Operasi
+                      </TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -1339,19 +1389,35 @@ export default function App() {
                           <TableCell className="text-xs text-slate-400">
                             Rt. {mbr.rt} / Rw. {mbr.rw} - {mbr.hamlet}
                           </TableCell>
-                          <TableCell className="font-mono text-xs text-slate-300">Rp {totalSavings.toLocaleString()}</TableCell>
-                          <TableCell className="font-mono text-xs text-slate-300">Rp {mbr.loan_outstanding.toLocaleString()}</TableCell>
+                          <TableCell className="font-mono text-xs text-slate-300">
+                            Rp {totalSavings.toLocaleString()}
+                          </TableCell>
+                          <TableCell className="font-mono text-xs text-slate-300">
+                            Rp {mbr.loan_outstanding.toLocaleString()}
+                          </TableCell>
                           <TableCell>
-                            <span className={`inline-flex px-2 py-0.5 rounded text-[9px] font-mono font-bold uppercase tracking-wider ${mbr.status === "aktif" ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/15" : "bg-rose-500/10 text-rose-400 border border-rose-500/15"}`}>
+                            <span
+                              className={`inline-flex px-2 py-0.5 rounded text-[9px] font-mono font-bold uppercase tracking-wider ${mbr.status === "aktif" ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/15" : "bg-rose-500/10 text-rose-400 border border-rose-500/15"}`}
+                            >
                               {mbr.status}
                             </span>
                           </TableCell>
                           <TableCell className="text-right print:hidden">
                             <div className="flex gap-1.5 justify-end">
-                              <Button variant="outline" size="sm" onClick={() => openEditMemberModal(mbr)} className="h-7 w-7 p-0 border-slate-900 bg-slate-950/20 hover:bg-slate-800 text-slate-300">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => openEditMemberModal(mbr)}
+                                className="h-7 w-7 p-0 border-slate-900 bg-slate-950/20 hover:bg-slate-800 text-slate-300"
+                              >
                                 <Edit2 className="h-3 w-3" />
                               </Button>
-                              <Button variant="destructive" size="sm" onClick={() => handleDeleteMember(mbr)} className="h-7 w-7 p-0 bg-rose-500/5 hover:bg-rose-500/10 border border-rose-500/20 text-rose-400 shadow-none">
+                              <Button
+                                variant="destructive"
+                                size="sm"
+                                onClick={() => handleDeleteMember(mbr)}
+                                className="h-7 w-7 p-0 bg-rose-500/5 hover:bg-rose-500/10 border border-rose-500/20 text-rose-400 shadow-none"
+                              >
                                 <Trash2 className="h-3 w-3" />
                               </Button>
                             </div>
@@ -1379,10 +1445,11 @@ export default function App() {
                     </DialogTitle>
                   </DialogHeader>
                   <form onSubmit={handleMemberFormSubmit} className="space-y-6 pt-4 text-xs">
-                    
                     {/* Biodata Section */}
                     <div className="space-y-3">
-                      <h4 className="font-bold text-[10px] font-mono tracking-wider uppercase text-emerald-400 border-b border-slate-900 pb-1">Biodata Kependudukan</h4>
+                      <h4 className="font-bold text-[10px] font-mono tracking-wider uppercase text-emerald-400 border-b border-slate-900 pb-1">
+                        Biodata Kependudukan
+                      </h4>
                       <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-1">
                           <label className="text-slate-400 font-mono text-[9px] uppercase">Nomor NIK (16 Digit)</label>
@@ -1391,7 +1458,9 @@ export default function App() {
                             maxLength={16}
                             required
                             value={memberFormValues.nik}
-                            onChange={(e) => setMemberFormValues({ ...memberFormValues, nik: e.target.value.replace(/\D/g, "") })}
+                            onChange={(e) =>
+                              setMemberFormValues({ ...memberFormValues, nik: e.target.value.replace(/\D/g, "") })
+                            }
                             className="bg-slate-950 border-slate-900 text-xs"
                           />
                         </div>
@@ -1410,7 +1479,9 @@ export default function App() {
                           <Input
                             type="text"
                             value={memberFormValues.place_of_birth}
-                            onChange={(e) => setMemberFormValues({ ...memberFormValues, place_of_birth: e.target.value })}
+                            onChange={(e) =>
+                              setMemberFormValues({ ...memberFormValues, place_of_birth: e.target.value })
+                            }
                             className="bg-slate-950 border-slate-900 text-xs"
                           />
                         </div>
@@ -1419,13 +1490,18 @@ export default function App() {
                           <Input
                             type="date"
                             value={memberFormValues.date_of_birth}
-                            onChange={(e) => setMemberFormValues({ ...memberFormValues, date_of_birth: e.target.value })}
+                            onChange={(e) =>
+                              setMemberFormValues({ ...memberFormValues, date_of_birth: e.target.value })
+                            }
                             className="bg-slate-950 border-slate-900 text-xs text-white"
                           />
                         </div>
                         <div className="space-y-1">
                           <label className="text-slate-400 font-mono text-[9px] uppercase">Jenis Kelamin</label>
-                          <Select value={memberFormValues.gender} onValueChange={(val) => setMemberFormValues({ ...memberFormValues, gender: val })}>
+                          <Select
+                            value={memberFormValues.gender}
+                            onValueChange={(val) => setMemberFormValues({ ...memberFormValues, gender: val })}
+                          >
                             <SelectTrigger className="w-full bg-slate-950 border-slate-900 text-xs">
                               <SelectValue placeholder="Gender" />
                             </SelectTrigger>
@@ -1449,7 +1525,9 @@ export default function App() {
 
                     {/* Alamat Section */}
                     <div className="space-y-3">
-                      <h4 className="font-bold text-[10px] font-mono tracking-wider uppercase text-emerald-400 border-b border-slate-900 pb-1">Alamat Domisili</h4>
+                      <h4 className="font-bold text-[10px] font-mono tracking-wider uppercase text-emerald-400 border-b border-slate-900 pb-1">
+                        Alamat Domisili
+                      </h4>
                       <div className="grid grid-cols-3 gap-4">
                         <div className="space-y-1">
                           <label className="text-slate-400 font-mono text-[9px] uppercase">Dusun</label>
@@ -1483,17 +1561,20 @@ export default function App() {
 
                     {/* Keuangan Section */}
                     <div className="grid grid-cols-2 gap-6 pt-2 border-t border-slate-900">
-                      
                       {/* Simpanan */}
                       <div className="space-y-3">
-                        <h4 className="font-bold text-[10px] font-mono tracking-wider uppercase text-emerald-400 border-b border-slate-900 pb-1">Neraca Simpanan</h4>
+                        <h4 className="font-bold text-[10px] font-mono tracking-wider uppercase text-emerald-400 border-b border-slate-900 pb-1">
+                          Neraca Simpanan
+                        </h4>
                         <div className="space-y-2">
                           <div className="space-y-1">
                             <label className="text-slate-500 font-mono text-[9px] uppercase">Simpanan Pokok (Rp)</label>
                             <Input
                               type="number"
                               value={memberFormValues.savings_pokok}
-                              onChange={(e) => setMemberFormValues({ ...memberFormValues, savings_pokok: Number(e.target.value) })}
+                              onChange={(e) =>
+                                setMemberFormValues({ ...memberFormValues, savings_pokok: Number(e.target.value) })
+                              }
                               className="bg-slate-950 border-slate-900 text-xs font-mono"
                             />
                           </div>
@@ -1502,16 +1583,22 @@ export default function App() {
                             <Input
                               type="number"
                               value={memberFormValues.savings_wajib}
-                              onChange={(e) => setMemberFormValues({ ...memberFormValues, savings_wajib: Number(e.target.value) })}
+                              onChange={(e) =>
+                                setMemberFormValues({ ...memberFormValues, savings_wajib: Number(e.target.value) })
+                              }
                               className="bg-slate-950 border-slate-900 text-xs font-mono"
                             />
                           </div>
                           <div className="space-y-1">
-                            <label className="text-slate-500 font-mono text-[9px] uppercase">Simpanan Sukarela (Rp)</label>
+                            <label className="text-slate-500 font-mono text-[9px] uppercase">
+                              Simpanan Sukarela (Rp)
+                            </label>
                             <Input
                               type="number"
                               value={memberFormValues.savings_sukarela}
-                              onChange={(e) => setMemberFormValues({ ...memberFormValues, savings_sukarela: Number(e.target.value) })}
+                              onChange={(e) =>
+                                setMemberFormValues({ ...memberFormValues, savings_sukarela: Number(e.target.value) })
+                              }
                               className="bg-slate-950 border-slate-900 text-xs font-mono"
                             />
                           </div>
@@ -1520,32 +1607,46 @@ export default function App() {
 
                       {/* Pinjaman */}
                       <div className="space-y-3">
-                        <h4 className="font-bold text-[10px] font-mono tracking-wider uppercase text-sky-400 border-b border-slate-900 pb-1">Status Pinjaman</h4>
+                        <h4 className="font-bold text-[10px] font-mono tracking-wider uppercase text-sky-400 border-b border-slate-900 pb-1">
+                          Status Pinjaman
+                        </h4>
                         <div className="space-y-2">
                           <div className="space-y-1">
-                            <label className="text-slate-500 font-mono text-[9px] uppercase">Plafon Pinjaman (Rp)</label>
+                            <label className="text-slate-500 font-mono text-[9px] uppercase">
+                              Plafon Pinjaman (Rp)
+                            </label>
                             <Input
                               type="number"
                               value={memberFormValues.loan_total}
-                              onChange={(e) => setMemberFormValues({ ...memberFormValues, loan_total: Number(e.target.value) })}
+                              onChange={(e) =>
+                                setMemberFormValues({ ...memberFormValues, loan_total: Number(e.target.value) })
+                              }
                               className="bg-slate-950 border-slate-900 text-xs font-mono"
                             />
                           </div>
                           <div className="space-y-1">
-                            <label className="text-slate-500 font-mono text-[9px] uppercase">Outstanding Pinjaman (Rp)</label>
+                            <label className="text-slate-500 font-mono text-[9px] uppercase">
+                              Outstanding Pinjaman (Rp)
+                            </label>
                             <Input
                               type="number"
                               value={memberFormValues.loan_outstanding}
-                              onChange={(e) => setMemberFormValues({ ...memberFormValues, loan_outstanding: Number(e.target.value) })}
+                              onChange={(e) =>
+                                setMemberFormValues({ ...memberFormValues, loan_outstanding: Number(e.target.value) })
+                              }
                               className="bg-slate-950 border-slate-900 text-xs font-mono"
                             />
                           </div>
                           <div className="space-y-1">
-                            <label className="text-slate-400 font-mono text-[9px] uppercase">Kategori Kolektibilitas</label>
+                            <label className="text-slate-400 font-mono text-[9px] uppercase">
+                              Kategori Kolektibilitas
+                            </label>
                             <Input
                               type="text"
                               value={memberFormValues.loan_status}
-                              onChange={(e) => setMemberFormValues({ ...memberFormValues, loan_status: e.target.value })}
+                              onChange={(e) =>
+                                setMemberFormValues({ ...memberFormValues, loan_status: e.target.value })
+                              }
                               className="bg-slate-950 border-slate-900 text-xs"
                             />
                           </div>
@@ -1557,7 +1658,10 @@ export default function App() {
                     <div className="border-t border-slate-900 pt-4 flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <label className="text-slate-400 font-mono text-[9px] uppercase">Status Anggota</label>
-                        <Select value={memberFormValues.status} onValueChange={(val) => setMemberFormValues({ ...memberFormValues, status: val })}>
+                        <Select
+                          value={memberFormValues.status}
+                          onValueChange={(val) => setMemberFormValues({ ...memberFormValues, status: val })}
+                        >
                           <SelectTrigger className="w-36 bg-slate-950 border-slate-900 text-xs">
                             <SelectValue />
                           </SelectTrigger>
@@ -1569,39 +1673,60 @@ export default function App() {
                       </div>
 
                       <DialogFooter className="gap-2">
-                        <Button type="button" onClick={() => setShowMemberModal(false)} className="bg-slate-900 hover:bg-slate-800 text-slate-300 text-xs">
+                        <Button
+                          type="button"
+                          onClick={() => setShowMemberModal(false)}
+                          className="bg-slate-900 hover:bg-slate-800 text-slate-300 text-xs"
+                        >
                           Batal
                         </Button>
-                        <Button type="submit" className="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold text-xs">Simpan Data</Button>
+                        <Button
+                          type="submit"
+                          className="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold text-xs"
+                        >
+                          Simpan Data
+                        </Button>
                       </DialogFooter>
                     </div>
-
                   </form>
                 </DialogContent>
               </Dialog>
-
             </div>
           )}
 
           {activeTab === "accounting" && (
             <div className="space-y-6">
-              
               {/* SAK EP Navigation tab row */}
               <Tabs value={accountingTab} onValueChange={(val) => setAccountingTab(val as any)} className="w-full">
                 <TabsList className="bg-[#090e1a] border border-slate-900 text-slate-400 mb-6 p-0.5 rounded-lg flex w-fit print:hidden">
-                  <TabsTrigger value="coa" className="data-[state=active]:bg-emerald-500 data-[state=active]:text-slate-950 font-bold text-xs px-4 py-1.5 rounded">
+                  <TabsTrigger
+                    value="coa"
+                    className="data-[state=active]:bg-emerald-500 data-[state=active]:text-slate-950 font-bold text-xs px-4 py-1.5 rounded"
+                  >
                     Bagan Akun (COA)
                   </TabsTrigger>
-                  <TabsTrigger value="journal" className="data-[state=active]:bg-emerald-500 data-[state=active]:text-slate-950 font-bold text-xs px-4 py-1.5 rounded">
+                  <TabsTrigger
+                    value="journal"
+                    className="data-[state=active]:bg-emerald-500 data-[state=active]:text-slate-950 font-bold text-xs px-4 py-1.5 rounded"
+                  >
                     Buku Jurnal Umum
                   </TabsTrigger>
-                  <TabsTrigger value="ledger" className="data-[state=active]:bg-emerald-500 data-[state=active]:text-slate-950 font-bold text-xs px-4 py-1.5 rounded">
+                  <TabsTrigger
+                    value="ledger"
+                    className="data-[state=active]:bg-emerald-500 data-[state=active]:text-slate-950 font-bold text-xs px-4 py-1.5 rounded"
+                  >
                     Buku Besar
                   </TabsTrigger>
-                  <TabsTrigger value="neraca" className="data-[state=active]:bg-emerald-500 data-[state=active]:text-slate-950 font-bold text-xs px-4 py-1.5 rounded">
+                  <TabsTrigger
+                    value="neraca"
+                    className="data-[state=active]:bg-emerald-500 data-[state=active]:text-slate-950 font-bold text-xs px-4 py-1.5 rounded"
+                  >
                     Neraca Keuangan
                   </TabsTrigger>
-                  <TabsTrigger value="labarugi" className="data-[state=active]:bg-emerald-500 data-[state=active]:text-slate-950 font-bold text-xs px-4 py-1.5 rounded">
+                  <TabsTrigger
+                    value="labarugi"
+                    className="data-[state=active]:bg-emerald-500 data-[state=active]:text-slate-950 font-bold text-xs px-4 py-1.5 rounded"
+                  >
                     Laporan SHU (Laba Rugi)
                   </TabsTrigger>
                 </TabsList>
@@ -1611,10 +1736,17 @@ export default function App() {
                   <Card className="bg-[#0b101c]/90 border border-slate-900">
                     <CardHeader className="flex flex-row justify-between items-center border-b border-slate-900/60 pb-4">
                       <div>
-                        <CardTitle className="text-xs font-bold text-slate-400 uppercase tracking-wider">Chart of Accounts (Bagan Perkiraan)</CardTitle>
-                        <CardDescription className="text-[10px] text-slate-500">Struktur penomoran akun perkiraan akuntansi standar SAK Entitas Privat.</CardDescription>
+                        <CardTitle className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                          Chart of Accounts (Bagan Perkiraan)
+                        </CardTitle>
+                        <CardDescription className="text-[10px] text-slate-500">
+                          Struktur penomoran akun perkiraan akuntansi standar SAK Entitas Privat.
+                        </CardDescription>
                       </div>
-                      <Button onClick={() => setShowCoaModal(true)} className="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold text-xs h-8">
+                      <Button
+                        onClick={() => setShowCoaModal(true)}
+                        className="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold text-xs h-8"
+                      >
                         <Plus className="h-4 w-4 mr-1 text-slate-950" /> Tambah Akun
                       </Button>
                     </CardHeader>
@@ -1623,9 +1755,15 @@ export default function App() {
                         <TableHeader className="bg-slate-950/20 border-slate-900">
                           <TableRow className="border-slate-900 hover:bg-transparent">
                             <TableHead className="text-slate-500 font-mono text-[10px] uppercase">Kode Akun</TableHead>
-                            <TableHead className="text-slate-500 font-mono text-[10px] uppercase">Nama Perkiraan</TableHead>
-                            <TableHead className="text-slate-500 font-mono text-[10px] uppercase">Klasifikasi</TableHead>
-                            <TableHead className="text-slate-500 font-mono text-[10px] uppercase">Saldo Normal</TableHead>
+                            <TableHead className="text-slate-500 font-mono text-[10px] uppercase">
+                              Nama Perkiraan
+                            </TableHead>
+                            <TableHead className="text-slate-500 font-mono text-[10px] uppercase">
+                              Klasifikasi
+                            </TableHead>
+                            <TableHead className="text-slate-500 font-mono text-[10px] uppercase">
+                              Saldo Normal
+                            </TableHead>
                             <TableHead className="text-slate-500 font-mono text-[10px] uppercase">Saldo Buku</TableHead>
                           </TableRow>
                         </TableHeader>
@@ -1636,7 +1774,9 @@ export default function App() {
                               <TableCell className="font-semibold text-slate-200 text-xs">{acc.name}</TableCell>
                               <TableCell className="text-xs text-slate-400 capitalize">{acc.type}</TableCell>
                               <TableCell className="text-xs text-slate-400 capitalize">{acc.normal_balance}</TableCell>
-                              <TableCell className="font-mono text-xs text-slate-200">Rp {acc.balance.toLocaleString()}</TableCell>
+                              <TableCell className="font-mono text-xs text-slate-200">
+                                Rp {acc.balance.toLocaleString()}
+                              </TableCell>
                             </TableRow>
                           ))}
                         </TableBody>
@@ -1648,20 +1788,39 @@ export default function App() {
                   <Dialog open={showCoaModal} onOpenChange={setShowCoaModal}>
                     <DialogContent className="bg-[#0b101c] border-slate-900 text-slate-100 max-w-md">
                       <DialogHeader>
-                        <DialogTitle className="text-sm font-bold font-mono tracking-wider uppercase text-slate-300">Buat Perkiraan Baru</DialogTitle>
+                        <DialogTitle className="text-sm font-bold font-mono tracking-wider uppercase text-slate-300">
+                          Buat Perkiraan Baru
+                        </DialogTitle>
                       </DialogHeader>
                       <form onSubmit={handleCreateCoaSubmit} className="space-y-4 pt-4 text-xs">
                         <div className="space-y-1">
-                          <label className="text-slate-400 font-mono text-[9px] uppercase">Kode Rekening (Contoh: 1.1.04)</label>
-                          <Input type="text" required value={newCoaValues.code} onChange={(e) => setNewCoaValues({ ...newCoaValues, code: e.target.value })} className="bg-slate-950 border-slate-900 text-xs" />
+                          <label className="text-slate-400 font-mono text-[9px] uppercase">
+                            Kode Rekening (Contoh: 1.1.04)
+                          </label>
+                          <Input
+                            type="text"
+                            required
+                            value={newCoaValues.code}
+                            onChange={(e) => setNewCoaValues({ ...newCoaValues, code: e.target.value })}
+                            className="bg-slate-950 border-slate-900 text-xs"
+                          />
                         </div>
                         <div className="space-y-1">
                           <label className="text-slate-400 font-mono text-[9px] uppercase">Nama Perkiraan</label>
-                          <Input type="text" required value={newCoaValues.name} onChange={(e) => setNewCoaValues({ ...newCoaValues, name: e.target.value })} className="bg-slate-950 border-slate-900 text-xs" />
+                          <Input
+                            type="text"
+                            required
+                            value={newCoaValues.name}
+                            onChange={(e) => setNewCoaValues({ ...newCoaValues, name: e.target.value })}
+                            className="bg-slate-950 border-slate-900 text-xs"
+                          />
                         </div>
                         <div className="space-y-1">
                           <label className="text-slate-400 font-mono text-[9px] uppercase">Klasifikasi Tipe</label>
-                          <Select value={newCoaValues.type} onValueChange={(val) => setNewCoaValues({ ...newCoaValues, type: val as any })}>
+                          <Select
+                            value={newCoaValues.type}
+                            onValueChange={(val) => setNewCoaValues({ ...newCoaValues, type: val as any })}
+                          >
                             <SelectTrigger className="w-full bg-slate-950 border-slate-900 text-xs">
                               <SelectValue placeholder="Tipe Akun" />
                             </SelectTrigger>
@@ -1676,7 +1835,10 @@ export default function App() {
                         </div>
                         <div className="space-y-1">
                           <label className="text-slate-400 font-mono text-[9px] uppercase">Saldo Normal</label>
-                          <Select value={newCoaValues.normal_balance} onValueChange={(val) => setNewCoaValues({ ...newCoaValues, normal_balance: val as any })}>
+                          <Select
+                            value={newCoaValues.normal_balance}
+                            onValueChange={(val) => setNewCoaValues({ ...newCoaValues, normal_balance: val as any })}
+                          >
                             <SelectTrigger className="w-full bg-slate-950 border-slate-900 text-xs">
                               <SelectValue placeholder="Saldo Normal" />
                             </SelectTrigger>
@@ -1688,11 +1850,27 @@ export default function App() {
                         </div>
                         <div className="space-y-1">
                           <label className="text-slate-400 font-mono text-[9px] uppercase">Saldo Awal Awal (Rp)</label>
-                          <Input type="number" value={newCoaValues.balance} onChange={(e) => setNewCoaValues({ ...newCoaValues, balance: Number(e.target.value) })} className="bg-slate-950 border-slate-900 text-xs font-mono" />
+                          <Input
+                            type="number"
+                            value={newCoaValues.balance}
+                            onChange={(e) => setNewCoaValues({ ...newCoaValues, balance: Number(e.target.value) })}
+                            className="bg-slate-950 border-slate-900 text-xs font-mono"
+                          />
                         </div>
                         <DialogFooter className="pt-4 border-t border-slate-900 gap-2">
-                          <Button type="button" onClick={() => setShowCoaModal(false)} className="bg-slate-900 hover:bg-slate-800 text-slate-300 text-xs">Batal</Button>
-                          <Button type="submit" className="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold text-xs">Tambah Akun</Button>
+                          <Button
+                            type="button"
+                            onClick={() => setShowCoaModal(false)}
+                            className="bg-slate-900 hover:bg-slate-800 text-slate-300 text-xs"
+                          >
+                            Batal
+                          </Button>
+                          <Button
+                            type="submit"
+                            className="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold text-xs"
+                          >
+                            Tambah Akun
+                          </Button>
                         </DialogFooter>
                       </form>
                     </DialogContent>
@@ -1704,17 +1882,27 @@ export default function App() {
                   <Card className="bg-[#0b101c]/90 border border-slate-900 shadow-md">
                     <CardHeader className="flex flex-row justify-between items-center border-b border-slate-900/60 pb-4">
                       <div>
-                        <CardTitle className="text-xs font-bold text-slate-400 uppercase tracking-wider">Jurnal Transaksi Harian</CardTitle>
-                        <CardDescription className="text-[10px] text-slate-500">Rekapitulasi posting debit dan kredit umum.</CardDescription>
+                        <CardTitle className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                          Jurnal Transaksi Harian
+                        </CardTitle>
+                        <CardDescription className="text-[10px] text-slate-500">
+                          Rekapitulasi posting debit dan kredit umum.
+                        </CardDescription>
                       </div>
-                      <Button onClick={() => setShowJournalModal(true)} className="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold text-xs h-8">
+                      <Button
+                        onClick={() => setShowJournalModal(true)}
+                        className="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold text-xs h-8"
+                      >
                         <Plus className="h-4 w-4 mr-1 text-slate-950" /> Buat Jurnal Baru
                       </Button>
                     </CardHeader>
                     <CardContent className="pt-6">
                       <div className="space-y-4">
                         {journalEntries.map((entry) => (
-                          <div key={entry.id} className="bg-slate-950/40 p-4 rounded-xl border border-slate-900 shadow-sm">
+                          <div
+                            key={entry.id}
+                            className="bg-slate-950/40 p-4 rounded-xl border border-slate-900 shadow-sm"
+                          >
                             <div className="flex justify-between border-b border-slate-900/60 pb-2 mb-2 text-xs font-mono">
                               <span className="font-bold text-emerald-400">{entry.number}</span>
                               <span className="text-slate-500 flex items-center gap-1">
@@ -1722,7 +1910,7 @@ export default function App() {
                               </span>
                             </div>
                             <div className="text-xs text-slate-200 mb-3 font-semibold">{entry.description}</div>
-                            
+
                             <div className="pl-4 space-y-1.5 border-l-[2px] border-slate-800">
                               {entry.lines.map((line, idx) => (
                                 <div key={idx} className="flex justify-between text-[11px] font-mono">
@@ -1749,33 +1937,65 @@ export default function App() {
                   <Dialog open={showJournalModal} onOpenChange={setShowJournalModal}>
                     <DialogContent className="bg-[#0b101c] border-slate-900 text-slate-100 max-w-3xl overflow-y-auto max-h-[85vh]">
                       <DialogHeader className="border-b border-slate-900 pb-3">
-                        <DialogTitle className="text-sm font-bold font-mono tracking-wider uppercase text-slate-300">Posting Jurnal Berpasangan</DialogTitle>
+                        <DialogTitle className="text-sm font-bold font-mono tracking-wider uppercase text-slate-300">
+                          Posting Jurnal Berpasangan
+                        </DialogTitle>
                       </DialogHeader>
                       <form onSubmit={handleJournalEntrySubmit} className="space-y-6 pt-4 text-xs">
                         <div className="grid grid-cols-2 gap-4">
                           <div className="space-y-1">
                             <label className="text-slate-400 font-mono text-[9px] uppercase">Tanggal Transaksi</label>
-                            <Input type="date" required value={journalForm.date} onChange={(e) => setJournalForm({ ...journalForm, date: e.target.value })} className="bg-slate-950 border-slate-900 text-white text-xs" />
+                            <Input
+                              type="date"
+                              required
+                              value={journalForm.date}
+                              onChange={(e) => setJournalForm({ ...journalForm, date: e.target.value })}
+                              className="bg-slate-950 border-slate-900 text-white text-xs"
+                            />
                           </div>
                           <div className="space-y-1">
-                            <label className="text-slate-400 font-mono text-[9px] uppercase">Nomor Bukti Transaksi (No. Ref)</label>
-                            <Input type="text" required placeholder="Contoh: JM-2026-07-002" value={journalForm.number} onChange={(e) => setJournalForm({ ...journalForm, number: e.target.value })} className="bg-slate-950 border-slate-900 text-xs font-mono" />
+                            <label className="text-slate-400 font-mono text-[9px] uppercase">
+                              Nomor Bukti Transaksi (No. Ref)
+                            </label>
+                            <Input
+                              type="text"
+                              required
+                              placeholder="Contoh: JM-2026-07-002"
+                              value={journalForm.number}
+                              onChange={(e) => setJournalForm({ ...journalForm, number: e.target.value })}
+                              className="bg-slate-950 border-slate-900 text-xs font-mono"
+                            />
                           </div>
                           <div className="col-span-2 space-y-1">
                             <label className="text-slate-400 font-mono text-[9px] uppercase">Keterangan Ringkas</label>
-                            <Input type="text" required placeholder="Contoh: Penerimaan pembayaran angsuran toko..." value={journalForm.description} onChange={(e) => setJournalForm({ ...journalForm, description: e.target.value })} className="bg-slate-950 border-slate-900 text-xs" />
+                            <Input
+                              type="text"
+                              required
+                              placeholder="Contoh: Penerimaan pembayaran angsuran toko..."
+                              value={journalForm.description}
+                              onChange={(e) => setJournalForm({ ...journalForm, description: e.target.value })}
+                              className="bg-slate-950 border-slate-900 text-xs"
+                            />
                           </div>
                         </div>
 
                         <div className="space-y-3">
-                          <strong className="text-[10px] font-mono tracking-wider uppercase text-emerald-400 border-b border-slate-900 pb-1 block">Baris Rekening Ledger</strong>
+                          <strong className="text-[10px] font-mono tracking-wider uppercase text-emerald-400 border-b border-slate-900 pb-1 block">
+                            Baris Rekening Ledger
+                          </strong>
                           <div className="overflow-x-auto">
                             <Table>
                               <TableHeader className="bg-slate-950/20 border-slate-900">
                                 <TableRow className="border-slate-900 hover:bg-transparent">
-                                  <TableHead className="text-slate-500 font-mono text-[10px] uppercase w-1/2">Nama Akun / Rekening</TableHead>
-                                  <TableHead className="text-slate-500 font-mono text-[10px] uppercase">Debit (Rp)</TableHead>
-                                  <TableHead className="text-slate-500 font-mono text-[10px] uppercase">Kredit (Rp)</TableHead>
+                                  <TableHead className="text-slate-500 font-mono text-[10px] uppercase w-1/2">
+                                    Nama Akun / Rekening
+                                  </TableHead>
+                                  <TableHead className="text-slate-500 font-mono text-[10px] uppercase">
+                                    Debit (Rp)
+                                  </TableHead>
+                                  <TableHead className="text-slate-500 font-mono text-[10px] uppercase">
+                                    Kredit (Rp)
+                                  </TableHead>
                                   <TableHead className="w-10"></TableHead>
                                 </TableRow>
                               </TableHeader>
@@ -1783,13 +2003,18 @@ export default function App() {
                                 {journalForm.lines.map((line, idx) => (
                                   <TableRow key={idx} className="border-slate-900 hover:bg-transparent">
                                     <TableCell className="p-1">
-                                      <Select value={line.accountCode} onValueChange={(val) => handleJournalLineChange(idx, "accountCode", val)}>
+                                      <Select
+                                        value={line.accountCode}
+                                        onValueChange={(val) => handleJournalLineChange(idx, "accountCode", val)}
+                                      >
                                         <SelectTrigger className="w-full bg-slate-950 border-slate-900 text-xs text-white">
                                           <SelectValue />
                                         </SelectTrigger>
                                         <SelectContent className="bg-slate-950 border-slate-900 text-white text-xs">
                                           {coaAccounts.map((a) => (
-                                            <SelectItem key={a.code} value={a.code}>{a.code} - {a.name}</SelectItem>
+                                            <SelectItem key={a.code} value={a.code}>
+                                              {a.code} - {a.name}
+                                            </SelectItem>
                                           ))}
                                         </SelectContent>
                                       </Select>
@@ -1811,7 +2036,11 @@ export default function App() {
                                       />
                                     </TableCell>
                                     <TableCell className="p-1 text-center">
-                                      <Button type="button" onClick={() => removeJournalLineRow(idx)} className="bg-transparent border-0 hover:bg-rose-500/10 text-rose-500 p-1 shadow-none">
+                                      <Button
+                                        type="button"
+                                        onClick={() => removeJournalLineRow(idx)}
+                                        className="bg-transparent border-0 hover:bg-rose-500/10 text-rose-500 p-1 shadow-none"
+                                      >
                                         <Trash2 className="h-4 w-4" />
                                       </Button>
                                     </TableCell>
@@ -1820,14 +2049,29 @@ export default function App() {
                               </TableBody>
                             </Table>
                           </div>
-                          <Button type="button" onClick={addJournalLineRow} className="bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 text-[10px] h-7 shadow-none px-3">
+                          <Button
+                            type="button"
+                            onClick={addJournalLineRow}
+                            className="bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 text-[10px] h-7 shadow-none px-3"
+                          >
                             + Tambah Baris
                           </Button>
                         </div>
 
                         <DialogFooter className="pt-4 border-t border-slate-900 gap-2">
-                          <Button type="button" onClick={() => setShowJournalModal(false)} className="bg-slate-900 hover:bg-slate-800 text-slate-300 text-xs">Batal</Button>
-                          <Button type="submit" className="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold text-xs">Simpan Transaksi</Button>
+                          <Button
+                            type="button"
+                            onClick={() => setShowJournalModal(false)}
+                            className="bg-slate-900 hover:bg-slate-800 text-slate-300 text-xs"
+                          >
+                            Batal
+                          </Button>
+                          <Button
+                            type="submit"
+                            className="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold text-xs"
+                          >
+                            Simpan Transaksi
+                          </Button>
                         </DialogFooter>
                       </form>
                     </DialogContent>
@@ -1839,14 +2083,18 @@ export default function App() {
                   <Card className="bg-[#0b101c]/90 border border-slate-900 shadow-md">
                     <CardHeader className="border-b border-slate-900/60 pb-4">
                       <div className="w-80">
-                        <label className="text-slate-400 font-mono text-[9px] uppercase block mb-1">Filter Rekening Buku Besar</label>
+                        <label className="text-slate-400 font-mono text-[9px] uppercase block mb-1">
+                          Filter Rekening Buku Besar
+                        </label>
                         <Select value={ledgerSelectedCode} onValueChange={setLedgerSelectedCode}>
                           <SelectTrigger className="w-full bg-slate-950 border-slate-900 text-xs text-white">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent className="bg-slate-950 border-slate-900 text-white text-xs">
                             {coaAccounts.map((a) => (
-                              <SelectItem key={a.code} value={a.code}>{a.code} - {a.name}</SelectItem>
+                              <SelectItem key={a.code} value={a.code}>
+                                {a.code} - {a.name}
+                              </SelectItem>
                             ))}
                           </SelectContent>
                         </Select>
@@ -1854,19 +2102,31 @@ export default function App() {
                     </CardHeader>
                     <CardContent className="pt-4">
                       <div className="flex justify-between border-b border-slate-900 pb-3 mb-6 text-xs text-slate-400 font-mono">
-                        <span>Saldo Awal: <strong className="text-slate-200">Rp {ledgerBalanceStart.toLocaleString()}</strong></span>
-                        <span>Saldo Akhir: <strong className="text-emerald-400">Rp {ledgerBalanceEnd.toLocaleString()}</strong></span>
+                        <span>
+                          Saldo Awal:{" "}
+                          <strong className="text-slate-200">Rp {ledgerBalanceStart.toLocaleString()}</strong>
+                        </span>
+                        <span>
+                          Saldo Akhir:{" "}
+                          <strong className="text-emerald-400">Rp {ledgerBalanceEnd.toLocaleString()}</strong>
+                        </span>
                       </div>
 
                       <Table>
                         <TableHeader className="bg-slate-950/20 border-slate-900">
                           <TableRow className="border-slate-900 hover:bg-transparent">
                             <TableHead className="text-slate-500 font-mono text-[10px] uppercase">Tanggal</TableHead>
-                            <TableHead className="text-slate-500 font-mono text-[10px] uppercase">Nomor Bukti</TableHead>
-                            <TableHead className="text-slate-500 font-mono text-[10px] uppercase">Keterangan Posting</TableHead>
+                            <TableHead className="text-slate-500 font-mono text-[10px] uppercase">
+                              Nomor Bukti
+                            </TableHead>
+                            <TableHead className="text-slate-500 font-mono text-[10px] uppercase">
+                              Keterangan Posting
+                            </TableHead>
                             <TableHead className="text-slate-500 font-mono text-[10px] uppercase">Debit (D)</TableHead>
                             <TableHead className="text-slate-500 font-mono text-[10px] uppercase">Kredit (K)</TableHead>
-                            <TableHead className="text-slate-500 font-mono text-[10px] uppercase">Saldo Kumulatif</TableHead>
+                            <TableHead className="text-slate-500 font-mono text-[10px] uppercase">
+                              Saldo Kumulatif
+                            </TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -1875,9 +2135,15 @@ export default function App() {
                               <TableCell className="text-xs">{line.date}</TableCell>
                               <TableCell className="font-mono text-xs text-emerald-400">{line.number}</TableCell>
                               <TableCell className="text-xs text-slate-300">{line.entry_desc}</TableCell>
-                              <TableCell className="font-mono text-xs text-emerald-400">{line.debit > 0 ? `Rp ${line.debit.toLocaleString()}` : "—"}</TableCell>
-                              <TableCell className="font-mono text-xs text-slate-500">{line.credit > 0 ? `Rp ${line.credit.toLocaleString()}` : "—"}</TableCell>
-                              <TableCell className="font-mono text-xs text-slate-200 font-bold">Rp {line.runningBalance.toLocaleString()}</TableCell>
+                              <TableCell className="font-mono text-xs text-emerald-400">
+                                {line.debit > 0 ? `Rp ${line.debit.toLocaleString()}` : "—"}
+                              </TableCell>
+                              <TableCell className="font-mono text-xs text-slate-500">
+                                {line.credit > 0 ? `Rp ${line.credit.toLocaleString()}` : "—"}
+                              </TableCell>
+                              <TableCell className="font-mono text-xs text-slate-200 font-bold">
+                                Rp {line.runningBalance.toLocaleString()}
+                              </TableCell>
                             </TableRow>
                           ))}
                           {ledgerEntries.length === 0 && (
@@ -1896,58 +2162,92 @@ export default function App() {
                 {/* Neraca Laporan */}
                 <TabsContent value="neraca">
                   <Card className="bg-[#0b101c]/90 border border-slate-900 p-8 shadow-md">
-                    
                     {/* Financial Statement Header */}
                     <div className="text-center mb-8 border-b border-slate-900 pb-6">
-                      <h3 className="text-lg font-black tracking-wider text-white uppercase">{coopProfile.name.toUpperCase()}</h3>
-                      <h4 className="text-[10px] font-mono font-bold text-slate-400 tracking-widest uppercase mt-1">LAPORAN NERACA KEUANGAN KDKMP</h4>
-                      <p className="text-[10px] font-mono text-slate-500 mt-0.5">Per 30 Juni 2026 • SAK Entitas Privat Compliant</p>
+                      <h3 className="text-lg font-black tracking-wider text-white uppercase">
+                        {coopProfile.name.toUpperCase()}
+                      </h3>
+                      <h4 className="text-[10px] font-mono font-bold text-slate-400 tracking-widest uppercase mt-1">
+                        LAPORAN NERACA KEUANGAN KDKMP
+                      </h4>
+                      <p className="text-[10px] font-mono text-slate-500 mt-0.5">
+                        Per 30 Juni 2026 • SAK Entitas Privat Compliant
+                      </p>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-12 text-xs">
                       {/* Left Column: Aktiva */}
                       <div>
-                        <h5 className="border-b border-emerald-500/30 pb-2 text-emerald-400 font-bold font-mono tracking-widest uppercase mb-4 text-[10px]">ASET (AKTIVA)</h5>
+                        <h5 className="border-b border-emerald-500/30 pb-2 text-emerald-400 font-bold font-mono tracking-widest uppercase mb-4 text-[10px]">
+                          ASET (AKTIVA)
+                        </h5>
                         <div className="space-y-2">
-                          {coaAccounts.filter(a => a.type === "aset").map(acc => (
-                            <div key={acc.code} className="flex justify-between border-b border-slate-900/40 pb-1.5 font-mono">
-                              <span className="text-slate-400 text-xs font-sans">{acc.name}</span>
-                              <span className="text-slate-200">{acc.balance >= 0 ? `Rp ${acc.balance.toLocaleString()}` : `(Rp ${Math.abs(acc.balance).toLocaleString()})`}</span>
-                            </div>
-                          ))}
+                          {coaAccounts
+                            .filter((a) => a.type === "aset")
+                            .map((acc) => (
+                              <div
+                                key={acc.code}
+                                className="flex justify-between border-b border-slate-900/40 pb-1.5 font-mono"
+                              >
+                                <span className="text-slate-400 text-xs font-sans">{acc.name}</span>
+                                <span className="text-slate-200">
+                                  {acc.balance >= 0
+                                    ? `Rp ${acc.balance.toLocaleString()}`
+                                    : `(Rp ${Math.abs(acc.balance).toLocaleString()})`}
+                                </span>
+                              </div>
+                            ))}
                           <div className="flex justify-between font-bold text-white border-t border-slate-800 pt-3 mt-4 text-xs font-mono">
                             <span>TOTAL ASET</span>
-                            <span className="border-b-[3px] border-double border-white">Rp {reports.totalAssets.toLocaleString()}</span>
+                            <span className="border-b-[3px] border-double border-white">
+                              Rp {reports.totalAssets.toLocaleString()}
+                            </span>
                           </div>
                         </div>
                       </div>
 
                       {/* Right Column: Passiva */}
                       <div>
-                        <h5 className="border-b border-sky-500/30 pb-2 text-sky-400 font-bold font-mono tracking-widest uppercase mb-4 text-[10px]">KEWAJIBAN & EKUITAS (PASSIVA)</h5>
-                        
-                        <strong className="text-[9px] font-mono text-slate-500 uppercase tracking-widest block mb-2">Kewajiban Jangka Pendek/Panjang</strong>
+                        <h5 className="border-b border-sky-500/30 pb-2 text-sky-400 font-bold font-mono tracking-widest uppercase mb-4 text-[10px]">
+                          KEWAJIBAN & EKUITAS (PASSIVA)
+                        </h5>
+
+                        <strong className="text-[9px] font-mono text-slate-500 uppercase tracking-widest block mb-2">
+                          Kewajiban Jangka Pendek/Panjang
+                        </strong>
                         <div className="space-y-2 mb-6">
-                          {coaAccounts.filter(a => a.type === "kewajiban").map(acc => (
-                            <div key={acc.code} className="flex justify-between border-b border-slate-900/40 pb-1.5 font-mono">
-                              <span className="text-slate-400 text-xs font-sans">{acc.name}</span>
-                              <span className="text-slate-200">Rp {acc.balance.toLocaleString()}</span>
-                            </div>
-                          ))}
+                          {coaAccounts
+                            .filter((a) => a.type === "kewajiban")
+                            .map((acc) => (
+                              <div
+                                key={acc.code}
+                                className="flex justify-between border-b border-slate-900/40 pb-1.5 font-mono"
+                              >
+                                <span className="text-slate-400 text-xs font-sans">{acc.name}</span>
+                                <span className="text-slate-200">Rp {acc.balance.toLocaleString()}</span>
+                              </div>
+                            ))}
                           <div className="flex justify-between text-slate-400 border-t border-slate-900/40 pt-2 text-xs font-mono">
                             <span className="font-sans text-[11px] italic">Jumlah Kewajiban</span>
                             <span>Rp {reports.totalLiabilities.toLocaleString()}</span>
                           </div>
                         </div>
 
-                        <strong className="text-[9px] font-mono text-slate-500 uppercase tracking-widest block mb-2">Modal & Ekuitas Desa</strong>
+                        <strong className="text-[9px] font-mono text-slate-500 uppercase tracking-widest block mb-2">
+                          Modal & Ekuitas Desa
+                        </strong>
                         <div className="space-y-2">
-                          {coaAccounts.filter(a => a.type === "ekuitas").map(acc => (
-                            <div key={acc.code} className="flex justify-between border-b border-slate-900/40 pb-1.5 font-mono">
-                              <span className="text-slate-400 text-xs font-sans">{acc.name}</span>
-                              <span className="text-slate-200">Rp {acc.balance.toLocaleString()}</span>
-                            </div>
-                          ))}
+                          {coaAccounts
+                            .filter((a) => a.type === "ekuitas")
+                            .map((acc) => (
+                              <div
+                                key={acc.code}
+                                className="flex justify-between border-b border-slate-900/40 pb-1.5 font-mono"
+                              >
+                                <span className="text-slate-400 text-xs font-sans">{acc.name}</span>
+                                <span className="text-slate-200">Rp {acc.balance.toLocaleString()}</span>
+                              </div>
+                            ))}
                           <div className="flex justify-between text-slate-400 border-t border-slate-900/40 pt-2 text-xs font-mono">
                             <span className="font-sans text-[11px] italic">Jumlah Ekuitas</span>
                             <span>Rp {reports.totalEquity.toLocaleString()}</span>
@@ -1956,7 +2256,9 @@ export default function App() {
 
                         <div className="flex justify-between font-bold text-white border-t border-slate-800 pt-3 mt-6 text-xs font-mono">
                           <span>TOTAL PASSIVA</span>
-                          <span className="border-b-[3px] border-double border-white">Rp {(reports.totalLiabilities + reports.totalEquity).toLocaleString()}</span>
+                          <span className="border-b-[3px] border-double border-white">
+                            Rp {(reports.totalLiabilities + reports.totalEquity).toLocaleString()}
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -1973,7 +2275,10 @@ export default function App() {
                           </span>
                         )}
                       </div>
-                      <Button onClick={() => window.print()} className="bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 text-xs h-8">
+                      <Button
+                        onClick={() => window.print()}
+                        className="bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 text-xs h-8"
+                      >
                         Cetak Laporan
                       </Button>
                     </div>
@@ -1983,26 +2288,37 @@ export default function App() {
                 {/* Laba Rugi */}
                 <TabsContent value="labarugi">
                   <Card className="bg-[#0b101c]/90 border border-slate-900 p-8 shadow-md">
-                    
                     {/* Laba Rugi Header */}
                     <div className="text-center mb-8 border-b border-slate-900 pb-6">
-                      <h3 className="text-lg font-black tracking-wider text-white uppercase">{coopProfile.name.toUpperCase()}</h3>
-                      <h4 className="text-[10px] font-mono font-bold text-slate-400 tracking-widest uppercase mt-1">LAPORAN LABA RUGI / SHU</h4>
-                      <p className="text-[10px] font-mono text-slate-500 mt-0.5">Periode 1 Januari - 30 Juni 2026 • SAK EP Standard</p>
+                      <h3 className="text-lg font-black tracking-wider text-white uppercase">
+                        {coopProfile.name.toUpperCase()}
+                      </h3>
+                      <h4 className="text-[10px] font-mono font-bold text-slate-400 tracking-widest uppercase mt-1">
+                        LAPORAN LABA RUGI / SHU
+                      </h4>
+                      <p className="text-[10px] font-mono text-slate-500 mt-0.5">
+                        Periode 1 Januari - 30 Juni 2026 • SAK EP Standard
+                      </p>
                     </div>
 
                     <div className="max-w-xl mx-auto space-y-6 text-xs">
-                      
                       {/* Pendapatan */}
                       <div>
-                        <h5 className="border-b border-emerald-500/30 pb-1 text-emerald-400 font-bold font-mono tracking-widest uppercase mb-3 text-[10px]">PENDAPATAN USAHA</h5>
+                        <h5 className="border-b border-emerald-500/30 pb-1 text-emerald-400 font-bold font-mono tracking-widest uppercase mb-3 text-[10px]">
+                          PENDAPATAN USAHA
+                        </h5>
                         <div className="space-y-2">
-                          {coaAccounts.filter(a => a.type === "pendapatan").map(acc => (
-                            <div key={acc.code} className="flex justify-between border-b border-slate-900/40 pb-1.5 font-mono">
-                              <span className="text-slate-400 font-sans">{acc.name}</span>
-                              <span className="text-slate-200">Rp {acc.balance.toLocaleString()}</span>
-                            </div>
-                          ))}
+                          {coaAccounts
+                            .filter((a) => a.type === "pendapatan")
+                            .map((acc) => (
+                              <div
+                                key={acc.code}
+                                className="flex justify-between border-b border-slate-900/40 pb-1.5 font-mono"
+                              >
+                                <span className="text-slate-400 font-sans">{acc.name}</span>
+                                <span className="text-slate-200">Rp {acc.balance.toLocaleString()}</span>
+                              </div>
+                            ))}
                           <div className="flex justify-between font-bold text-white border-t border-slate-800 pt-2.5 mt-2 font-mono">
                             <span>TOTAL PENDAPATAN</span>
                             <span>Rp {reports.totalRevenue.toLocaleString()}</span>
@@ -2012,14 +2328,21 @@ export default function App() {
 
                       {/* Beban */}
                       <div>
-                        <h5 className="border-b border-rose-500/30 pb-1 text-rose-400 font-bold font-mono tracking-widest uppercase mb-3 text-[10px]">BEBAN OPERASIONAL</h5>
+                        <h5 className="border-b border-rose-500/30 pb-1 text-rose-400 font-bold font-mono tracking-widest uppercase mb-3 text-[10px]">
+                          BEBAN OPERASIONAL
+                        </h5>
                         <div className="space-y-2">
-                          {coaAccounts.filter(a => a.type === "beban").map(acc => (
-                            <div key={acc.code} className="flex justify-between border-b border-slate-900/40 pb-1.5 font-mono">
-                              <span className="text-slate-400 font-sans">{acc.name}</span>
-                              <span className="text-slate-200">Rp {acc.balance.toLocaleString()}</span>
-                            </div>
-                          ))}
+                          {coaAccounts
+                            .filter((a) => a.type === "beban")
+                            .map((acc) => (
+                              <div
+                                key={acc.code}
+                                className="flex justify-between border-b border-slate-900/40 pb-1.5 font-mono"
+                              >
+                                <span className="text-slate-400 font-sans">{acc.name}</span>
+                                <span className="text-slate-200">Rp {acc.balance.toLocaleString()}</span>
+                              </div>
+                            ))}
                           <div className="flex justify-between font-bold text-white border-t border-slate-800 pt-2.5 mt-2 font-mono">
                             <span>TOTAL BEBAN OPERASIONAL</span>
                             <span>Rp {reports.totalExpense.toLocaleString()}</span>
@@ -2039,18 +2362,21 @@ export default function App() {
                         </div>
                         <div className="flex justify-between text-sm font-extrabold text-emerald-400 border-t border-slate-900 pt-3">
                           <span>SHU BERSIH TAHUN BERJALAN</span>
-                          <span className="border-b-[3px] border-double border-emerald-400">Rp {reports.shuBersih.toLocaleString()}</span>
+                          <span className="border-b-[3px] border-double border-emerald-400">
+                            Rp {reports.shuBersih.toLocaleString()}
+                          </span>
                         </div>
                       </div>
-
                     </div>
 
                     <div className="mt-8 border-t border-slate-900 pt-6 flex justify-end print:hidden">
-                      <Button onClick={() => window.print()} className="bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 text-xs h-8">
+                      <Button
+                        onClick={() => window.print()}
+                        className="bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 text-xs h-8"
+                      >
                         Cetak Laporan
                       </Button>
                     </div>
-
                   </Card>
                 </TabsContent>
               </Tabs>
@@ -2059,38 +2385,59 @@ export default function App() {
 
           {activeTab === "feasibility" && (
             <div className="space-y-6">
-              
-              <Tabs value={feasibilityActiveTab} onValueChange={(val) => setFeasibilityActiveTab(val as any)} className="w-full">
+              <Tabs
+                value={feasibilityActiveTab}
+                onValueChange={(val) => setFeasibilityActiveTab(val as any)}
+                className="w-full"
+              >
                 <TabsList className="bg-[#090e1a] border border-slate-900 text-slate-400 mb-6 p-0.5 rounded-lg flex w-fit print:hidden">
-                  <TabsTrigger value="calculator" className="data-[state=active]:bg-emerald-500 data-[state=active]:text-slate-950 font-bold text-xs px-4 py-1.5 rounded">
+                  <TabsTrigger
+                    value="calculator"
+                    className="data-[state=active]:bg-emerald-500 data-[state=active]:text-slate-950 font-bold text-xs px-4 py-1.5 rounded"
+                  >
                     Kalkulator Kelayakan
                   </TabsTrigger>
-                  <TabsTrigger value="sensitivity" className="data-[state=active]:bg-emerald-500 data-[state=active]:text-slate-950 font-bold text-xs px-4 py-1.5 rounded">
+                  <TabsTrigger
+                    value="sensitivity"
+                    className="data-[state=active]:bg-emerald-500 data-[state=active]:text-slate-950 font-bold text-xs px-4 py-1.5 rounded"
+                  >
                     Analisis Sensitivitas
                   </TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="calculator" className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    
                     {/* Parameter input */}
                     <Card className="bg-[#0b101c]/90 border border-slate-900 shadow-md">
                       <CardHeader>
-                        <CardTitle className="text-xs font-bold text-slate-400 uppercase tracking-wider">Variabel Investasi Unit Usaha</CardTitle>
+                        <CardTitle className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                          Variabel Investasi Unit Usaha
+                        </CardTitle>
                       </CardHeader>
                       <CardContent className="space-y-4 pt-2 text-xs">
                         <div className="space-y-1">
-                          <label className="text-slate-400 font-mono text-[9px] uppercase">Investasi Kapital Awal (Rp)</label>
+                          <label className="text-slate-400 font-mono text-[9px] uppercase">
+                            Investasi Kapital Awal (Rp)
+                          </label>
                           <Input
                             type="number"
                             value={feasibilityParams.initialInvestment}
-                            onChange={(e) => setFeasibilityParams({ ...feasibilityParams, initialInvestment: Number(e.target.value) })}
+                            onChange={(e) =>
+                              setFeasibilityParams({ ...feasibilityParams, initialInvestment: Number(e.target.value) })
+                            }
                             className="bg-slate-950 border-slate-900 text-xs font-mono"
                           />
                         </div>
                         <div className="space-y-1">
-                          <label className="text-slate-400 font-mono text-[9px] uppercase">Tahun Horison Proyeksi</label>
-                          <Select value={String(feasibilityParams.projectionYears)} onValueChange={(val) => setFeasibilityParams({ ...feasibilityParams, projectionYears: Number(val) })}>
+                          <label className="text-slate-400 font-mono text-[9px] uppercase">
+                            Tahun Horison Proyeksi
+                          </label>
+                          <Select
+                            value={String(feasibilityParams.projectionYears)}
+                            onValueChange={(val) =>
+                              setFeasibilityParams({ ...feasibilityParams, projectionYears: Number(val) })
+                            }
+                          >
                             <SelectTrigger className="w-full bg-slate-950 border-slate-900 text-xs text-slate-300">
                               <SelectValue />
                             </SelectTrigger>
@@ -2102,14 +2449,18 @@ export default function App() {
                           </Select>
                         </div>
                         <div className="space-y-1">
-                          <label className="text-slate-400 font-mono text-[9px] uppercase">Aliran Arus Kas Masuk Bersih (Pisahkan dengan koma)</label>
+                          <label className="text-slate-400 font-mono text-[9px] uppercase">
+                            Aliran Arus Kas Masuk Bersih (Pisahkan dengan koma)
+                          </label>
                           <Input
                             type="text"
                             value={feasibilityParams.cashFlows}
                             onChange={(e) => setFeasibilityParams({ ...feasibilityParams, cashFlows: e.target.value })}
                             className="bg-slate-950 border-slate-900 text-xs font-mono"
                           />
-                          <span className="text-[10px] text-slate-500 font-mono mt-1 block">Format: tahun1, tahun2, tahun3, ...</span>
+                          <span className="text-[10px] text-slate-500 font-mono mt-1 block">
+                            Format: tahun1, tahun2, tahun3, ...
+                          </span>
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                           <div className="space-y-1">
@@ -2118,22 +2469,31 @@ export default function App() {
                               type="number"
                               step={0.1}
                               value={feasibilityParams.discountRate}
-                              onChange={(e) => setFeasibilityParams({ ...feasibilityParams, discountRate: Number(e.target.value) })}
+                              onChange={(e) =>
+                                setFeasibilityParams({ ...feasibilityParams, discountRate: Number(e.target.value) })
+                              }
                               className="bg-slate-950 border-slate-900 text-xs font-mono"
                             />
                           </div>
                           <div className="space-y-1">
-                            <label className="text-slate-400 font-mono text-[9px] uppercase">Opportunity Cost (%)</label>
+                            <label className="text-slate-400 font-mono text-[9px] uppercase">
+                              Opportunity Cost (%)
+                            </label>
                             <Input
                               type="number"
                               step={0.1}
                               value={feasibilityParams.opportunityCost}
-                              onChange={(e) => setFeasibilityParams({ ...feasibilityParams, opportunityCost: Number(e.target.value) })}
+                              onChange={(e) =>
+                                setFeasibilityParams({ ...feasibilityParams, opportunityCost: Number(e.target.value) })
+                              }
                               className="bg-slate-950 border-slate-900 text-xs font-mono"
                             />
                           </div>
                         </div>
-                        <Button onClick={calculateFeasibility} className="w-full bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold text-xs h-9 mt-4 shadow-none">
+                        <Button
+                          onClick={calculateFeasibility}
+                          className="w-full bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold text-xs h-9 mt-4 shadow-none"
+                        >
                           Hitung Rasio Kelayakan
                         </Button>
                       </CardContent>
@@ -2142,17 +2502,26 @@ export default function App() {
                     {/* Results metrics */}
                     <Card className="bg-[#0b101c]/90 border border-slate-900 shadow-md">
                       <CardHeader>
-                        <CardTitle className="text-xs font-bold text-slate-400 uppercase tracking-wider">Hasil Uji Indikator Kelayakan</CardTitle>
+                        <CardTitle className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                          Hasil Uji Indikator Kelayakan
+                        </CardTitle>
                       </CardHeader>
                       <CardContent className="pt-2">
                         {feasibilityResults ? (
                           <div className="space-y-6 text-xs">
-                            
                             {/* Recommendation banner */}
-                            <div className={`p-4 rounded-xl border text-center font-mono ${feasibilityResults.tierColor === "green" ? "bg-emerald-500/5 border-emerald-500/20 text-emerald-400" : feasibilityResults.tierColor === "amber" ? "bg-amber-500/5 border-amber-500/20 text-amber-400" : "bg-rose-500/5 border-rose-500/20 text-rose-400"}`}>
-                              <span className="text-[10px] text-slate-500 uppercase block tracking-widest mb-1">Rekomendasi Uji</span>
-                              <h4 className="text-lg font-bold uppercase tracking-wider">{feasibilityResults.tierLabel}</h4>
-                              <span className="text-[10px] text-slate-400 mt-1 block">Tier Level: <strong>Tier {feasibilityResults.tier}</strong></span>
+                            <div
+                              className={`p-4 rounded-xl border text-center font-mono ${feasibilityResults.tierColor === "green" ? "bg-emerald-500/5 border-emerald-500/20 text-emerald-400" : feasibilityResults.tierColor === "amber" ? "bg-amber-500/5 border-amber-500/20 text-amber-400" : "bg-rose-500/5 border-rose-500/20 text-rose-400"}`}
+                            >
+                              <span className="text-[10px] text-slate-500 uppercase block tracking-widest mb-1">
+                                Rekomendasi Uji
+                              </span>
+                              <h4 className="text-lg font-bold uppercase tracking-wider">
+                                {feasibilityResults.tierLabel}
+                              </h4>
+                              <span className="text-[10px] text-slate-400 mt-1 block">
+                                Tier Level: <strong>Tier {feasibilityResults.tier}</strong>
+                              </span>
                             </div>
 
                             {/* Details table */}
@@ -2179,7 +2548,6 @@ export default function App() {
                                 </span>
                               </div>
                             </div>
-
                           </div>
                         ) : (
                           <div className="text-center text-slate-500 py-16 text-xs font-mono">
@@ -2189,7 +2557,6 @@ export default function App() {
                         )}
                       </CardContent>
                     </Card>
-
                   </div>
                 </TabsContent>
 
@@ -2197,13 +2564,22 @@ export default function App() {
                   <Card className="bg-[#0b101c]/90 border border-slate-900 shadow-md">
                     <CardHeader className="border-b border-slate-900 pb-4 print:hidden">
                       <div className="flex gap-2">
-                        <Button onClick={() => handleSensitivityScenarioChange("optimis")} className={`text-xs h-8 px-4 font-mono shadow-none ${sensitivityScenario === "optimis" ? "bg-emerald-500 text-slate-950 font-bold" : "bg-slate-950/40 border border-slate-900 text-slate-400 hover:text-white"}`}>
+                        <Button
+                          onClick={() => handleSensitivityScenarioChange("optimis")}
+                          className={`text-xs h-8 px-4 font-mono shadow-none ${sensitivityScenario === "optimis" ? "bg-emerald-500 text-slate-950 font-bold" : "bg-slate-950/40 border border-slate-900 text-slate-400 hover:text-white"}`}
+                        >
                           Optimis (+15% Kas Masuk)
                         </Button>
-                        <Button onClick={() => handleSensitivityScenarioChange("moderat")} className={`text-xs h-8 px-4 font-mono shadow-none ${sensitivityScenario === "moderat" ? "bg-emerald-500 text-slate-950 font-bold" : "bg-slate-950/40 border border-slate-900 text-slate-400 hover:text-white"}`}>
+                        <Button
+                          onClick={() => handleSensitivityScenarioChange("moderat")}
+                          className={`text-xs h-8 px-4 font-mono shadow-none ${sensitivityScenario === "moderat" ? "bg-emerald-500 text-slate-950 font-bold" : "bg-slate-950/40 border border-slate-900 text-slate-400 hover:text-white"}`}
+                        >
                           Moderat (Base Case)
                         </Button>
-                        <Button onClick={() => handleSensitivityScenarioChange("pesimis")} className={`text-xs h-8 px-4 font-mono shadow-none ${sensitivityScenario === "pesimis" ? "bg-emerald-500 text-slate-950 font-bold" : "bg-slate-950/40 border border-slate-900 text-slate-400 hover:text-white"}`}>
+                        <Button
+                          onClick={() => handleSensitivityScenarioChange("pesimis")}
+                          className={`text-xs h-8 px-4 font-mono shadow-none ${sensitivityScenario === "pesimis" ? "bg-emerald-500 text-slate-950 font-bold" : "bg-slate-950/40 border border-slate-900 text-slate-400 hover:text-white"}`}
+                        >
                           Pesimis (-30% Shock Pertanian)
                         </Button>
                       </div>
@@ -2212,11 +2588,16 @@ export default function App() {
                       {sensitivityPresetResults ? (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs">
                           <div>
-                            <h4 className="text-xs font-bold font-mono tracking-wider uppercase text-emerald-400 mb-2">Kondisi Variabel Skenario</h4>
+                            <h4 className="text-xs font-bold font-mono tracking-wider uppercase text-emerald-400 mb-2">
+                              Kondisi Variabel Skenario
+                            </h4>
                             <p className="text-slate-400 leading-relaxed">
-                              {sensitivityScenario === "optimis" && "Cuaca optimal dan panen raya desa melimpah. Arus kas masuk unit usaha diproyeksikan meningkat 15% di atas perkiraan dasar."}
-                              {sensitivityScenario === "moderat" && "Perkiraan dasar (Base Case) tanpa fluktuasi harga komoditas atau kejadian alam ekstrim di desa."}
-                              {sensitivityScenario === "pesimis" && "Gagal panen sawah desa akibat cuaca kering berkepanjangan menekan daya beli dan menyusutkan pendapatan usaha hingga 30%."}
+                              {sensitivityScenario === "optimis" &&
+                                "Cuaca optimal dan panen raya desa melimpah. Arus kas masuk unit usaha diproyeksikan meningkat 15% di atas perkiraan dasar."}
+                              {sensitivityScenario === "moderat" &&
+                                "Perkiraan dasar (Base Case) tanpa fluktuasi harga komoditas atau kejadian alam ekstrim di desa."}
+                              {sensitivityScenario === "pesimis" &&
+                                "Gagal panen sawah desa akibat cuaca kering berkepanjangan menekan daya beli dan menyusutkan pendapatan usaha hingga 30%."}
                             </p>
                           </div>
                           <div className="border-l border-slate-900 pl-6 space-y-3 font-mono text-[11px]">
@@ -2247,45 +2628,57 @@ export default function App() {
                       ) : (
                         <div className="text-center text-slate-500 py-16 text-xs font-mono">
                           <Info className="h-6 w-6 mx-auto mb-2 text-slate-600" />
-                          Hitung kelayakan proyeksi awal (Kalkulator Kelayakan) terlebih dahulu untuk mengaktifkan skenario.
+                          Hitung kelayakan proyeksi awal (Kalkulator Kelayakan) terlebih dahulu untuk mengaktifkan
+                          skenario.
                         </div>
                       )}
                     </CardContent>
                   </Card>
                 </TabsContent>
-
               </Tabs>
             </div>
           )}
 
           {activeTab === "sync" && (
             <div className="space-y-6">
-              
               <Card className="bg-[#0b101c]/90 border border-slate-900 shadow-md">
                 <CardHeader>
-                  <CardTitle className="text-xs font-bold text-slate-400 uppercase tracking-wider">Pintu Gerbang Sinkronisasi Kabupaten</CardTitle>
+                  <CardTitle className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                    Pintu Gerbang Sinkronisasi Kabupaten
+                  </CardTitle>
                   <CardDescription className="text-[10px] text-slate-500">
-                    Koneksi Node Local SQLite database ke portal aggregasi kabupaten: <strong className="text-slate-300 font-mono">{syncServerUrl}</strong>
+                    Koneksi Node Local SQLite database ke portal aggregasi kabupaten:{" "}
+                    <strong className="text-slate-300 font-mono">{syncServerUrl}</strong>
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="flex items-center gap-4">
-                  <Button onClick={handleSyncNow} disabled={isSyncing} className="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold text-xs h-9">
+                  <Button
+                    onClick={handleSyncNow}
+                    disabled={isSyncing}
+                    className="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold text-xs h-9"
+                  >
                     {isSyncing ? "Menghubungkan..." : "Mulai Sinkronisasi Sekarang"}
                   </Button>
-                  {syncProgress && <span className="text-emerald-400 text-xs font-mono font-semibold">{syncProgress}</span>}
+                  {syncProgress && (
+                    <span className="text-emerald-400 text-xs font-mono font-semibold">{syncProgress}</span>
+                  )}
                 </CardContent>
               </Card>
 
               {/* Sync History */}
               <Card className="bg-[#0b101c]/90 border border-slate-900 shadow-md">
                 <CardHeader>
-                  <CardTitle className="text-xs font-bold text-slate-400 uppercase tracking-wider">Log Riwayat Aggregasi Sinkronisasi</CardTitle>
+                  <CardTitle className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                    Log Riwayat Aggregasi Sinkronisasi
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <Table>
                     <TableHeader className="bg-slate-950/20 border-slate-900">
                       <TableRow className="border-slate-900 hover:bg-transparent">
-                        <TableHead className="text-slate-500 font-mono text-[10px] uppercase">Waktu Sinkronisasi</TableHead>
+                        <TableHead className="text-slate-500 font-mono text-[10px] uppercase">
+                          Waktu Sinkronisasi
+                        </TableHead>
                         <TableHead className="text-slate-500 font-mono text-[10px] uppercase">Tipe Data</TableHead>
                         <TableHead className="text-slate-500 font-mono text-[10px] uppercase">Status Koneksi</TableHead>
                         <TableHead className="text-slate-500 font-mono text-[10px] uppercase">Jumlah Muatan</TableHead>
@@ -2297,7 +2690,9 @@ export default function App() {
                           <TableCell className="text-xs font-mono">{hist.completed_at}</TableCell>
                           <TableCell className="text-xs capitalize">{hist.direction}</TableCell>
                           <TableCell>
-                            <span className={`font-mono text-xs font-bold ${hist.status === "success" ? "text-emerald-400" : "text-rose-400"}`}>
+                            <span
+                              className={`font-mono text-xs font-bold ${hist.status === "success" ? "text-emerald-400" : "text-rose-400"}`}
+                            >
                               {hist.status === "success" ? "BERHASIL" : "GAGAL"}
                             </span>
                           </TableCell>
@@ -2315,26 +2710,38 @@ export default function App() {
                   </Table>
                 </CardContent>
               </Card>
-
             </div>
           )}
 
           {activeTab === "settings" && (
             <div className="space-y-6">
-              
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                
                 {/* Profile Form */}
-                <form className="bg-[#0b101c]/90 border border-slate-900 rounded-xl p-6 md:col-span-2 shadow-md" onSubmit={handleSaveProfile}>
-                  <h4 className="text-xs font-bold text-slate-400 font-mono tracking-wider uppercase border-b border-slate-900 pb-3 mb-4">Profil Organisasi Koperasi Desa</h4>
+                <form
+                  className="bg-[#0b101c]/90 border border-slate-900 rounded-xl p-6 md:col-span-2 shadow-md"
+                  onSubmit={handleSaveProfile}
+                >
+                  <h4 className="text-xs font-bold text-slate-400 font-mono tracking-wider uppercase border-b border-slate-900 pb-3 mb-4">
+                    Profil Organisasi Koperasi Desa
+                  </h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
                     <div className="space-y-1">
                       <label className="text-slate-500 font-mono text-[9px] uppercase">Nama Koperasi</label>
-                      <Input type="text" value={coopProfile.name} onChange={(e) => handleProfileFieldChange("name", e.target.value)} className="bg-slate-950 border-slate-900 text-xs" />
+                      <Input
+                        type="text"
+                        value={coopProfile.name}
+                        onChange={(e) => handleProfileFieldChange("name", e.target.value)}
+                        className="bg-slate-950 border-slate-900 text-xs"
+                      />
                     </div>
                     <div className="space-y-1">
                       <label className="text-slate-500 font-mono text-[9px] uppercase">Nomor Legal Hukum</label>
-                      <Input type="text" value={coopProfile.legal_id} onChange={(e) => handleProfileFieldChange("legal_id", e.target.value)} className="bg-slate-950 border-slate-900 text-xs font-mono" />
+                      <Input
+                        type="text"
+                        value={coopProfile.legal_id}
+                        onChange={(e) => handleProfileFieldChange("legal_id", e.target.value)}
+                        className="bg-slate-950 border-slate-900 text-xs font-mono"
+                      />
                     </div>
                     <div className="space-y-1">
                       <label className="text-slate-500 font-mono text-[9px] uppercase">Nama Ketua Pengurus</label>
@@ -2389,27 +2796,45 @@ export default function App() {
                       />
                     </div>
                   </div>
-                  <Button type="submit" className="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold text-xs h-9 mt-6">Simpan Profil Koperasi</Button>
+                  <Button
+                    type="submit"
+                    className="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold text-xs h-9 mt-6"
+                  >
+                    Simpan Profil Koperasi
+                  </Button>
                 </form>
 
                 {/* Updater */}
                 <Card className="bg-[#0b101c]/90 border border-slate-900 md:col-span-2 shadow-md">
                   <CardHeader>
-                    <CardTitle className="text-xs font-bold text-slate-400 uppercase tracking-wider">Pemeliharaan Aplikasi & Update OTA</CardTitle>
+                    <CardTitle className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                      Pemeliharaan Aplikasi & Update OTA
+                    </CardTitle>
                     <CardDescription className="text-[10px] text-slate-500">
                       Sambungkan ke repositori GitHub untuk mengunduh update biner rilis KDKMP secara langsung.
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4 pt-2 text-xs">
-                    <Button onClick={checkUpdateCenter} disabled={isUpdateChecking} className="w-full bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold text-xs h-9">
+                    <Button
+                      onClick={checkUpdateCenter}
+                      disabled={isUpdateChecking}
+                      className="w-full bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold text-xs h-9"
+                    >
                       {isUpdateChecking ? "Menghubungi Repositori..." : "Cek Pembaruan Sistem Sekarang"}
                     </Button>
-                    {updateStatusText && <span className="text-emerald-400 text-xs font-mono font-semibold block text-center mt-2">{updateStatusText}</span>}
+                    {updateStatusText && (
+                      <span className="text-emerald-400 text-xs font-mono font-semibold block text-center mt-2">
+                        {updateStatusText}
+                      </span>
+                    )}
 
                     {downloadContentLength > 0 && (
                       <div className="space-y-2 mt-4 font-mono text-[10px]">
                         <div className="flex justify-between text-slate-400">
-                          <span>Progress: {(downloadedBytes / 1024 / 1024).toFixed(2)} MB / {(downloadContentLength / 1024 / 1024).toFixed(2)} MB</span>
+                          <span>
+                            Progress: {(downloadedBytes / 1024 / 1024).toFixed(2)} MB /{" "}
+                            {(downloadContentLength / 1024 / 1024).toFixed(2)} MB
+                          </span>
                           <span className="font-bold text-emerald-400">{downloadProgress}%</span>
                         </div>
                         <div className="w-full bg-slate-950 rounded-full h-1.5 border border-slate-900 overflow-hidden">
@@ -2426,7 +2851,9 @@ export default function App() {
                 {/* Preference card */}
                 <Card className="bg-[#0b101c]/90 border border-slate-900 md:col-span-2 shadow-md">
                   <CardHeader>
-                    <CardTitle className="text-xs font-bold text-slate-400 uppercase tracking-wider">Preferensi Interface</CardTitle>
+                    <CardTitle className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                      Preferensi Interface
+                    </CardTitle>
                   </CardHeader>
                   <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2 text-xs">
                     <div className="space-y-1">
@@ -2455,14 +2882,11 @@ export default function App() {
                     </div>
                   </CardContent>
                 </Card>
-
               </div>
             </div>
           )}
-
         </main>
       </div>
-
     </div>
   );
 }
