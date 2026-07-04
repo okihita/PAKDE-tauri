@@ -1,8 +1,10 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { check } from "@tauri-apps/plugin-updater";
 import { relaunch } from "@tauri-apps/plugin-process";
 
 export function useUpdater() {
+  const { t } = useTranslation();
   const [downloadProgress, setDownloadProgress] = useState(0);
   const [downloadContentLength, setDownloadContentLength] = useState(0);
   const [downloadedBytes, setDownloadedBytes] = useState(0);
@@ -11,14 +13,14 @@ export function useUpdater() {
 
   const checkUpdateCenter = async () => {
     setIsUpdateChecking(true);
-    setUpdateStatusText("Memeriksa rilis KDKMP di GitHub...");
+    setUpdateStatusText(t("settings.updater.checkingRilis"));
     setDownloadProgress(0);
     setDownloadContentLength(0);
     setDownloadedBytes(0);
     try {
       const update = await check();
       if (update) {
-        setUpdateStatusText(`Mengunduh update v${update.version}...`);
+        setUpdateStatusText(t("settings.updater.downloading", { version: update.version }));
         let bytesDownloaded = 0,
           size = 0;
         await update.downloadAndInstall((event) => {
@@ -36,19 +38,19 @@ export function useUpdater() {
               }
               break;
             case "Finished":
-              setUpdateStatusText("Unduhan selesai. Menginstal...");
+              setUpdateStatusText(t("settings.updater.installing"));
               break;
           }
         });
-        setUpdateStatusText("Relaunching...");
+        setUpdateStatusText(t("settings.updater.relaunching"));
         await relaunch();
       } else {
-        setUpdateStatusText("Aplikasi sudah di versi terbaru!");
+        setUpdateStatusText(t("settings.updater.upToDate"));
         setTimeout(() => setUpdateStatusText(""), 3000);
       }
     } catch (e) {
       console.error(e);
-      setUpdateStatusText(`Gagal: ${e}`);
+      setUpdateStatusText(t("settings.updater.failed", { error: String(e) }));
       setTimeout(() => setUpdateStatusText(""), 4000);
     } finally {
       setIsUpdateChecking(false);

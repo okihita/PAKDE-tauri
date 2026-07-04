@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "pakde-tauri",
+  "productName": "PAKDE",
   "version": "0.5.0",
   "identifier": "com.okihita.pakde-tauri",
   "build": {
@@ -12,7 +12,7 @@
   "app": {
     "windows": [
       {
-        "title": "pakde-tauri",
+        "title": "PAKDE",
         "width": 800,
         "height": 600
       }
@@ -25,20 +25,12 @@
     "active": true,
     "targets": "all",
     "createUpdaterArtifacts": true,
-    "icon": [
-      "icons/32x32.png",
-      "icons/128x128.png",
-      "icons/128x128@2x.png",
-      "icons/icon.icns",
-      "icons/icon.ico"
-    ]
+    "icon": ["icons/icon.png"]
   },
   "plugins": {
     "updater": {
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDI5NjExRTVENDVGQUUwOApSV1FJcmwvVTVSR1dBaWNweVIzVTlGM1JFWWE0aDlpalJnWUxKVzk5UFBEZkUzbGZUWC9UbnRjSgo=",
-      "endpoints": [
-        "https://github.com/okihita/PAKDE-tauri/releases/latest/download/latest.json"
-      ]
+      "endpoints": ["https://github.com/okihita/PAKDE-tauri/releases/latest/download/latest.json"]
     }
   }
 }

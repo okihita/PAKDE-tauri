@@ -33,8 +33,8 @@
     "balance": "Balance"
   },
   "splash": {
-    "brand": "KDKMP",
-    "title": "COCKPIT PANEL",
+    "brand": "PAKDE",
+    "title": "PAKDE",
     "subtitle": "SQLite Local Node Initialization",
     "version": "VER 0.5.0 • SAK EP COMPLIANT"
   },
@@ -314,10 +314,10 @@
     "saveProfile": "Save Cooperative Profile",
     "updater": {
       "title": "Application Maintenance & OTA Updates",
-      "description": "Connect to the GitHub repository to download KDKMP release binary updates directly.",
+      "description": "Connect to the GitHub repository to download PAKDE release binary updates directly.",
       "checkButton": "Check for System Updates Now",
       "checking": "Connecting to Repository...",
-      "checkingRilis": "Checking KDKMP releases on GitHub...",
+      "checkingRilis": "Checking PAKDE releases on GitHub...",
       "downloading": "Downloading update v{{version}}...",
       "installing": "Download complete. Installing...",
       "relaunching": "Relaunching...",

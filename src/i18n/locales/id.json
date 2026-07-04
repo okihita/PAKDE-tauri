@@ -33,8 +33,8 @@
     "balance": "Saldo"
   },
   "splash": {
-    "brand": "KDKMP",
-    "title": "COCKPIT PANEL",
+    "brand": "PAKDE",
+    "title": "PAKDE",
     "subtitle": "SQLite Local Node Initialization",
     "version": "VER 0.5.0 • SAK EP COMPLIANT"
   },
@@ -314,10 +314,10 @@
     "saveProfile": "Simpan Profil Koperasi",
     "updater": {
       "title": "Pemeliharaan Aplikasi & Update OTA",
-      "description": "Sambungkan ke repositori GitHub untuk mengunduh update biner rilis KDKMP secara langsung.",
+      "description": "Sambungkan ke repositori GitHub untuk mengunduh update biner rilis PAKDE secara langsung.",
       "checkButton": "Cek Pembaruan Sistem Sekarang",
       "checking": "Menghubungi Repositori...",
-      "checkingRilis": "Memeriksa rilis KDKMP di GitHub...",
+      "checkingRilis": "Memeriksa rilis PAKDE di GitHub...",
       "downloading": "Mengunduh update v{{version}}...",
       "installing": "Unduhan selesai. Menginstal...",
       "relaunching": "Relaunching...",
