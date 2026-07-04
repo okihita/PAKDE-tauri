@@ -14,6 +14,8 @@ interface Props {
   setCoopProfile: (v: CooperativeProfile) => void;
   fontSizeSetting: "small" | "normal" | "large" | "xlarge";
   setFontSizeSetting: (v: "small" | "normal" | "large" | "xlarge") => void;
+  appTheme: "dark" | "light";
+  setAppTheme: (v: "dark" | "light") => void;
 }
 
 const i18nFieldKeys: Record<string, string> = {
@@ -29,13 +31,20 @@ const i18nFieldKeys: Record<string, string> = {
   email: "email",
 };
 
-export default function Settings({ coopProfile, setCoopProfile, fontSizeSetting, setFontSizeSetting }: Props) {
+export default function Settings({
+  coopProfile,
+  setCoopProfile,
+  fontSizeSetting,
+  setFontSizeSetting,
+  appTheme,
+  setAppTheme,
+}: Props) {
   const { t, i18n } = useTranslation();
   const [lang, setLang] = useState(i18n.language);
   const u = useUpdater();
   const toast = useToast();
 
-  if (!coopProfile) return <div className="text-slate-500 text-xs">{t("common.loading")}</div>;
+  if (!coopProfile) return <div className="text-muted-foreground text-xs">{t("common.loading")}</div>;
 
   const handleFieldChange = (key: string, value: string) => {
     setCoopProfile({ ...coopProfile, [key]: value });
@@ -71,9 +80,9 @@ export default function Settings({ coopProfile, setCoopProfile, fontSizeSetting,
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card className="bg-[#0b101c]/90 border-slate-900 md:col-span-2">
+        <Card className="bg-card border-border md:col-span-2">
           <CardHeader>
-            <CardTitle className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+            <CardTitle className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
               {t("settings.profileTitle")}
             </CardTitle>
           </CardHeader>
@@ -92,13 +101,13 @@ export default function Settings({ coopProfile, setCoopProfile, fontSizeSetting,
                 { key: "email" },
               ].map(({ key }) => (
                 <div key={key} className="space-y-1">
-                  <label className="text-slate-500 font-mono text-xxxs uppercase">
+                  <label className="text-muted-foreground font-mono text-xxxs uppercase">
                     {t(`settings.profileFields.${i18nFieldKeys[key]}`)}
                   </label>
                   <Input
                     value={String(coopProfile[key as keyof CooperativeProfile] ?? "")}
                     onChange={(e) => handleFieldChange(key, e.target.value)}
-                    className="bg-slate-950 border-slate-900 text-xs h-8"
+                    className="bg-input border-border text-xs h-8"
                   />
                 </div>
               ))}
@@ -112,12 +121,14 @@ export default function Settings({ coopProfile, setCoopProfile, fontSizeSetting,
           </CardContent>
         </Card>
 
-        <Card className="bg-[#0b101c]/90 border-slate-900 md:col-span-2">
+        <Card className="bg-card border-border md:col-span-2">
           <CardHeader>
-            <CardTitle className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+            <CardTitle className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
               {t("settings.updater.title")}
             </CardTitle>
-            <CardDescription className="text-xxs text-slate-500">{t("settings.updater.description")}</CardDescription>
+            <CardDescription className="text-xxs text-muted-foreground">
+              {t("settings.updater.description")}
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4 pt-2 text-xs">
             <Button
@@ -134,13 +145,13 @@ export default function Settings({ coopProfile, setCoopProfile, fontSizeSetting,
             )}
             {u.downloadContentLength > 0 && (
               <div className="space-y-2 font-mono text-xxs">
-                <div className="flex justify-between text-slate-400">
+                <div className="flex justify-between text-muted-foreground">
                   <span>
                     {`${t("settings.updater.progress")}: ${(u.downloadedBytes / 1024 / 1024).toFixed(2)} MB / ${(u.downloadContentLength / 1024 / 1024).toFixed(2)} MB`}
                   </span>
                   <span className="font-bold text-emerald-400">{u.downloadProgress}%</span>
                 </div>
-                <div className="w-full bg-slate-950 rounded-full h-1.5 border border-slate-900 overflow-hidden">
+                <div className="w-full bg-input rounded-full h-1.5 border border-border overflow-hidden">
                   <div
                     className="bg-emerald-500 h-full transition-all duration-300"
                     style={{ width: `${u.downloadProgress}%` }}
@@ -151,15 +162,15 @@ export default function Settings({ coopProfile, setCoopProfile, fontSizeSetting,
           </CardContent>
         </Card>
 
-        <Card className="bg-[#0b101c]/90 border-slate-900 md:col-span-2">
+        <Card className="bg-card border-border md:col-span-2">
           <CardHeader>
-            <CardTitle className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+            <CardTitle className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
               {t("settings.preferences.title")}
             </CardTitle>
           </CardHeader>
           <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2 text-xs">
             <div className="space-y-1">
-              <label className="text-slate-500 font-mono text-xxxs uppercase">
+              <label className="text-muted-foreground font-mono text-xxxs uppercase">
                 {t("settings.preferences.language")}
               </label>
               <Select
@@ -169,46 +180,48 @@ export default function Settings({ coopProfile, setCoopProfile, fontSizeSetting,
                   setLang(val);
                 }}
               >
-                <SelectTrigger className="w-full bg-slate-950 border-slate-900 text-xs h-8 text-slate-300">
+                <SelectTrigger className="w-full bg-input border-border text-xs h-8 text-foreground">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-[#0b101c] border-slate-900 text-white text-xs">
+                <SelectContent className="bg-card border-border text-foreground text-xs">
                   <SelectItem value="id">{t("settings.preferences.languageId")}</SelectItem>
                   <SelectItem value="en">{t("settings.preferences.languageEn")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-1">
-              <label className="text-slate-500 font-mono text-xxxs uppercase">{t("settings.preferences.theme")}</label>
-              <Select defaultValue="dark">
-                <SelectTrigger className="w-full bg-slate-950 border-slate-900 text-xs h-8 text-slate-300">
+              <label className="text-muted-foreground font-mono text-xxxs uppercase">
+                {t("settings.preferences.theme")}
+              </label>
+              <Select value={appTheme} onValueChange={(val) => setAppTheme(val as "dark" | "light")}>
+                <SelectTrigger className="w-full bg-input border-border text-xs h-8 text-foreground">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-[#0b101c] border-slate-900 text-white text-xs">
+                <SelectContent className="bg-card border-border text-foreground text-xs">
                   <SelectItem value="dark">{t("settings.preferences.themeDark")}</SelectItem>
                   <SelectItem value="light">{t("settings.preferences.themeLight")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-1">
-              <label className="text-slate-500 font-mono text-xxxs uppercase">
+              <label className="text-muted-foreground font-mono text-xxxs uppercase">
                 {t("settings.preferences.fontSize")}
               </label>
               <Select
                 value={fontSizeSetting}
                 onValueChange={(val) => setFontSizeSetting(val as "small" | "normal" | "large" | "xlarge")}
               >
-                <SelectTrigger className="w-full bg-slate-950 border-slate-900 text-xs h-8 text-slate-300">
+                <SelectTrigger className="w-full bg-input border-border text-xs h-8 text-foreground">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-[#0b101c] border-slate-900 text-white text-xs">
+                <SelectContent className="bg-card border-border text-foreground text-xs">
                   <SelectItem value="small">{t("settings.preferences.fontSmall")}</SelectItem>
                   <SelectItem value="normal">{t("settings.preferences.fontNormal")}</SelectItem>
                   <SelectItem value="large">{t("settings.preferences.fontLarge")}</SelectItem>
                   <SelectItem value="xlarge">{t("settings.preferences.fontXLarge")}</SelectItem>
                 </SelectContent>
               </Select>
-              <p className="text-xxxs text-slate-600 font-mono">{t("settings.preferences.fontHint")}</p>
+              <p className="text-xxxs text-muted-foreground font-mono">{t("settings.preferences.fontHint")}</p>
             </div>
           </CardContent>
         </Card>

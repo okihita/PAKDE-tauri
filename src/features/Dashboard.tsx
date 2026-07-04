@@ -128,26 +128,26 @@ function CalendarWidget({ t }: { t: (key: string) => string }) {
     d === today.getDate() && viewMonth === today.getMonth() && viewYear === today.getFullYear();
 
   return (
-    <Card className="bg-[#0b101c]/90 border-slate-900 text-slate-300">
+    <Card className="bg-card border-border text-foreground">
       <CardHeader className="pb-2 flex flex-row items-center justify-between">
-        <CardTitle className="text-xs font-mono tracking-widest text-slate-400 uppercase flex items-center gap-2">
+        <CardTitle className="text-xs font-mono tracking-widest text-muted-foreground uppercase flex items-center gap-2">
           <CalendarDays className="h-3 w-3" />
           {t("beranda.calendar")}
         </CardTitle>
         <div className="flex items-center gap-2">
-          <span className="text-xxs font-mono text-slate-400">
+          <span className="text-xxs font-mono text-muted-foreground">
             {MONTHS[viewMonth]} {viewYear}
           </span>
           <div className="flex gap-0.5">
             <button
               onClick={prevMonth}
-              className="p-0.5 rounded hover:bg-slate-800 text-slate-500 hover:text-white transition-colors"
+              className="p-0.5 rounded hover:bg-sidebar-ring text-muted-foreground hover:text-foreground transition-colors"
             >
               <ChevronLeft className="h-3 w-3" />
             </button>
             <button
               onClick={nextMonth}
-              className="p-0.5 rounded hover:bg-slate-800 text-slate-500 hover:text-white transition-colors"
+              className="p-0.5 rounded hover:bg-sidebar-ring text-muted-foreground hover:text-foreground transition-colors"
             >
               <ChevronRight className="h-3 w-3" />
             </button>
@@ -157,7 +157,7 @@ function CalendarWidget({ t }: { t: (key: string) => string }) {
       <CardContent>
         <div className="grid grid-cols-7 gap-0">
           {DAYS_SHORT.map((d) => (
-            <div key={d} className="text-center text-xxxs font-mono text-slate-600 py-1">
+            <div key={d} className="text-center text-xxxs font-mono text-muted-foreground py-1">
               {t(`beranda.${d}`)}
             </div>
           ))}
@@ -169,7 +169,7 @@ function CalendarWidget({ t }: { t: (key: string) => string }) {
                   ? "text-transparent"
                   : isToday(d)
                     ? "bg-emerald-500/20 text-emerald-400 font-bold"
-                    : "text-slate-400 hover:bg-slate-800"
+                    : "text-muted-foreground hover:bg-sidebar-ring"
               }`}
             >
               {d ?? "."}
@@ -203,9 +203,9 @@ export default function Dashboard({ coopProfile, currentUser }: Props) {
         {/* ── COLUMN 1 ──────────────────────────────────────────── */}
         <div className="space-y-6">
           {/* Greeting */}
-          <Card className="bg-[#0b101c]/90 border-slate-900 text-slate-300">
+          <Card className="bg-card border-border text-foreground">
             <CardHeader>
-              <CardTitle className="text-xs font-mono tracking-widest text-slate-400 uppercase flex items-center gap-2">
+              <CardTitle className="text-xs font-mono tracking-widest text-muted-foreground uppercase flex items-center gap-2">
                 <GreetingIcon className="h-3 w-3 text-amber-400" />
                 {t("beranda.welcome")}
               </CardTitle>
@@ -213,19 +213,19 @@ export default function Dashboard({ coopProfile, currentUser }: Props) {
             <CardContent className="space-y-3">
               {currentUser && (
                 <div>
-                  <p className="text-sm font-bold text-white">
+                  <p className="text-sm font-bold text-foreground">
                     {t("beranda.greeting", {
                       time: t(`beranda.time${greeting.charAt(0).toUpperCase() + greeting.slice(1)}`),
                       name: currentUser.name,
                     })}
                   </p>
-                  <p className="text-xxs text-slate-500">{currentUser.role}</p>
+                  <p className="text-xxs text-muted-foreground">{currentUser.role}</p>
                 </div>
               )}
               {coopProfile && (
-                <div className="space-y-1 pt-2 border-t border-slate-900">
+                <div className="space-y-1 pt-2 border-t border-border">
                   <p className="text-sm font-semibold text-emerald-400">{coopProfile.name}</p>
-                  <p className="text-xxs font-mono text-slate-500">
+                  <p className="text-xxs font-mono text-muted-foreground">
                     {coopProfile.village}, {coopProfile.regency}
                   </p>
                 </div>
@@ -234,9 +234,9 @@ export default function Dashboard({ coopProfile, currentUser }: Props) {
           </Card>
 
           {/* Reminders */}
-          <Card className="bg-[#0b101c]/90 border-slate-900 text-slate-300">
+          <Card className="bg-card border-border text-foreground">
             <CardHeader>
-              <CardTitle className="text-xs font-mono tracking-widest text-slate-400 uppercase flex items-center gap-2">
+              <CardTitle className="text-xs font-mono tracking-widest text-muted-foreground uppercase flex items-center gap-2">
                 <Bell className="h-3 w-3 text-amber-400" />
                 {t("beranda.reminders")}
               </CardTitle>
@@ -248,7 +248,7 @@ export default function Dashboard({ coopProfile, currentUser }: Props) {
                   { icon: "📅", text: "Rapat Anggota Tahunan: persiapkan agenda" },
                   { icon: "💰", text: "Cek outstanding pinjaman anggota aktif" },
                 ].map((r, i) => (
-                  <div key={i} className="flex items-start gap-2 text-xs text-slate-400">
+                  <div key={i} className="flex items-start gap-2 text-xs text-muted-foreground">
                     <span className="text-xs">{r.icon}</span>
                     <span>{r.text}</span>
                   </div>
@@ -265,17 +265,17 @@ export default function Dashboard({ coopProfile, currentUser }: Props) {
 
         <div className="space-y-6">
           {/* Todo List */}
-          <Card className="bg-[#0b101c]/90 border-slate-900 text-slate-300">
+          <Card className="bg-card border-border text-foreground">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-xs font-mono tracking-widest text-slate-400 uppercase flex items-center gap-2">
+                <CardTitle className="text-xs font-mono tracking-widest text-muted-foreground uppercase flex items-center gap-2">
                   <CheckCircle2 className="h-3 w-3 text-emerald-400" />
                   {t("beranda.todo")}
                 </CardTitle>
                 {doneCount > 0 && (
                   <button
                     onClick={removeDone}
-                    className="text-xxxs font-mono text-slate-600 hover:text-slate-400 transition-colors"
+                    className="text-xxxs font-mono text-muted-foreground hover:text-muted-foreground transition-colors"
                   >
                     {t("beranda.clearDone", { n: doneCount })}
                   </button>
@@ -295,7 +295,7 @@ export default function Dashboard({ coopProfile, currentUser }: Props) {
                   value={newTask}
                   onChange={(e) => setNewTask(e.target.value)}
                   placeholder={t("beranda.addTodo")}
-                  className="flex-1 bg-slate-950 border-slate-900 text-xs h-8 text-slate-300 placeholder:text-slate-600"
+                  className="flex-1 bg-input border-border text-xs h-8 text-foreground placeholder:text-muted-foreground"
                 />
                 <Button
                   type="submit"
@@ -309,20 +309,20 @@ export default function Dashboard({ coopProfile, currentUser }: Props) {
               {/* Task list */}
               <div className="space-y-1 max-h-64 overflow-y-auto">
                 {todos.length === 0 && (
-                  <p className="text-xxs text-slate-600 text-center py-4">{t("beranda.noTasks")}</p>
+                  <p className="text-xxs text-muted-foreground text-center py-4">{t("beranda.noTasks")}</p>
                 )}
                 {todos.map((todo) => (
                   <div
                     key={todo.id}
-                    className="flex items-center gap-2 py-1.5 px-2 rounded hover:bg-slate-900/50 cursor-pointer group"
+                    className="flex items-center gap-2 py-1.5 px-2 rounded hover:bg-secondary cursor-pointer group"
                     onClick={() => toggleTodo(todo.id)}
                   >
                     {todo.done ? (
                       <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
                     ) : (
-                      <Circle className="h-3.5 w-3.5 text-slate-600 shrink-0 group-hover:text-slate-400 transition-colors" />
+                      <Circle className="h-3.5 w-3.5 text-muted-foreground shrink-0 group-hover:text-muted-foreground transition-colors" />
                     )}
-                    <span className={`text-xs ${todo.done ? "text-slate-600 line-through" : "text-slate-300"}`}>
+                    <span className={`text-xs ${todo.done ? "text-muted-foreground line-through" : "text-foreground"}`}>
                       {todo.text}
                     </span>
                   </div>

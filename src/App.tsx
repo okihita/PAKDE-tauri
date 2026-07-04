@@ -31,7 +31,9 @@ function AppContent() {
   const [activeTab, setActiveTab] = useState<
     "home" | "statistics" | "leveling" | "members" | "accounting" | "feasibility" | "sync" | "settings"
   >("home");
-  const [appTheme] = useState<"dark" | "light">("dark");
+  const [appTheme, setAppTheme] = useState<"dark" | "light">(() => {
+    return (localStorage.getItem("pakde-theme") as "dark" | "light") || "dark";
+  });
   const [fontSizeSetting, setFontSizeSetting] = useState<FontLevel>(() => {
     const saved = localStorage.getItem("pakde-font-size") as FontLevel | null;
     return saved && FONT_LEVELS.includes(saved) ? saved : FONT_LEVEL_DEFAULT;
@@ -58,6 +60,15 @@ function AppContent() {
     document.documentElement.setAttribute("data-font-size", fontSizeSetting);
     localStorage.setItem("pakde-font-size", fontSizeSetting);
   }, [fontSizeSetting]);
+
+  useEffect(() => {
+    localStorage.setItem("pakde-theme", appTheme);
+    if (appTheme === "dark") {
+      document.documentElement.classList.remove("light");
+    } else {
+      document.documentElement.classList.add("light");
+    }
+  }, [appTheme]);
 
   // Keyboard shortcuts: Cmd/Ctrl + +/-/0 to zoom font
   useEffect(() => {
@@ -108,13 +119,15 @@ function AppContent() {
   if (appState === "db_error") return <DbErrorScreen message={dbErrorMessage} />;
 
   return (
-    <div className={`app-container flex min-h-screen text-slate-300 bg-[#070b14] ${appTheme} antialiased`}>
+    <div className="app-container flex min-h-screen text-foreground bg-background antialiased">
       <Sidebar
         activeTab={activeTab}
         onTabChange={setActiveTab}
         coopProfile={coopProfile}
         ewsAlerts={ewsAlerts}
         currentUser={currentUser}
+        appTheme={appTheme}
+        onThemeToggle={() => setAppTheme((t) => (t === "dark" ? "light" : "dark"))}
       />
 
       <main className="flex-1 p-6 overflow-y-auto max-h-screen">
@@ -133,6 +146,8 @@ function AppContent() {
             setCoopProfile={setCoopProfile}
             fontSizeSetting={fontSizeSetting}
             setFontSizeSetting={setFontSizeSetting}
+            appTheme={appTheme}
+            setAppTheme={setAppTheme}
           />
         )}
       </main>

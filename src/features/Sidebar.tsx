@@ -10,9 +10,10 @@ import {
   Settings,
   AlertTriangle,
   CheckCircle2,
-  Bell,
   Database,
   UserCheck,
+  Sun,
+  Moon,
 } from "lucide-react";
 import type { CooperativeProfile, EwsAlert } from "@/types";
 
@@ -24,9 +25,19 @@ interface SidebarProps {
   coopProfile: CooperativeProfile | null;
   ewsAlerts: EwsAlert[];
   currentUser: { name: string; role: string } | null;
+  appTheme: "dark" | "light";
+  onThemeToggle: () => void;
 }
 
-export default function Sidebar({ activeTab, onTabChange, coopProfile, ewsAlerts, currentUser }: SidebarProps) {
+export default function Sidebar({
+  activeTab,
+  onTabChange,
+  coopProfile,
+  ewsAlerts,
+  currentUser,
+  appTheme,
+  onThemeToggle,
+}: SidebarProps) {
   const { t } = useTranslation();
   const criticalAlerts = ewsAlerts.filter((a) => a.level === "critical").length;
 
@@ -42,17 +53,17 @@ export default function Sidebar({ activeTab, onTabChange, coopProfile, ewsAlerts
   ];
 
   return (
-    <aside className="w-64 border-r border-slate-900 bg-[#090e1a]/95 flex flex-col justify-between print:hidden">
+    <aside className="w-64 border-r border-border bg-sidebar flex flex-col justify-between print:hidden">
       <div>
-        <div className="px-6 py-6 border-b border-slate-900 flex flex-col gap-2">
+        <div className="px-6 py-6 border-b border-border flex flex-col gap-2">
           <div className="flex items-center gap-2">
             <span className="text-xs font-mono font-black tracking-widest text-emerald-400">{t("splash.brand")}</span>
-            <span className="text-xs font-mono text-slate-500">|</span>
-            <span className="text-xs font-mono text-slate-300">{coopProfile?.village ?? "DESA"}</span>
+            <span className="text-xs font-mono text-muted-foreground">|</span>
+            <span className="text-xs font-mono text-foreground">{coopProfile?.village ?? "DESA"}</span>
           </div>
           <div className="flex items-center gap-1.5 mt-1">
             <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-[pulse_2s_infinite]" />
-            <span className="text-xxs font-mono text-slate-400">{t("sidebar.connected")}</span>
+            <span className="text-xxs font-mono text-muted-foreground">{t("sidebar.connected")}</span>
           </div>
         </div>
 
@@ -63,7 +74,7 @@ export default function Sidebar({ activeTab, onTabChange, coopProfile, ewsAlerts
               className={`flex items-center gap-3 px-4 py-3 rounded-lg cursor-pointer transition-all text-xs font-semibold ${
                 activeTab === id
                   ? "bg-emerald-500/10 text-emerald-400 border-[0.5px] border-emerald-500/20"
-                  : "text-slate-400 hover:bg-slate-900/50 hover:text-white"
+                  : "text-muted-foreground hover:bg-secondary hover:text-foreground"
               }`}
               onClick={() => onTabChange(id)}
             >
@@ -74,16 +85,16 @@ export default function Sidebar({ activeTab, onTabChange, coopProfile, ewsAlerts
         </nav>
       </div>
 
-      <div className="border-t border-slate-900 p-4 space-y-4">
+      <div className="border-t border-border p-4 space-y-4">
         {(coopProfile?.health_score ?? 0) > 0 && (
-          <div className="px-3 py-3 rounded-xl bg-[#0b101c] border border-slate-900">
+          <div className="px-3 py-3 rounded-xl bg-card border border-border">
             <div className="flex items-center gap-2 mb-2">
               <Database className="h-3 w-3 text-emerald-400" />
-              <span className="text-xxs font-mono text-slate-400">{t("sidebar.healthScore")}</span>
+              <span className="text-xxs font-mono text-muted-foreground">{t("sidebar.healthScore")}</span>
             </div>
             <div className="flex items-end gap-2">
               <span className="text-xl font-black text-emerald-400 font-mono">{coopProfile?.health_score}%</span>
-              <span className="text-xxxs text-slate-500 mb-1">
+              <span className="text-xxxs text-muted-foreground mb-1">
                 {t("sidebar.rag")}: {coopProfile?.rag_status}
               </span>
             </div>
@@ -104,10 +115,10 @@ export default function Sidebar({ activeTab, onTabChange, coopProfile, ewsAlerts
         {(ewsAlerts.filter((a) => a.level === "warning").length > 0 ||
           ewsAlerts.length === 0 ||
           criticalAlerts === 0) && (
-          <div className="px-3 py-3 rounded-xl bg-[#0b101c] border border-slate-900">
+          <div className="px-3 py-3 rounded-xl bg-card border border-border">
             <div className="flex items-center gap-2">
               <CheckCircle2 className="h-3 w-3 text-emerald-400" />
-              <span className="text-xxs font-mono text-slate-400">{t("sidebar.systemNormal")}</span>
+              <span className="text-xxs font-mono text-muted-foreground">{t("sidebar.systemNormal")}</span>
             </div>
           </div>
         )}
@@ -117,10 +128,20 @@ export default function Sidebar({ activeTab, onTabChange, coopProfile, ewsAlerts
             <UserCheck className="h-4 w-4 text-emerald-400" />
           </div>
           <div className="text-xxs">
-            <p className="font-bold text-slate-300">{currentUser?.name}</p>
-            <p className="text-slate-500">{currentUser?.role}</p>
+            <p className="font-bold text-foreground">{currentUser?.name}</p>
+            <p className="text-muted-foreground">{currentUser?.role}</p>
           </div>
-          <Bell className="h-3 w-3 text-slate-600 ml-auto" />
+          <button
+            onClick={onThemeToggle}
+            className="p-1 rounded hover:bg-sidebar-ring transition-colors ml-auto"
+            title={appTheme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+          >
+            {appTheme === "dark" ? (
+              <Sun className="h-3 w-3 text-muted-foreground hover:text-amber-400 transition-colors" />
+            ) : (
+              <Moon className="h-3 w-3 text-muted-foreground hover:text-blue-400 transition-colors" />
+            )}
+          </button>
         </div>
       </div>
     </aside>

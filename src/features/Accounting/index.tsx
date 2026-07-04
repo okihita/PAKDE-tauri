@@ -25,7 +25,7 @@ export default function Accounting() {
         onValueChange={(val) => a.setAccountingTab(val as typeof a.accountingTab)}
         className="w-full"
       >
-        <TabsList className="bg-[#090e1a] border border-slate-900 text-slate-400 mb-6 p-0.5 rounded-lg flex w-fit print:hidden">
+        <TabsList className="bg-sidebar border border-border text-muted-foreground mb-6 p-0.5 rounded-lg flex w-fit print:hidden">
           <TabsTrigger
             value="coa"
             className="text-xxs data-[state=active]:bg-emerald-500/10 data-[state=active]:text-emerald-400"

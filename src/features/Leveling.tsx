@@ -32,7 +32,7 @@ const ASPECT_ICONS: Record<string, React.ComponentType<{ className?: string }>> 
 
 function QuestItem({ done, text }: { done: boolean; text: string }) {
   return (
-    <li className="flex items-start gap-1.5 text-xxs text-slate-500">
+    <li className="flex items-start gap-1.5 text-xxs text-muted-foreground">
       {done ? (
         <CheckCircle2 className="h-3 w-3 text-emerald-500 mt-0.5 shrink-0" />
       ) : (
@@ -66,7 +66,7 @@ function LevelCard({
 
   return (
     <Card
-      className={`bg-[#0b101c]/90 border-slate-900 text-slate-300 overflow-hidden transition-all ${
+      className={`bg-card border-border text-foreground overflow-hidden transition-all ${
         isCurrent ? "ring-1 ring-emerald-500/30" : ""
       } ${!isUnlocked ? "opacity-60" : ""}`}
     >
@@ -78,12 +78,12 @@ function LevelCard({
               {isUnlocked ? (
                 <Icon className={`h-5 w-5 ${level.textClass}`} />
               ) : (
-                <Lock className="h-4 w-4 text-slate-600" />
+                <Lock className="h-4 w-4 text-muted-foreground" />
               )}
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
-                <span className="text-sm font-bold text-white">{t("leveling.level", { n: level.tier })}</span>
+                <span className="text-sm font-bold text-foreground">{t("leveling.level", { n: level.tier })}</span>
                 <span
                   className={`text-xxxs font-mono font-bold px-2 py-0.5 rounded-full border-0 ${level.bgClass} ${level.textClass}`}
                 >
@@ -93,29 +93,29 @@ function LevelCard({
                   <span className="text-xxxs font-mono text-emerald-500 font-bold">{t("leveling.active")}</span>
                 )}
               </div>
-              <p className="text-xxs text-slate-500 mt-0.5 truncate">{desc}</p>
+              <p className="text-xxs text-muted-foreground mt-0.5 truncate">{desc}</p>
             </div>
           </div>
           <div className="flex items-center gap-3 shrink-0">
             {/* XP progress */}
             <div className="hidden sm:block w-24">
               <div className="flex justify-between text-xxxs font-mono mb-0.5">
-                <span className="text-slate-500">{isId ? `XP ${xp}/${maxXp}` : `XP ${xp}/${maxXp}`}</span>
+                <span className="text-muted-foreground">{isId ? `XP ${xp}/${maxXp}` : `XP ${xp}/${maxXp}`}</span>
                 <span className={level.textClass}>{percent}%</span>
               </div>
-              <div className="h-1.5 bg-slate-900 rounded-full overflow-hidden">
+              <div className="h-1.5 bg-muted rounded-full overflow-hidden">
                 <div
                   className={`h-full rounded-full transition-all duration-500 ${
-                    isCurrent ? "bg-emerald-500" : isUnlocked ? level.color : "bg-slate-800"
+                    isCurrent ? "bg-emerald-500" : isUnlocked ? level.color : "bg-muted"
                   }`}
                   style={{ width: `${isUnlocked ? percent : 0}%` }}
                 />
               </div>
             </div>
             {open ? (
-              <ChevronUp className="h-3.5 w-3.5 text-slate-500" />
+              <ChevronUp className="h-3.5 w-3.5 text-muted-foreground" />
             ) : (
-              <ChevronDown className="h-3.5 w-3.5 text-slate-500" />
+              <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
             )}
           </div>
         </div>
@@ -130,10 +130,10 @@ function LevelCard({
               const quests = isId ? aspect.quests.map((q) => q.id) : aspect.quests.map((q) => q.en);
 
               return (
-                <div key={aspect.aspectId} className="bg-slate-950/50 rounded-lg p-3 border border-slate-900">
+                <div key={aspect.aspectId} className="bg-input/50 rounded-lg p-3 border border-border">
                   <div className="flex items-center gap-2 mb-2">
-                    <AspectIcon className="h-3.5 w-3.5 text-slate-400" />
-                    <span className="text-xxxs font-mono font-bold text-slate-400 uppercase tracking-wider">
+                    <AspectIcon className="h-3.5 w-3.5 text-muted-foreground" />
+                    <span className="text-xxxs font-mono font-bold text-muted-foreground uppercase tracking-wider">
                       {aLabel}
                     </span>
                   </div>
@@ -165,8 +165,8 @@ export default function Leveling({ healthScore = 0 }: Props) {
           <Trophy className="h-5 w-5 text-amber-400" />
         </div>
         <div>
-          <h1 className="text-sm font-bold text-white">{isId ? "Leveling Koperasi" : "Cooperative Leveling"}</h1>
-          <p className="text-xxs text-slate-500">
+          <h1 className="text-sm font-bold text-foreground">{isId ? "Leveling Koperasi" : "Cooperative Leveling"}</h1>
+          <p className="text-xxs text-muted-foreground">
             {isId
               ? "Selesaikan quest untuk naik level dan tingkatkan kesehatan koperasi"
               : "Complete quests to level up and improve cooperative health"}
@@ -175,27 +175,27 @@ export default function Leveling({ healthScore = 0 }: Props) {
       </div>
 
       {/* Current status bar */}
-      <Card className="bg-[#0b101c]/90 border-slate-900 text-slate-300">
+      <Card className="bg-card border-border text-foreground">
         <CardContent className="p-4">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
               <Trophy className="h-4 w-4 text-amber-400" />
-              <span className="text-xs font-bold text-white">
+              <span className="text-xs font-bold text-foreground">
                 {isId ? `Level Saat Ini: ${currentLevel.labelId}` : `Current Level: ${currentLevel.labelEn}`}
               </span>
             </div>
-            <span className="text-xxs font-mono text-slate-500">
+            <span className="text-xxs font-mono text-muted-foreground">
               {isId ? `Skor Kesehatan: ${healthScore} / 100` : `Health Score: ${healthScore} / 100`}
             </span>
           </div>
           {/* Global XP bar */}
-          <div className="h-2 bg-slate-900 rounded-full overflow-hidden">
+          <div className="h-2 bg-muted rounded-full overflow-hidden">
             <div
               className="h-full bg-gradient-to-r from-emerald-500 to-amber-400 rounded-full transition-all duration-500"
               style={{ width: `${Math.min(100, healthScore)}%` }}
             />
           </div>
-          <div className="flex justify-between mt-1 text-xxxs font-mono text-slate-600">
+          <div className="flex justify-between mt-1 text-xxxs font-mono text-muted-foreground">
             <span>{isId ? "Rintisan" : "Pioneer"}</span>
             <span>{isId ? "Teladan" : "Exemplary"}</span>
           </div>
@@ -217,21 +217,21 @@ export default function Leveling({ healthScore = 0 }: Props) {
                 isActive
                   ? `${level.bgClass} border-emerald-500/30`
                   : isComplete
-                    ? `${level.bgClass} border-slate-800`
-                    : "bg-slate-950/50 border-slate-900"
+                    ? `${level.bgClass} border-muted`
+                    : "bg-input/50 border-border"
               }`}
             >
               {isComplete ? (
                 <CheckCircle2 className={`h-3.5 w-3.5 ${level.textClass}`} />
               ) : (
-                <Icon className={`h-3.5 w-3.5 ${isActive ? level.textClass : "text-slate-600"}`} />
+                <Icon className={`h-3.5 w-3.5 ${isActive ? level.textClass : "text-muted-foreground"}`} />
               )}
               <span
-                className={`text-xxxs font-mono font-bold leading-tight ${isActive ? level.textClass : "text-slate-500"}`}
+                className={`text-xxxs font-mono font-bold leading-tight ${isActive ? level.textClass : "text-muted-foreground"}`}
               >
                 L{level.tier}
               </span>
-              <span className="text-xxxs text-slate-600 text-center leading-tight leading-none">{label}</span>
+              <span className="text-xxxs text-muted-foreground text-center leading-tight leading-none">{label}</span>
             </div>
           );
         })}

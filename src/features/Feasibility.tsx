@@ -18,7 +18,7 @@ export default function Feasibility() {
         value={f.feasibilityActiveTab}
         onValueChange={(val) => f.setFeasibilityActiveTab(val as typeof f.feasibilityActiveTab)}
       >
-        <TabsList className="bg-[#090e1a] border border-slate-900 text-slate-400 mb-6 p-0.5 rounded-lg flex w-fit">
+        <TabsList className="bg-sidebar border border-border text-muted-foreground mb-6 p-0.5 rounded-lg flex w-fit">
           <TabsTrigger
             value="calculator"
             className="text-xxs data-[state=active]:bg-emerald-500/10 data-[state=active]:text-emerald-400"
@@ -34,9 +34,9 @@ export default function Feasibility() {
         </TabsList>
 
         <TabsContent value="calculator" className="space-y-4">
-          <Card className="bg-[#0b101c]/90 border-slate-900">
+          <Card className="bg-card border-border">
             <CardHeader>
-              <CardTitle className="text-xs font-bold text-slate-400 uppercase">
+              <CardTitle className="text-xs font-bold text-muted-foreground uppercase">
                 {t("feasibility.calculator.title")}
               </CardTitle>
             </CardHeader>
@@ -50,7 +50,7 @@ export default function Feasibility() {
                   { label: t("feasibility.calculator.opportunityCost"), key: "opportunityCost" as const },
                 ].map(({ label, key }) => (
                   <div key={key} className="space-y-1">
-                    <label className="text-slate-500 font-mono text-xxxs uppercase">{label}</label>
+                    <label className="text-muted-foreground font-mono text-xxxs uppercase">{label}</label>
                     <Input
                       type={key === "cashFlows" ? "text" : "number"}
                       value={f.feasibilityParams[key]}
@@ -60,7 +60,7 @@ export default function Feasibility() {
                           [key]: key === "cashFlows" ? e.target.value : Number(e.target.value),
                         })
                       }
-                      className="bg-slate-950 border-slate-900 text-xs h-8"
+                      className="bg-input border-border text-xs h-8"
                     />
                   </div>
                 ))}
@@ -75,9 +75,9 @@ export default function Feasibility() {
           </Card>
 
           {f.feasibilityResults && (
-            <Card className="bg-[#0b101c]/90 border-slate-900">
+            <Card className="bg-card border-border">
               <CardHeader>
-                <CardTitle className="text-xs font-bold text-slate-400 uppercase">
+                <CardTitle className="text-xs font-bold text-muted-foreground uppercase">
                   {t("feasibility.calculator.resultsTitle")}
                 </CardTitle>
               </CardHeader>
@@ -107,11 +107,11 @@ export default function Feasibility() {
                   ].map(({ label, value, pass, accent }) => (
                     <div
                       key={label}
-                      className={`p-3 rounded-xl border ${pass === false ? "border-rose-500/20 bg-rose-500/5" : pass === true ? "border-emerald-500/20 bg-emerald-500/5" : "border-slate-900 bg-[#0a0f1a]"}`}
+                      className={`p-3 rounded-xl border ${pass === false ? "border-rose-500/20 bg-rose-500/5" : pass === true ? "border-emerald-500/20 bg-emerald-500/5" : "border-border bg-card"}`}
                     >
-                      <p className="text-xxxs font-mono text-slate-500">{label}</p>
+                      <p className="text-xxxs font-mono text-muted-foreground">{label}</p>
                       <p
-                        className={`text-sm font-black font-mono mt-1 ${accent ? `text-${accent}-400` : "text-white"}`}
+                        className={`text-sm font-black font-mono mt-1 ${accent ? `text-${accent}-400` : "text-foreground"}`}
                       >
                         {value}
                       </p>
@@ -131,9 +131,9 @@ export default function Feasibility() {
         </TabsContent>
 
         <TabsContent value="sensitivity" className="space-y-4">
-          <Card className="bg-[#0b101c]/90 border-slate-900">
+          <Card className="bg-card border-border">
             <CardHeader>
-              <CardTitle className="text-xs font-bold text-slate-400 uppercase">
+              <CardTitle className="text-xs font-bold text-muted-foreground uppercase">
                 {t("feasibility.sensitivity.title")}
               </CardTitle>
             </CardHeader>
@@ -143,7 +143,7 @@ export default function Feasibility() {
                   <Button
                     key={s}
                     variant={f.sensitivityScenario === s ? "default" : "outline"}
-                    className={`text-xs h-8 font-bold ${f.sensitivityScenario === s ? "bg-emerald-500 text-slate-950" : "border-slate-900 text-slate-400"}`}
+                    className={`text-xs h-8 font-bold ${f.sensitivityScenario === s ? "bg-emerald-500 text-slate-950" : "border-border text-muted-foreground"}`}
                     onClick={() => f.handleSensitivityScenarioChange(s)}
                   >
                     {s === "optimis"
@@ -176,12 +176,14 @@ export default function Feasibility() {
                       accent: TIER_COLORS[f.sensitivityPresetResults.tier],
                     },
                   ].map(({ label, value, accent }) => (
-                    <div key={label} className="p-3 rounded-xl border border-slate-900 bg-[#0a0f1a]">
+                    <div key={label} className="p-3 rounded-xl border border-border bg-card">
                       <div className="flex items-center gap-1 mb-1">
-                        <Info className="h-2.5 w-2.5 text-slate-600" />
-                        <p className="text-xxxs font-mono text-slate-500">{label}</p>
+                        <Info className="h-2.5 w-2.5 text-muted-foreground" />
+                        <p className="text-xxxs font-mono text-muted-foreground">{label}</p>
                       </div>
-                      <p className={`text-sm font-black font-mono ${accent ? `text-${accent}-400` : "text-white"}`}>
+                      <p
+                        className={`text-sm font-black font-mono ${accent ? `text-${accent}-400` : "text-foreground"}`}
+                      >
                         {value}
                       </p>
                     </div>

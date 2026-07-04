@@ -16,10 +16,12 @@ export default function Sync() {
 
   return (
     <div className="space-y-6">
-      <Card className="bg-[#0b101c]/90 border-slate-900">
+      <Card className="bg-card border-border">
         <CardHeader>
-          <CardTitle className="text-xs font-bold text-slate-400 uppercase tracking-wider">{t("sync.title")}</CardTitle>
-          <CardDescription className="text-xxs text-slate-500">{t("sync.description")}</CardDescription>
+          <CardTitle className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+            {t("sync.title")}
+          </CardTitle>
+          <CardDescription className="text-xxs text-muted-foreground">{t("sync.description")}</CardDescription>
         </CardHeader>
         <CardContent>
           <Button
@@ -37,29 +39,37 @@ export default function Sync() {
         </CardContent>
       </Card>
 
-      <Card className="bg-[#0b101c]/90 border-slate-900">
+      <Card className="bg-card border-border">
         <CardHeader>
-          <CardTitle className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+          <CardTitle className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
             {t("sync.historyTitle")}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
-              <TableRow className="border-slate-900 hover:bg-transparent">
-                <TableHead className="text-xxs font-mono text-slate-500">{t("sync.tableHeaders.id")}</TableHead>
-                <TableHead className="text-xxs font-mono text-slate-500">{t("sync.tableHeaders.direction")}</TableHead>
-                <TableHead className="text-xxs font-mono text-slate-500">{t("sync.tableHeaders.startedAt")}</TableHead>
-                <TableHead className="text-xxs font-mono text-slate-500">{t("sync.tableHeaders.status")}</TableHead>
-                <TableHead className="text-xxs font-mono text-slate-500">{t("sync.tableHeaders.entries")}</TableHead>
+              <TableRow className="border-border hover:bg-transparent">
+                <TableHead className="text-xxs font-mono text-muted-foreground">{t("sync.tableHeaders.id")}</TableHead>
+                <TableHead className="text-xxs font-mono text-muted-foreground">
+                  {t("sync.tableHeaders.direction")}
+                </TableHead>
+                <TableHead className="text-xxs font-mono text-muted-foreground">
+                  {t("sync.tableHeaders.startedAt")}
+                </TableHead>
+                <TableHead className="text-xxs font-mono text-muted-foreground">
+                  {t("sync.tableHeaders.status")}
+                </TableHead>
+                <TableHead className="text-xxs font-mono text-muted-foreground">
+                  {t("sync.tableHeaders.entries")}
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {s.syncHistoryList.map((hist) => (
-                <TableRow key={hist.id} className="border-slate-900 hover:bg-[#0e1326]">
-                  <TableCell className="text-xxs font-mono text-slate-400">{hist.id}</TableCell>
-                  <TableCell className="text-xxs font-mono text-slate-300 uppercase">{hist.direction}</TableCell>
-                  <TableCell className="text-xxs font-mono text-slate-400">{hist.started_at}</TableCell>
+                <TableRow key={hist.id} className="border-border hover:bg-sidebar-ring">
+                  <TableCell className="text-xxs font-mono text-muted-foreground">{hist.id}</TableCell>
+                  <TableCell className="text-xxs font-mono text-foreground uppercase">{hist.direction}</TableCell>
+                  <TableCell className="text-xxs font-mono text-muted-foreground">{hist.started_at}</TableCell>
                   <TableCell>
                     <span
                       className={`font-mono text-xs font-bold ${hist.status === "success" ? "text-emerald-400" : "text-rose-400"}`}
@@ -73,8 +83,8 @@ export default function Sync() {
                 </TableRow>
               ))}
               {s.syncHistoryList.length === 0 && (
-                <TableRow className="border-slate-900">
-                  <TableCell colSpan={5} className="text-center py-8 text-slate-500 text-xs font-mono">
+                <TableRow className="border-border">
+                  <TableCell colSpan={5} className="text-center py-8 text-muted-foreground text-xs font-mono">
                     {t("sync.empty")}
                   </TableCell>
                 </TableRow>

@@ -4,6 +4,16 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>PAKDE</title>
+    <script>
+      (function () {
+        try {
+          var theme = localStorage.getItem("pakde-theme");
+          if (theme === "light") {
+            document.documentElement.classList.add("light");
+          }
+        } catch (_) {}
+      })();
+    </script>
   </head>
 
   <body>

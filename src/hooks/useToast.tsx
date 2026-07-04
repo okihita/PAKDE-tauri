@@ -85,16 +85,16 @@ export function ToastProvider({ children }: { children: ReactNode }) {
 
       {/* Confirm dialog */}
       <Dialog open={confirmOpen} onOpenChange={(open) => !open && handleConfirm(false)}>
-        <DialogContent className="bg-[#0b101c] border border-slate-900 text-white max-w-sm">
+        <DialogContent className="bg-card border border-border text-foreground max-w-sm">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-sm font-bold text-slate-200">
               <AlertTriangle className="h-4 w-4 text-amber-400" />
               {t("common.confirm")}
             </DialogTitle>
           </DialogHeader>
-          <p className="text-xs text-slate-400 font-mono py-2">{confirmMessage}</p>
+          <p className="text-xs text-muted-foreground font-mono py-2">{confirmMessage}</p>
           <DialogFooter className="gap-2">
-            <Button variant="outline" onClick={() => handleConfirm(false)} className="text-xs border-slate-900">
+            <Button variant="outline" onClick={() => handleConfirm(false)} className="text-xs border-border">
               {t("common.cancel")}
             </Button>
             <Button

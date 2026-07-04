@@ -50,26 +50,26 @@ export default function Statistics({ coopProfile, ewsAlerts, currentUser }: Prop
         {/* ── COLUMN 1 ──────────────────────────────────────────── */}
 
         <div className="space-y-6">
-          <Card className="bg-[#0b101c]/90 border-slate-900 text-slate-300">
+          <Card className="bg-card border-border text-foreground">
             <CardHeader>
-              <CardTitle className="text-xs font-mono tracking-widest text-slate-400 uppercase">
+              <CardTitle className="text-xs font-mono tracking-widest text-muted-foreground uppercase">
                 {t("dashboard.welcome")}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               {currentUser && (
                 <div>
-                  <p className="text-sm font-bold text-white">{currentUser.name}</p>
-                  <p className="text-xxs text-slate-500">{currentUser.role}</p>
+                  <p className="text-sm font-bold text-foreground">{currentUser.name}</p>
+                  <p className="text-xxs text-muted-foreground">{currentUser.role}</p>
                 </div>
               )}
               {coopProfile && (
-                <div className="space-y-1 pt-2 border-t border-slate-900">
+                <div className="space-y-1 pt-2 border-t border-border">
                   <p className="text-sm font-semibold text-emerald-400">{coopProfile.name}</p>
-                  <p className="text-xxs font-mono text-slate-500">
+                  <p className="text-xxs font-mono text-muted-foreground">
                     {t("dashboard.legalId")}: {coopProfile.legal_id}
                   </p>
-                  <p className="text-xxs font-mono text-slate-500">
+                  <p className="text-xxs font-mono text-muted-foreground">
                     {coopProfile.regency}, {coopProfile.province}
                   </p>
                 </div>
@@ -77,9 +77,9 @@ export default function Statistics({ coopProfile, ewsAlerts, currentUser }: Prop
             </CardContent>
           </Card>
 
-          <Card className="bg-[#0b101c]/90 border-slate-900 text-slate-300">
+          <Card className="bg-card border-border text-foreground">
             <CardHeader className="pb-2">
-              <CardTitle className="text-xs font-mono tracking-widest text-slate-400 uppercase flex items-center gap-2">
+              <CardTitle className="text-xs font-mono tracking-widest text-muted-foreground uppercase flex items-center gap-2">
                 <AlertTriangle className="h-3 w-3 text-amber-400" />
                 {t("dashboard.ewAlerts")}
               </CardTitle>
@@ -87,21 +87,25 @@ export default function Statistics({ coopProfile, ewsAlerts, currentUser }: Prop
             <CardContent className="p-0">
               <Table>
                 <TableHeader>
-                  <TableRow className="border-slate-900 hover:bg-transparent">
-                    <TableHead className="text-xxs font-mono text-slate-500 py-2 pl-4">
+                  <TableRow className="border-border hover:bg-transparent">
+                    <TableHead className="text-xxs font-mono text-muted-foreground py-2 pl-4">
                       {t("dashboard.level")}
                     </TableHead>
-                    <TableHead className="text-xxs font-mono text-slate-500 py-2">{t("dashboard.indicator")}</TableHead>
-                    <TableHead className="text-xxs font-mono text-slate-500 py-2">{t("dashboard.message")}</TableHead>
-                    <TableHead className="text-xxs font-mono text-slate-500 py-2 pr-4 text-right">
+                    <TableHead className="text-xxs font-mono text-muted-foreground py-2">
+                      {t("dashboard.indicator")}
+                    </TableHead>
+                    <TableHead className="text-xxs font-mono text-muted-foreground py-2">
+                      {t("dashboard.message")}
+                    </TableHead>
+                    <TableHead className="text-xxs font-mono text-muted-foreground py-2 pr-4 text-right">
                       {t("dashboard.time")}
                     </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {activeAlerts.length === 0 && (
-                    <TableRow className="border-slate-900 hover:bg-transparent">
-                      <TableCell colSpan={4} className="text-xxs text-slate-600 py-4 text-center">
+                    <TableRow className="border-border hover:bg-transparent">
+                      <TableCell colSpan={4} className="text-xxs text-muted-foreground py-4 text-center">
                         {t("dashboard.noAlerts")}
                       </TableCell>
                     </TableRow>
@@ -109,7 +113,7 @@ export default function Statistics({ coopProfile, ewsAlerts, currentUser }: Prop
                   {activeAlerts.map((a) => {
                     const Icon = LEVEL_ICON[a.level] ?? Info;
                     return (
-                      <TableRow key={a.id} className="border-slate-900 hover:bg-[#0e1326]">
+                      <TableRow key={a.id} className="border-border hover:bg-sidebar-ring">
                         <TableCell className="py-2 pl-4">
                           <span
                             className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xxxs font-mono font-semibold ${LEVEL_STYLE[a.level]}`}
@@ -118,9 +122,9 @@ export default function Statistics({ coopProfile, ewsAlerts, currentUser }: Prop
                             {a.level.toUpperCase()}
                           </span>
                         </TableCell>
-                        <TableCell className="text-xxs font-mono text-slate-300 py-2">{a.indicator}</TableCell>
-                        <TableCell className="text-xxs font-mono text-slate-400 py-2">{a.message}</TableCell>
-                        <TableCell className="text-xxs font-mono text-slate-500 py-2 pr-4 text-right">
+                        <TableCell className="text-xxs font-mono text-foreground py-2">{a.indicator}</TableCell>
+                        <TableCell className="text-xxs font-mono text-muted-foreground py-2">{a.message}</TableCell>
+                        <TableCell className="text-xxs font-mono text-muted-foreground py-2 pr-4 text-right">
                           {a.triggered_at}
                         </TableCell>
                       </TableRow>
@@ -137,7 +141,7 @@ export default function Statistics({ coopProfile, ewsAlerts, currentUser }: Prop
         <div className="space-y-6">
           <div className="grid grid-cols-2 gap-4">
             {[
-              { label: t("dashboard.totalMembers"), value: "328", accent: "text-white" },
+              { label: t("dashboard.totalMembers"), value: "328", accent: "text-foreground" },
               { label: t("dashboard.totalAssets"), value: "Rp 1,275M", accent: "text-emerald-400" },
               { label: t("dashboard.shuAnnual"), value: "Rp 178M", accent: "text-emerald-400" },
               {
@@ -146,18 +150,18 @@ export default function Statistics({ coopProfile, ewsAlerts, currentUser }: Prop
                 accent: ragScore >= 70 ? "text-emerald-400" : "text-amber-400",
               },
             ].map(({ label, value, accent }) => (
-              <Card key={label} className="bg-[#0b101c]/90 border-slate-900 text-slate-300">
+              <Card key={label} className="bg-card border-border text-foreground">
                 <CardContent className="p-4">
-                  <p className="text-xxs font-mono text-slate-500 mb-1">{label}</p>
+                  <p className="text-xxs font-mono text-muted-foreground mb-1">{label}</p>
                   <p className={`text-lg font-black font-mono ${accent}`}>{value}</p>
                 </CardContent>
               </Card>
             ))}
           </div>
 
-          <Card className="bg-[#0b101c]/90 border-slate-900 text-slate-300">
+          <Card className="bg-card border-border text-foreground">
             <CardHeader className="pb-2">
-              <CardTitle className="text-xs font-mono tracking-widest text-slate-400 uppercase">
+              <CardTitle className="text-xs font-mono tracking-widest text-muted-foreground uppercase">
                 {t("dashboard.incomeExpense")}
               </CardTitle>
             </CardHeader>
@@ -168,8 +172,8 @@ export default function Statistics({ coopProfile, ewsAlerts, currentUser }: Prop
                   <div className="space-y-1.5">
                     {pendItems.map((d) => (
                       <div key={d.label} className="flex items-center gap-2">
-                        <span className="text-xxxs font-mono text-slate-500 w-20 text-right">{d.label}</span>
-                        <div className="flex-1 h-3 bg-slate-900 rounded-sm overflow-hidden">
+                        <span className="text-xxxs font-mono text-muted-foreground w-20 text-right">{d.label}</span>
+                        <div className="flex-1 h-3 bg-muted rounded-sm overflow-hidden">
                           <div
                             className="h-full bg-emerald-500/70 rounded-sm"
                             style={{ width: `${(d.value / maxBar) * 100}%` }}
@@ -185,8 +189,8 @@ export default function Statistics({ coopProfile, ewsAlerts, currentUser }: Prop
                   <div className="space-y-1.5">
                     {bebanItems.map((d) => (
                       <div key={d.label} className="flex items-center gap-2">
-                        <span className="text-xxxs font-mono text-slate-500 w-20 text-right">{d.label}</span>
-                        <div className="flex-1 h-3 bg-slate-900 rounded-sm overflow-hidden">
+                        <span className="text-xxxs font-mono text-muted-foreground w-20 text-right">{d.label}</span>
+                        <div className="flex-1 h-3 bg-muted rounded-sm overflow-hidden">
                           <div
                             className="h-full bg-rose-500/70 rounded-sm"
                             style={{ width: `${(d.value / maxBar) * 100}%` }}

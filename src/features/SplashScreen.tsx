@@ -4,7 +4,7 @@ export default function SplashScreen() {
   const { t } = useTranslation();
 
   return (
-    <div className="flex h-screen flex-col items-center justify-center bg-[#070b14] text-white text-center">
+    <div className="flex h-screen flex-col items-center justify-center bg-background text-foreground text-center">
       <div className="flex flex-col items-center gap-5">
         <div className="relative">
           <div className="absolute inset-0 bg-emerald-500/20 blur-xl rounded-full" />
@@ -14,13 +14,13 @@ export default function SplashScreen() {
         </div>
         <div className="space-y-1">
           <h2 className="text-lg font-semibold tracking-wider text-slate-200">{t("splash.title")}</h2>
-          <p className="text-slate-500 text-xs font-mono">{t("splash.subtitle")}</p>
+          <p className="text-muted-foreground text-xs font-mono">{t("splash.subtitle")}</p>
         </div>
-        <div className="w-40 bg-slate-900 h-1 rounded-full overflow-hidden border border-slate-800/40">
+        <div className="w-40 bg-muted h-1 rounded-full overflow-hidden border border-muted/40">
           <div className="bg-emerald-500 h-full w-2/3 animate-[pulse_1.5s_infinite] rounded-full" />
         </div>
       </div>
-      <p className="absolute bottom-8 text-slate-600 font-mono text-xxs">{t("splash.version")}</p>
+      <p className="absolute bottom-8 text-muted-foreground font-mono text-xxs">{t("splash.version")}</p>
     </div>
   );
 }
