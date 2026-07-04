@@ -143,7 +143,7 @@ function AppContent() {
   if (appState === "db_error") return <DbErrorScreen message={dbErrorMessage} />;
 
   return (
-    <div className="app-container flex min-h-screen text-foreground bg-background antialiased">
+    <div className="app-container flex min-h-screen text-foreground antialiased">
       <Sidebar
         activeTab={activeTab}
         onTabChange={setActiveTab}
@@ -190,6 +190,10 @@ function AppContent() {
 export default function App() {
   return (
     <ToastProvider>
+      <div
+        className="fixed inset-0 -z-10 bg-cover bg-center bg-no-repeat bg-fixed opacity-3 pointer-events-none"
+        style={{ backgroundImage: 'url("/background.jpg")' }}
+      />
       <AppContent />
     </ToastProvider>
   );
