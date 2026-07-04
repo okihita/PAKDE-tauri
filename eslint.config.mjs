@@ -3,6 +3,7 @@ import tseslint from "typescript-eslint";
 import reactHooks from "eslint-plugin-react-hooks";
 import reactRefresh from "eslint-plugin-react-refresh";
 import prettierConfig from "eslint-config-prettier";
+import localRules from "./eslint-local-rules.mjs";
 
 export default tseslint.config(
   // ── Ignore patterns ─────────────────────────────────────────────
@@ -35,7 +36,12 @@ export default tseslint.config(
   // ── Custom project rules ────────────────────────────────────────
   {
     files: ["src/**/*.{ts,tsx}"],
+    plugins: {
+      local: { rules: localRules },
+    },
     rules: {
+      // File size
+      "local/max-lines-per-file": ["error", { max: 500 }],
       // TypeScript strictness
       "@typescript-eslint/no-explicit-any": "warn",
       "@typescript-eslint/consistent-type-imports": [

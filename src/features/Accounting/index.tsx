@@ -1,0 +1,105 @@
+import { useEffect } from "react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useAccounting } from "@/hooks/useAccounting";
+import AccountingCoa from "./AccountingCoa";
+import AccountingJournal from "./AccountingJournal";
+import AccountingLedger from "./AccountingLedger";
+import AccountingReports from "./AccountingReports";
+
+export default function Accounting() {
+  const a = useAccounting();
+
+  useEffect(() => {
+    a.loadAccountsData();
+    a.loadJournalData();
+    a.loadLedgerData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  return (
+    <div className="space-y-4">
+      <Tabs
+        value={a.accountingTab}
+        onValueChange={(val) => a.setAccountingTab(val as typeof a.accountingTab)}
+        className="w-full"
+      >
+        <TabsList className="bg-[#090e1a] border border-slate-900 text-slate-400 mb-6 p-0.5 rounded-lg flex w-fit print:hidden">
+          <TabsTrigger
+            value="coa"
+            className="text-[10px] data-[state=active]:bg-emerald-500/10 data-[state=active]:text-emerald-400"
+          >
+            COA
+          </TabsTrigger>
+          <TabsTrigger
+            value="journal"
+            className="text-[10px] data-[state=active]:bg-emerald-500/10 data-[state=active]:text-emerald-400"
+          >
+            Jurnal
+          </TabsTrigger>
+          <TabsTrigger
+            value="ledger"
+            className="text-[10px] data-[state=active]:bg-emerald-500/10 data-[state=active]:text-emerald-400"
+          >
+            Buku Besar
+          </TabsTrigger>
+          <TabsTrigger
+            value="neraca"
+            className="text-[10px] data-[state=active]:bg-emerald-500/10 data-[state=active]:text-emerald-400"
+          >
+            Neraca
+          </TabsTrigger>
+          <TabsTrigger
+            value="labarugi"
+            className="text-[10px] data-[state=active]:bg-emerald-500/10 data-[state=active]:text-emerald-400"
+          >
+            Laba Rugi
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="coa">
+          <AccountingCoa
+            coaAccounts={a.coaAccounts}
+            showModal={a.showCoaModal}
+            setShowModal={a.setShowCoaModal}
+            newValues={a.newCoaValues}
+            setNewValues={a.setNewCoaValues}
+            onSubmit={a.handleCreateCoaSubmit}
+          />
+        </TabsContent>
+
+        <TabsContent value="journal">
+          <AccountingJournal
+            journalEntries={a.journalEntries}
+            showModal={a.showJournalModal}
+            setShowModal={a.setShowJournalModal}
+            journalForm={a.journalForm}
+            setJournalForm={a.setJournalForm}
+            onLineChange={a.handleJournalLineChange}
+            onAddLine={a.addJournalLineRow}
+            onRemoveLine={a.removeJournalLineRow}
+            onSubmit={a.handleJournalEntrySubmit}
+          />
+        </TabsContent>
+
+        <TabsContent value="ledger">
+          <AccountingLedger
+            coaAccounts={a.coaAccounts}
+            selectedCode={a.ledgerSelectedCode}
+            setSelectedCode={a.setLedgerSelectedCode}
+            entries={a.ledgerEntries}
+            balanceStart={a.ledgerBalanceStart}
+            balanceEnd={a.ledgerBalanceEnd}
+          />
+        </TabsContent>
+
+        <TabsContent value="neraca">
+          <AccountingReports coaAccounts={a.coaAccounts} />
+        </TabsContent>
+
+        <TabsContent value="labarugi">
+          <AccountingReports coaAccounts={a.coaAccounts} />
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+}

@@ -1,0 +1,179 @@
+import { Info } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useFeasibility } from "@/hooks/useFeasibility";
+
+const TIER_COLORS: Record<number, string> = { 1: "emerald", 2: "amber", 3: "rose" };
+
+export default function Feasibility() {
+  const f = useFeasibility();
+
+  return (
+    <div className="space-y-4">
+      <Tabs
+        value={f.feasibilityActiveTab}
+        onValueChange={(val) => f.setFeasibilityActiveTab(val as typeof f.feasibilityActiveTab)}
+      >
+        <TabsList className="bg-[#090e1a] border border-slate-900 text-slate-400 mb-6 p-0.5 rounded-lg flex w-fit">
+          <TabsTrigger
+            value="calculator"
+            className="text-[10px] data-[state=active]:bg-emerald-500/10 data-[state=active]:text-emerald-400"
+          >
+            Kalkulator Kelayakan
+          </TabsTrigger>
+          <TabsTrigger
+            value="sensitivity"
+            className="text-[10px] data-[state=active]:bg-emerald-500/10 data-[state=active]:text-emerald-400"
+          >
+            Analisis Sensitivitas
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="calculator" className="space-y-4">
+          <Card className="bg-[#0b101c]/90 border-slate-900">
+            <CardHeader>
+              <CardTitle className="text-xs font-bold text-slate-400 uppercase">Parameter Proyeksi Investasi</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-xs mb-4">
+                {[
+                  { label: "Investasi Awal (Rp)", key: "initialInvestment" as const },
+                  { label: "Tahun Proyeksi", key: "projectionYears" as const },
+                  { label: "Arus Kas (koma)", key: "cashFlows" as const },
+                  { label: "Discount Rate (%)", key: "discountRate" as const },
+                  { label: "Opportunity Cost (%)", key: "opportunityCost" as const },
+                ].map(({ label, key }) => (
+                  <div key={key} className="space-y-1">
+                    <label className="text-slate-500 font-mono text-[9px] uppercase">{label}</label>
+                    <Input
+                      type={key === "cashFlows" ? "text" : "number"}
+                      value={f.feasibilityParams[key]}
+                      onChange={(e) =>
+                        f.setFeasibilityParams({
+                          ...f.feasibilityParams,
+                          [key]: key === "cashFlows" ? e.target.value : Number(e.target.value),
+                        })
+                      }
+                      className="bg-slate-950 border-slate-900 text-xs h-8"
+                    />
+                  </div>
+                ))}
+              </div>
+              <Button
+                onClick={f.calculateFeasibility}
+                className="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold text-xs h-9"
+              >
+                Hitung Kelayakan
+              </Button>
+            </CardContent>
+          </Card>
+
+          {f.feasibilityResults && (
+            <Card className="bg-[#0b101c]/90 border-slate-900">
+              <CardHeader>
+                <CardTitle className="text-xs font-bold text-slate-400 uppercase">Hasil Analisis Kelayakan</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                  {[
+                    {
+                      label: "ENPV",
+                      value: `Rp ${f.feasibilityResults.enpv.toLocaleString()}`,
+                      pass: f.feasibilityResults.isNPVPass,
+                    },
+                    {
+                      label: "EIRR",
+                      value: `${f.feasibilityResults.eirr.toFixed(2)}%`,
+                      pass: f.feasibilityResults.isIRRPass,
+                    },
+                    {
+                      label: "EBCR",
+                      value: f.feasibilityResults.ebcr.toFixed(4),
+                      pass: f.feasibilityResults.isBCRPass,
+                    },
+                    {
+                      label: "Tier",
+                      value: f.feasibilityResults.tierLabel ?? "",
+                      accent: TIER_COLORS[f.feasibilityResults.tier],
+                    },
+                  ].map(({ label, value, pass, accent }) => (
+                    <div
+                      key={label}
+                      className={`p-3 rounded-xl border ${pass === false ? "border-rose-500/20 bg-rose-500/5" : pass === true ? "border-emerald-500/20 bg-emerald-500/5" : "border-slate-900 bg-[#0a0f1a]"}`}
+                    >
+                      <p className="text-[9px] font-mono text-slate-500">{label}</p>
+                      <p
+                        className={`text-sm font-black font-mono mt-1 ${accent ? `text-${accent}-400` : "text-white"}`}
+                      >
+                        {value}
+                      </p>
+                      {pass !== undefined && (
+                        <span
+                          className={`text-[8px] font-mono font-bold ${pass ? "text-emerald-400" : "text-rose-400"}`}
+                        >
+                          {pass ? "PASS" : "FAIL"}
+                        </span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
+
+        <TabsContent value="sensitivity" className="space-y-4">
+          <Card className="bg-[#0b101c]/90 border-slate-900">
+            <CardHeader>
+              <CardTitle className="text-xs font-bold text-slate-400 uppercase">Skenario Sensitivitas</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex gap-3 mb-4">
+                {(["optimis", "moderat", "pesimis"] as const).map((s) => (
+                  <Button
+                    key={s}
+                    variant={f.sensitivityScenario === s ? "default" : "outline"}
+                    className={`text-xs h-8 font-bold ${f.sensitivityScenario === s ? "bg-emerald-500 text-slate-950" : "border-slate-900 text-slate-400"}`}
+                    onClick={() => f.handleSensitivityScenarioChange(s)}
+                  >
+                    {s === "optimis" ? "Optimis" : s === "moderat" ? "Moderat" : "Pesimis"}
+                  </Button>
+                ))}
+              </div>
+              {f.sensitivityPresetResults && (
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {[
+                    {
+                      label: "Kapital Skenario",
+                      value: `Rp ${Math.round(f.sensitivityPresetResults?.investment ?? 0).toLocaleString()}`,
+                    },
+                    { label: "ENPV", value: `Rp ${f.sensitivityPresetResults.enpv.toLocaleString()}` },
+                    { label: "EIRR", value: `${f.sensitivityPresetResults.eirr.toFixed(2)}%` },
+                    { label: "EBCR", value: f.sensitivityPresetResults.ebcr.toFixed(4) },
+                    {
+                      label: "Tier",
+                      value: f.sensitivityPresetResults.tierLabel ?? "",
+                      accent: TIER_COLORS[f.sensitivityPresetResults.tier],
+                    },
+                  ].map(({ label, value, accent }) => (
+                    <div key={label} className="p-3 rounded-xl border border-slate-900 bg-[#0a0f1a]">
+                      <div className="flex items-center gap-1 mb-1">
+                        <Info className="h-2.5 w-2.5 text-slate-600" />
+                        <p className="text-[9px] font-mono text-slate-500">{label}</p>
+                      </div>
+                      <p className={`text-sm font-black font-mono ${accent ? `text-${accent}-400` : "text-white"}`}>
+                        {value}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+}
