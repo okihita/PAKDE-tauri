@@ -48,6 +48,7 @@
     "nav": {
       "home": "Beranda",
       "statistics": "Rangkuman",
+      "peringkat": "Peringkat",
       "leveling": "Leveling",
       "members": "Database Anggota",
       "accounting": "Akuntansi SAK EP",
@@ -377,6 +378,22 @@
   "leveling": {
     "level": "Level {{n}}",
     "active": "AKTIF"
+  },
+  "ranking": {
+    "title": "Peringkat Koperasi",
+    "scope": {
+      "kabupaten": "Kabupaten/Kota",
+      "provinsi": "Provinsi",
+      "nasional": "Nasional"
+    },
+    "table": {
+      "coop": "Koperasi",
+      "score": "Skor",
+      "rag": "RAG"
+    },
+    "summary": {
+      "from": "dari {{total}} koperasi"
+    }
   },
   "toast": {
     "profileSaveSuccess": "Profil Koperasi berhasil disimpan!",

@@ -49,6 +49,7 @@
       "home": "Home",
       "leveling": "Leveling",
       "statistics": "Summary",
+      "peringkat": "Ranking",
       "members": "Member Database",
       "accounting": "SAK EP Accounting",
       "feasibility": "Financial Feasibility",
@@ -377,6 +378,22 @@
   "leveling": {
     "level": "Level {{n}}",
     "active": "ACTIVE"
+  },
+  "ranking": {
+    "title": "Cooperative Ranking",
+    "scope": {
+      "kabupaten": "District",
+      "provinsi": "Province",
+      "nasional": "National"
+    },
+    "table": {
+      "coop": "Cooperative",
+      "score": "Score",
+      "rag": "RAG"
+    },
+    "summary": {
+      "from": "of {{total}} cooperatives"
+    }
   },
   "toast": {
     "profileSaveSuccess": "Cooperative profile saved successfully!",

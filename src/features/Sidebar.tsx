@@ -15,6 +15,7 @@ import {
   Sun,
   Moon,
   Shield,
+  Medal,
 } from "lucide-react";
 import { getCurrentLevel } from "@/data/leveling";
 import type { CooperativeProfile, EwsAlert } from "@/types";
@@ -22,7 +23,8 @@ import type { CooperativeProfile, EwsAlert } from "@/types";
 interface SidebarProps {
   activeTab: string;
   onTabChange: (
-    tab: "home" | "statistics" | "leveling" | "members" | "accounting" | "feasibility" | "sync" | "settings",
+    tab:
+      "home" | "statistics" | "peringkat" | "leveling" | "members" | "accounting" | "feasibility" | "sync" | "settings",
   ) => void;
   coopProfile: CooperativeProfile | null;
   ewsAlerts: EwsAlert[];
@@ -50,6 +52,7 @@ export default function Sidebar({
   const NAV_ITEMS = [
     { id: "home" as const, icon: LayoutDashboard, label: t("sidebar.nav.home") },
     { id: "statistics" as const, icon: BarChart3, label: t("sidebar.nav.statistics") },
+    { id: "peringkat" as const, icon: Medal, label: t("sidebar.nav.peringkat") },
     { id: "leveling" as const, icon: Trophy, label: t("sidebar.nav.leveling") },
     { id: "members" as const, icon: Users, label: t("sidebar.nav.members") },
     { id: "accounting" as const, icon: Receipt, label: t("sidebar.nav.accounting") },

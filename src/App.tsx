@@ -11,6 +11,7 @@ import Leveling from "@/features/Leveling";
 import Members from "@/features/Members";
 import Accounting from "@/features/Accounting";
 import Feasibility from "@/features/Feasibility";
+import Ranking from "@/features/Ranking";
 import Sync from "@/features/Sync";
 import Settings from "@/features/Settings";
 import { getErrorMessage, type CooperativeProfile, type EwsAlert, type CountRow } from "@/types";
@@ -29,7 +30,7 @@ function AppContent() {
   });
 
   const [activeTab, setActiveTab] = useState<
-    "home" | "statistics" | "leveling" | "members" | "accounting" | "feasibility" | "sync" | "settings"
+    "home" | "statistics" | "peringkat" | "leveling" | "members" | "accounting" | "feasibility" | "sync" | "settings"
   >("home");
   const [appTheme, setAppTheme] = useState<"dark" | "light">(() => {
     return (localStorage.getItem("pakde-theme") as "dark" | "light") || "dark";
@@ -139,6 +140,7 @@ function AppContent() {
         {activeTab === "statistics" && (
           <Statistics coopProfile={coopProfile} ewsAlerts={ewsAlerts} currentUser={currentUser} />
         )}
+        {activeTab === "peringkat" && <Ranking coopProfile={coopProfile} />}
         {activeTab === "leveling" && <Leveling healthScore={coopProfile?.health_score ?? 0} />}
         {activeTab === "members" && <Members />}
         {activeTab === "accounting" && <Accounting />}
