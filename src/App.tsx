@@ -12,6 +12,7 @@ import Members from "@/features/Members";
 import Accounting from "@/features/Accounting";
 import Feasibility from "@/features/Feasibility";
 import Ranking from "@/features/Ranking";
+import CreateEvent from "@/features/CreateEvent";
 import Sync from "@/features/Sync";
 import Settings from "@/features/Settings";
 import { getErrorMessage, type CooperativeProfile, type EwsAlert, type CountRow } from "@/types";
@@ -30,7 +31,16 @@ function AppContent() {
   });
 
   const [activeTab, setActiveTab] = useState<
-    "home" | "statistics" | "peringkat" | "leveling" | "members" | "accounting" | "feasibility" | "sync" | "settings"
+    | "home"
+    | "statistics"
+    | "peringkat"
+    | "leveling"
+    | "members"
+    | "event"
+    | "accounting"
+    | "feasibility"
+    | "sync"
+    | "settings"
   >("home");
   const [appTheme, setAppTheme] = useState<"dark" | "light">(() => {
     return (localStorage.getItem("pakde-theme") as "dark" | "light") || "dark";
@@ -143,6 +153,7 @@ function AppContent() {
         {activeTab === "peringkat" && <Ranking coopProfile={coopProfile} />}
         {activeTab === "leveling" && <Leveling healthScore={coopProfile?.health_score ?? 0} />}
         {activeTab === "members" && <Members />}
+        {activeTab === "event" && <CreateEvent />}
         {activeTab === "accounting" && <Accounting />}
         {activeTab === "feasibility" && <Feasibility />}
         {activeTab === "sync" && <Sync />}

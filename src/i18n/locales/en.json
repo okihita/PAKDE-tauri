@@ -45,12 +45,20 @@
   },
   "sidebar": {
     "connected": "Connected to local.db",
+    "groups": {
+      "dashboard": "Dashboard",
+      "analitik": "Analytics",
+      "komunitas": "Community",
+      "keuangan": "Finance",
+      "sistem": "System"
+    },
     "nav": {
       "home": "Home",
       "leveling": "Leveling",
       "statistics": "Summary",
       "peringkat": "Ranking",
       "members": "Member Database",
+      "event": "Create Event",
       "accounting": "SAK EP Accounting",
       "feasibility": "Financial Feasibility",
       "sync": "Data Synchronization",
@@ -398,6 +406,20 @@
     },
     "summary": {
       "from": "of {{total}} cooperatives"
+    }
+  },
+  "event": {
+    "form": {
+      "name": "Event Name",
+      "namePlaceholder": "e.g., Annual Member Meeting",
+      "date": "Date",
+      "time": "Time",
+      "location": "Location",
+      "locationPlaceholder": "e.g., Village Hall",
+      "description": "Description",
+      "descriptionPlaceholder": "Event description...",
+      "note": "Event will appear on the Calendar after saving",
+      "save": "Save Event"
     }
   },
   "toast": {

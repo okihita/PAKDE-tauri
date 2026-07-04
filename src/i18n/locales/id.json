@@ -45,12 +45,20 @@
   },
   "sidebar": {
     "connected": "Connected to local.db",
+    "groups": {
+      "dashboard": "Dashboard",
+      "analitik": "Analitik",
+      "komunitas": "Komunitas",
+      "keuangan": "Keuangan",
+      "sistem": "Sistem"
+    },
     "nav": {
       "home": "Beranda",
       "statistics": "Rangkuman",
       "peringkat": "Peringkat",
       "leveling": "Leveling",
       "members": "Database Anggota",
+      "event": "Buat Acara",
       "accounting": "Akuntansi SAK EP",
       "feasibility": "Kelayakan Finansial",
       "sync": "Sinkronisasi Data",
@@ -398,6 +406,20 @@
     },
     "summary": {
       "from": "dari {{total}} koperasi"
+    }
+  },
+  "event": {
+    "form": {
+      "name": "Nama Acara",
+      "namePlaceholder": "Contoh: Rapat Anggota Tahunan",
+      "date": "Tanggal",
+      "time": "Waktu",
+      "location": "Lokasi",
+      "locationPlaceholder": "Contoh: Balai Desa",
+      "description": "Deskripsi",
+      "descriptionPlaceholder": "Deskripsi acara...",
+      "note": "Acara akan muncul di Kalender setelah disimpan",
+      "save": "Simpan Acara"
     }
   },
   "toast": {
