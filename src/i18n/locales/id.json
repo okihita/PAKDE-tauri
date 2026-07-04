@@ -105,7 +105,16 @@
     "sat": "Sab",
     "sun": "Min",
     "today": "Hari Ini",
-    "clearDone": "Hapus {{n}} selesai"
+    "clearDone": "Hapus {{n}} selesai",
+    "news": {
+      "title": "Berita & Info Terbaru",
+      "markRead": "Tandai sudah dibaca",
+      "unread": "{{n}} belum dibaca",
+      "noNews": "Belum ada berita terbaru",
+      "sourceKementerian": "Kementerian Koperasi",
+      "sourceProvinsi": "Dinas Provinsi",
+      "sourceKabupaten": "Dinas Kabupaten"
+    }
   },
   "members": {
     "title": "Database Anggota",

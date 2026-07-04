@@ -105,7 +105,16 @@
     "sat": "Sat",
     "sun": "Sun",
     "today": "Today",
-    "clearDone": "Clear {{n}} done"
+    "clearDone": "Clear {{n}} done",
+    "news": {
+      "title": "Updates & News",
+      "markRead": "Mark as read",
+      "unread": "{{n}} unread",
+      "noNews": "No updates at this time",
+      "sourceKementerian": "Ministry of Cooperatives",
+      "sourceProvinsi": "Provincial Office",
+      "sourceKabupaten": "District Office"
+    }
   },
   "members": {
     "title": "Member Database",
