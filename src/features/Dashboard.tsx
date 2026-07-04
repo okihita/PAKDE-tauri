@@ -3,26 +3,13 @@ import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import {
-  CheckCircle2,
-  Circle,
-  Plus,
-  Bell,
-  CalendarDays,
-  ChevronLeft,
-  ChevronRight,
-  Sun,
-  Moon,
-  Sunrise,
-  Newspaper,
-} from "lucide-react";
+import { CheckCircle2, Circle, Plus, Bell, Newspaper, GripHorizontal } from "lucide-react";
 import { NEWS_ITEMS, type NewsItem } from "@/data/news";
-import type { CooperativeProfile } from "@/types";
 
-interface Props {
-  coopProfile: CooperativeProfile | null;
-  currentUser: { name: string; role: string } | null;
-}
+import { DndContext, type DragEndEvent, closestCenter, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
+import { SortableContext, useSortable, arrayMove, rectSortingStrategy } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import CalendarWidget from "./DashboardCalendar";
 
 interface Todo {
   id: string;
@@ -30,7 +17,6 @@ interface Todo {
   done: boolean;
 }
 
-const TODO_KEY = "pakde-todos";
 const NEWS_READ_KEY = "pakde-news-read";
 
 const SOURCE_BADGE: Record<NewsItem["source"], string> = {
@@ -41,62 +27,43 @@ const SOURCE_BADGE: Record<NewsItem["source"], string> = {
 
 // ── Helpers ───────────────────────────────────────────────────────
 
-function getGreetingTime(): "morning" | "afternoon" | "evening" {
-  const h = new Date().getHours();
-  if (h < 12) return "morning";
-  if (h < 17) return "afternoon";
-  return "evening";
-}
-
-const GREETING_ICON = {
-  morning: Sunrise,
-  afternoon: Sun,
-  evening: Moon,
-};
-
-const DAYS_SHORT = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"] as const;
-const MONTHS = [
-  "January",
-  "February",
-  "March",
-  "April",
-  "May",
-  "June",
-  "July",
-  "August",
-  "September",
-  "October",
-  "November",
-  "December",
+const WEEKLY_DEFAULTS: Todo[] = [
+  { id: "weekly-1", text: "Lakukan pencatatan transaksi minimal 5 kali", done: false },
+  { id: "weekly-2", text: "Tambahkan 3 anggota baru ke database", done: false },
+  { id: "weekly-3", text: "Perbarui profil koperasi di Pengaturan", done: false },
+  { id: "weekly-4", text: "Lakukan sinkronisasi data dengan kabupaten", done: false },
+  { id: "weekly-5", text: "Cek laporan keuangan di modul Akuntansi", done: false },
+  { id: "weekly-6", text: "Tinjau alert EWS dan ambil tindakan", done: false },
+  { id: "weekly-7", text: "Evaluasi kelayakan finansial koperasi", done: false },
 ];
 
-// ── Hooks ─────────────────────────────────────────────────────────
-
-function useTodos() {
-  const [todos, setTodos] = useState<Todo[]>(() => {
+function useTodoList(key: string, defaults: Todo[] = []) {
+  const [items, setItems] = useState<Todo[]>(() => {
     try {
-      const saved = localStorage.getItem(TODO_KEY);
-      return saved ? JSON.parse(saved) : [];
+      const saved = localStorage.getItem(key);
+      if (saved) return JSON.parse(saved);
+      return defaults;
     } catch {
-      return [];
+      return defaults;
     }
   });
 
   useEffect(() => {
-    localStorage.setItem(TODO_KEY, JSON.stringify(todos));
-  }, [todos]);
+    localStorage.setItem(key, JSON.stringify(items));
+  }, [items, key]);
 
-  const addTodo = (text: string) => {
-    setTodos((prev) => [...prev, { id: crypto.randomUUID(), text, done: false }]);
+  const addItem = (text: string) => {
+    setItems((prev) => [...prev, { id: crypto.randomUUID(), text, done: false }]);
   };
-  const toggleTodo = (id: string) => {
-    setTodos((prev) => prev.map((t) => (t.id === id ? { ...t, done: !t.done } : t)));
+  const toggleItem = (id: string) => {
+    setItems((prev) => prev.map((t) => (t.id === id ? { ...t, done: !t.done } : t)));
   };
   const removeDone = () => {
-    setTodos((prev) => prev.filter((t) => !t.done));
+    setItems((prev) => prev.filter((t) => !t.done));
   };
+  const doneCount = items.filter((t) => t.done).length;
 
-  return { todos, addTodo, toggleTodo, removeDone };
+  return { items, addItem, toggleItem, removeDone, doneCount };
 }
 
 function useNewsRead() {
@@ -125,189 +92,122 @@ function useNewsRead() {
   return { readIds, markRead, markAllRead };
 }
 
-// ── Sub-components ────────────────────────────────────────────────
+// ── Card order (drag-and-drop) ───────────────────────────────────
 
-function CalendarWidget({ t }: { t: (key: string) => string }) {
-  const today = new Date();
-  const [viewMonth, setViewMonth] = useState(today.getMonth());
-  const [viewYear, setViewYear] = useState(today.getFullYear());
+const CARD_ORDER_KEY = "pakde-card-order";
+const DEFAULT_CARDS = ["tugas", "reminders", "calendar", "news"];
 
-  const firstDay = new Date(viewYear, viewMonth, 1).getDay();
-  const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+function useCardOrder() {
+  const [items, setItems] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem(CARD_ORDER_KEY);
+      return saved ? JSON.parse(saved) : DEFAULT_CARDS;
+    } catch {
+      return DEFAULT_CARDS;
+    }
+  });
 
-  const prevMonth = () => {
-    if (viewMonth === 0) {
-      setViewMonth(11);
-      setViewYear((y) => y - 1);
-    } else setViewMonth((m) => m - 1);
+  useEffect(() => {
+    localStorage.setItem(CARD_ORDER_KEY, JSON.stringify(items));
+  }, [items]);
+
+  const onDragEnd = useCallback((event: DragEndEvent) => {
+    const { active, over } = event;
+    if (over && active.id !== over.id) {
+      setItems((prev) => {
+        const oldIndex = prev.indexOf(active.id as string);
+        const newIndex = prev.indexOf(over.id as string);
+        return arrayMove(prev, oldIndex, newIndex);
+      });
+    }
+  }, []);
+
+  return { items, onDragEnd };
+}
+
+function SortableCard({ id, children, className }: { id: string; children: React.ReactNode; className?: string }) {
+  const { setNodeRef, attributes, listeners, transform, transition, isDragging } = useSortable({ id });
+
+  const style: React.CSSProperties = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.4 : undefined,
+    zIndex: isDragging ? 50 : undefined,
   };
-  const nextMonth = () => {
-    if (viewMonth === 11) {
-      setViewMonth(0);
-      setViewYear((y) => y + 1);
-    } else setViewMonth((m) => m + 1);
-  };
-
-  const cells: (number | null)[] = [];
-  for (let i = 0; i < firstDay; i++) cells.push(null);
-  for (let d = 1; d <= daysInMonth; d++) cells.push(d);
-
-  const isToday = (d: number) =>
-    d === today.getDate() && viewMonth === today.getMonth() && viewYear === today.getFullYear();
 
   return (
-    <Card className="bg-card border-border text-foreground">
-      <CardHeader className="pb-2 flex flex-row items-center justify-between">
-        <CardTitle className="text-xs font-mono tracking-widest text-muted-foreground uppercase flex items-center gap-2">
-          <CalendarDays className="h-3 w-3" />
-          {t("beranda.calendar")}
-        </CardTitle>
-        <div className="flex items-center gap-2">
-          <span className="text-xxs font-mono text-muted-foreground">
-            {MONTHS[viewMonth]} {viewYear}
-          </span>
-          <div className="flex gap-0.5">
-            <button
-              onClick={prevMonth}
-              className="p-0.5 rounded hover:bg-sidebar-ring text-muted-foreground hover:text-foreground transition-colors"
-            >
-              <ChevronLeft className="h-3 w-3" />
-            </button>
-            <button
-              onClick={nextMonth}
-              className="p-0.5 rounded hover:bg-sidebar-ring text-muted-foreground hover:text-foreground transition-colors"
-            >
-              <ChevronRight className="h-3 w-3" />
-            </button>
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent>
-        <div className="grid grid-cols-7 gap-0">
-          {DAYS_SHORT.map((d) => (
-            <div key={d} className="text-center text-xxxs font-mono text-muted-foreground py-1">
-              {t(`beranda.${d}`)}
-            </div>
-          ))}
-          {cells.map((d, i) => (
-            <div
-              key={i}
-              className={`text-center text-xxs font-mono py-1.5 rounded ${
-                d === null
-                  ? "text-transparent"
-                  : isToday(d)
-                    ? "bg-emerald-500/20 text-emerald-400 font-bold"
-                    : "text-muted-foreground hover:bg-sidebar-ring"
-              }`}
-            >
-              {d ?? "."}
-            </div>
-          ))}
-        </div>
-      </CardContent>
-    </Card>
+    <div ref={setNodeRef} style={style} className={`${className} relative group`}>
+      {children}
+      {/* Drag handle — grab cursor only on this grip icon */}
+      <div
+        className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-150 cursor-grab active:cursor-grabbing p-1 rounded hover:bg-sidebar-ring"
+        {...attributes}
+        {...listeners}
+      >
+        <GripHorizontal className="h-3.5 w-3.5 text-muted-foreground" />
+      </div>
+    </div>
   );
 }
 
 // ── Main ──────────────────────────────────────────────────────────
 
-export default function Dashboard({ coopProfile, currentUser }: Props) {
+export default function Dashboard() {
   const { t } = useTranslation();
-  const { todos, addTodo, toggleTodo, removeDone } = useTodos();
+  const { items: cardOrder, onDragEnd } = useCardOrder();
+  const daily = useTodoList("pakde-todos-daily");
+  const weekly = useTodoList("pakde-todos-weekly", WEEKLY_DEFAULTS);
   const { readIds, markRead, markAllRead } = useNewsRead();
+  const [tab, setTab] = useState<"daily" | "weekly">("daily");
   const [newTask, setNewTask] = useState("");
-  const greeting = getGreetingTime();
-  const GreetingIcon = GREETING_ICON[greeting];
-  const doneCount = todos.filter((td) => td.done).length;
   const unreadCount = NEWS_ITEMS.filter((n) => !readIds.has(n.id)).length;
+
+  const activeList = tab === "daily" ? daily : weekly;
+
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }));
 
   const handleAdd = () => {
     const text = newTask.trim();
     if (!text) return;
-    addTodo(text);
+    activeList.addItem(text);
     setNewTask("");
   };
 
-  return (
-    <div className="flex-1 overflow-auto p-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4 auto-rows-min">
-        {/* ── Greeting ── */}
-        <Card className="bg-card border-border text-foreground">
-          <CardHeader>
+  const cardContents: Record<string, React.ReactNode> = {
+    tugas: (
+      <Card className="bg-card border-border text-foreground">
+        <CardHeader className="pb-3 space-y-0">
+          <div className="flex items-center justify-between mb-2">
             <CardTitle className="text-xs font-mono tracking-widest text-muted-foreground uppercase flex items-center gap-2">
-              <GreetingIcon className="h-3 w-3 text-amber-400" />
-              {t("beranda.welcome")}
+              <CheckCircle2 className="h-3 w-3 text-emerald-400" />
+              {tab === "daily" ? t("beranda.todo") : t("beranda.todoWeekly")}
             </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            {currentUser && (
-              <div>
-                <p className="text-sm font-bold text-foreground">
-                  {t("beranda.greeting", {
-                    time: t(`beranda.time${greeting.charAt(0).toUpperCase() + greeting.slice(1)}`),
-                    name: currentUser.name,
-                  })}
-                </p>
-                <p className="text-xxs text-muted-foreground">{currentUser.role}</p>
-              </div>
+            {activeList.doneCount > 0 && (
+              <button
+                onClick={activeList.removeDone}
+                className="text-xxxs font-mono text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {t("beranda.clearDone", { n: activeList.doneCount })}
+              </button>
             )}
-            {coopProfile && (
-              <div className="space-y-1 pt-2 border-t border-border">
-                <p className="text-sm font-semibold text-emerald-400">{coopProfile.name}</p>
-                <p className="text-xxs font-mono text-muted-foreground">
-                  {coopProfile.village}, {coopProfile.regency}
-                </p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* ── Reminders ── */}
-        <Card className="bg-card border-border text-foreground">
-          <CardHeader>
-            <CardTitle className="text-xs font-mono tracking-widest text-muted-foreground uppercase flex items-center gap-2">
-              <Bell className="h-3 w-3 text-amber-400" />
-              {t("beranda.reminders")}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              {[
-                { icon: "📋", text: "Laporan SHU bulan ini harus disetor sebelum tanggal 10" },
-                { icon: "📅", text: "Rapat Anggota Tahunan: persiapkan agenda" },
-                { icon: "💰", text: "Cek outstanding pinjaman anggota aktif" },
-              ].map((r, i) => (
-                <div key={i} className="flex items-start gap-2 text-xs text-muted-foreground">
-                  <span className="text-xs">{r.icon}</span>
-                  <span>{r.text}</span>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* ── Calendar ── */}
-        <CalendarWidget t={t} />
-
-        {/* ── Todo List ── */}
-        <Card className="bg-card border-border text-foreground">
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-xs font-mono tracking-widest text-muted-foreground uppercase flex items-center gap-2">
-                <CheckCircle2 className="h-3 w-3 text-emerald-400" />
-                {t("beranda.todo")}
-              </CardTitle>
-              {doneCount > 0 && (
-                <button
-                  onClick={removeDone}
-                  className="text-xxxs font-mono text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  {t("beranda.clearDone", { n: doneCount })}
-                </button>
-              )}
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-3">
+          </div>
+          <div className="flex gap-1 rounded-lg bg-secondary p-0.5">
+            <button
+              onClick={() => setTab("daily")}
+              className={`flex-1 text-xxxs font-bold py-1 rounded-md transition-all ${tab === "daily" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+            >
+              {t("beranda.harian")}
+            </button>
+            <button
+              onClick={() => setTab("weekly")}
+              className={`flex-1 text-xxxs font-bold py-1 rounded-md transition-all ${tab === "weekly" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+            >
+              {t("beranda.mingguan")}
+            </button>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {tab === "daily" && (
             <form
               onSubmit={(e) => {
                 e.preventDefault();
@@ -325,96 +225,133 @@ export default function Dashboard({ coopProfile, currentUser }: Props) {
                 <Plus className="h-3.5 w-3.5" />
               </Button>
             </form>
-            <div className="space-y-1 max-h-64 overflow-y-auto">
-              {todos.length === 0 && (
-                <p className="text-xxs text-muted-foreground text-center py-4">{t("beranda.noTasks")}</p>
-              )}
-              {todos.map((todo) => (
-                <div
-                  key={todo.id}
-                  className="flex items-center gap-2 py-1.5 px-2 rounded hover:bg-secondary cursor-pointer group"
-                  onClick={() => toggleTodo(todo.id)}
-                >
-                  {todo.done ? (
-                    <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
-                  ) : (
-                    <Circle className="h-3.5 w-3.5 text-muted-foreground shrink-0 group-hover:text-foreground transition-colors" />
-                  )}
-                  <span className={`text-xs ${todo.done ? "text-muted-foreground line-through" : "text-foreground"}`}>
-                    {todo.text}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* ── News ── */}
-        <Card className="bg-card border-border text-foreground md:col-span-2 xl:col-span-2 2xl:col-span-2">
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-xs font-mono tracking-widest text-muted-foreground uppercase flex items-center gap-2">
-                <Newspaper className="h-3 w-3 text-blue-400" />
-                {t("beranda.news.title")}
-                {unreadCount > 0 && (
-                  <span className="text-xxxs font-bold px-1.5 py-0.5 rounded-full bg-blue-500/10 text-blue-400">
-                    {t("beranda.news.unread", { n: unreadCount })}
-                  </span>
+          )}
+          <div className="space-y-1 max-h-64 overflow-y-auto">
+            {activeList.items.length === 0 && (
+              <p className="text-xxs text-muted-foreground text-center py-4">{t("beranda.noTasks")}</p>
+            )}
+            {activeList.items.map((todo) => (
+              <div
+                key={todo.id}
+                className="flex items-center gap-2 py-1.5 px-2 rounded hover:bg-secondary cursor-pointer group"
+                onClick={() => activeList.toggleItem(todo.id)}
+              >
+                {todo.done ? (
+                  <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
+                ) : (
+                  <Circle className="h-3.5 w-3.5 text-muted-foreground shrink-0 group-hover:text-foreground transition-colors" />
                 )}
-              </CardTitle>
+                <span className={`text-xs ${todo.done ? "text-muted-foreground line-through" : "text-foreground"}`}>
+                  {todo.text}
+                </span>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    ),
+    reminders: (
+      <Card className="bg-card border-border text-foreground">
+        <CardHeader>
+          <CardTitle className="text-xs font-mono tracking-widest text-muted-foreground uppercase flex items-center gap-2">
+            <Bell className="h-3 w-3 text-amber-400" />
+            {t("beranda.reminders")}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-2">
+            {[
+              { icon: "📋", text: "Laporan SHU bulan ini harus disetor sebelum tanggal 10" },
+              { icon: "📅", text: "Rapat Anggota Tahunan: persiapkan agenda" },
+              { icon: "💰", text: "Cek outstanding pinjaman anggota aktif" },
+            ].map((r, i) => (
+              <div key={i} className="flex items-start gap-2 text-xs text-muted-foreground">
+                <span className="text-xs">{r.icon}</span>
+                <span>{r.text}</span>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    ),
+    calendar: <CalendarWidget t={t} />,
+    news: (
+      <Card className="bg-card border-border text-foreground">
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-xs font-mono tracking-widest text-muted-foreground uppercase flex items-center gap-2">
+              <Newspaper className="h-3 w-3 text-blue-400" />
+              {t("beranda.news.title")}
               {unreadCount > 0 && (
-                <button
-                  onClick={markAllRead}
-                  className="text-xxxs font-mono text-muted-foreground hover:text-foreground transition-colors"
+                <span className="text-xxxs font-bold px-1.5 py-0.5 rounded-full bg-blue-500/10 text-blue-400">
+                  {t("beranda.news.unread", { n: unreadCount })}
+                </span>
+              )}
+            </CardTitle>
+            {unreadCount > 0 && (
+              <button
+                onClick={markAllRead}
+                className="text-xxxs font-mono text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {t("beranda.news.markRead")}
+              </button>
+            )}
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-3 max-h-96 overflow-y-auto">
+            {NEWS_ITEMS.length === 0 && (
+              <p className="text-xxs text-muted-foreground text-center py-4">{t("beranda.news.noNews")}</p>
+            )}
+            {NEWS_ITEMS.map((item) => {
+              const isUnread = !readIds.has(item.id);
+              return (
+                <div
+                  key={item.id}
+                  className={`border-b border-border pb-3 last:border-b-0 last:pb-0 ${isUnread ? "cursor-pointer" : ""}`}
+                  onClick={() => isUnread && markRead(item.id)}
                 >
-                  {t("beranda.news.markRead")}
-                </button>
-              )}
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3 max-h-96 overflow-y-auto">
-              {NEWS_ITEMS.length === 0 && (
-                <p className="text-xxs text-muted-foreground text-center py-4">{t("beranda.news.noNews")}</p>
-              )}
-              {NEWS_ITEMS.map((item) => {
-                const isUnread = !readIds.has(item.id);
-                return (
-                  <div
-                    key={item.id}
-                    className={`border-b border-border pb-3 last:border-b-0 last:pb-0 ${
-                      isUnread ? "cursor-pointer" : ""
-                    }`}
-                    onClick={() => isUnread && markRead(item.id)}
-                  >
-                    <div className="flex items-start justify-between gap-2 mb-1">
-                      <div className="flex items-center gap-1.5 min-w-0">
-                        {isUnread && <span className="h-1.5 w-1.5 rounded-full bg-blue-400 shrink-0 mt-1.5" />}
-                        <h4 className={`text-xs font-bold ${isUnread ? "text-foreground" : "text-muted-foreground"}`}>
-                          {item.title}
-                        </h4>
-                      </div>
-                      <span
-                        className={`text-xxxs font-mono px-1.5 py-0.5 rounded shrink-0 ${SOURCE_BADGE[item.source]}`}
-                      >
-                        {t(`beranda.news.source${item.source.charAt(0).toUpperCase() + item.source.slice(1)}`)}
-                      </span>
+                  <div className="flex items-start justify-between gap-2 mb-1">
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      {isUnread && <span className="h-1.5 w-1.5 rounded-full bg-blue-400 shrink-0 mt-1.5" />}
+                      <h4 className={`text-xs font-bold ${isUnread ? "text-foreground" : "text-muted-foreground"}`}>
+                        {item.title}
+                      </h4>
                     </div>
-                    <p className="text-xxs text-muted-foreground leading-relaxed ml-4">{item.content}</p>
-                    <p className="text-xxxs font-mono text-muted-foreground mt-1 ml-4">
-                      {new Date(item.timestamp).toLocaleDateString(undefined, {
-                        day: "numeric",
-                        month: "short",
-                        year: "numeric",
-                      })}
-                    </p>
+                    <span className={`text-xxxs font-mono px-1.5 py-0.5 rounded shrink-0 ${SOURCE_BADGE[item.source]}`}>
+                      {t(`beranda.news.source${item.source.charAt(0).toUpperCase() + item.source.slice(1)}`)}
+                    </span>
                   </div>
-                );
-              })}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+                  <p className="text-xxs text-muted-foreground leading-relaxed ml-4">{item.content}</p>
+                  <p className="text-xxxs font-mono text-muted-foreground mt-1 ml-4">
+                    {new Date(item.timestamp).toLocaleDateString(undefined, {
+                      day: "numeric",
+                      month: "short",
+                      year: "numeric",
+                    })}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+        </CardContent>
+      </Card>
+    ),
+  };
+
+  return (
+    <div className="flex-1 overflow-auto p-6">
+      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
+        <SortableContext items={cardOrder} strategy={rectSortingStrategy}>
+          <div className="grid grid-cols-12 gap-4 auto-rows-min">
+            {cardOrder.map((id) => (
+              <SortableCard key={id} id={id} className="col-span-12 sm:col-span-6 xl:col-span-3">
+                {cardContents[id]}
+              </SortableCard>
+            ))}
+          </div>
+        </SortableContext>
+      </DndContext>
     </div>
   );
 }

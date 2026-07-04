@@ -136,7 +136,7 @@ function AppContent() {
       />
 
       <main className="flex-1 p-6 overflow-y-auto max-h-screen overscroll-contain">
-        {activeTab === "home" && <Dashboard coopProfile={coopProfile} currentUser={currentUser} />}
+        {activeTab === "home" && <Dashboard />}
         {activeTab === "statistics" && (
           <Statistics coopProfile={coopProfile} ewsAlerts={ewsAlerts} currentUser={currentUser} />
         )}
