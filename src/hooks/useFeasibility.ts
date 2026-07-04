@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import type { FeasibilityResult, SensitivityResult } from "@/types";
 import { useToast } from "@/hooks/useToast";
 
@@ -11,6 +12,7 @@ const DEFAULT_PARAMS = {
 };
 
 export function useFeasibility() {
+  const { t } = useTranslation();
   const toast = useToast();
 
   const [feasibilityActiveTab, setFeasibilityActiveTab] = useState<"calculator" | "sensitivity">("calculator");
@@ -25,7 +27,7 @@ export function useFeasibility() {
     const flows = cashFlows.split(",").map(Number);
 
     if (flows.length !== Number(projectionYears)) {
-      toast.error("Error: Jumlah elemen arus kas tidak sesuai dengan Tahun Proyeksi.");
+      toast.error(t("toast.feasibilityCashFlowMismatch"));
       return;
     }
 

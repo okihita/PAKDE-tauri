@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAccounting } from "@/hooks/useAccounting";
 import AccountingCoa from "./AccountingCoa";
@@ -8,6 +9,7 @@ import AccountingReports from "./AccountingReports";
 
 export default function Accounting() {
   const a = useAccounting();
+  const { t } = useTranslation();
 
   useEffect(() => {
     a.loadAccountsData();
@@ -28,31 +30,31 @@ export default function Accounting() {
             value="coa"
             className="text-[10px] data-[state=active]:bg-emerald-500/10 data-[state=active]:text-emerald-400"
           >
-            COA
+            {t("accounting.tabs.coa")}
           </TabsTrigger>
           <TabsTrigger
             value="journal"
             className="text-[10px] data-[state=active]:bg-emerald-500/10 data-[state=active]:text-emerald-400"
           >
-            Jurnal
+            {t("accounting.tabs.journal")}
           </TabsTrigger>
           <TabsTrigger
             value="ledger"
             className="text-[10px] data-[state=active]:bg-emerald-500/10 data-[state=active]:text-emerald-400"
           >
-            Buku Besar
+            {t("accounting.tabs.ledger")}
           </TabsTrigger>
           <TabsTrigger
             value="neraca"
             className="text-[10px] data-[state=active]:bg-emerald-500/10 data-[state=active]:text-emerald-400"
           >
-            Neraca
+            {t("accounting.tabs.neraca")}
           </TabsTrigger>
           <TabsTrigger
             value="labarugi"
             className="text-[10px] data-[state=active]:bg-emerald-500/10 data-[state=active]:text-emerald-400"
           >
-            Laba Rugi
+            {t("accounting.tabs.labarugi")}
           </TabsTrigger>
         </TabsList>
 

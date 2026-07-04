@@ -1,4 +1,5 @@
 import { useState, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import { getDb } from "@/db";
 import type {
   CoaAccount,
@@ -25,6 +26,7 @@ const JOURNAL_FORM_DEFAULT = {
 };
 
 export function useAccounting() {
+  const { t } = useTranslation();
   const toast = useToast();
 
   const [accountingTab, setAccountingTab] = useState<"coa" | "journal" | "ledger" | "neraca" | "labarugi">("coa");
@@ -127,7 +129,7 @@ export function useAccounting() {
   const handleCreateCoaSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newCoaValues.code || !newCoaValues.name) {
-      toast.error("Error: Kode dan Nama Akun harus diisi.");
+      toast.error(t("toast.coaFieldsRequired"));
       return;
     }
     try {
@@ -145,7 +147,7 @@ export function useAccounting() {
       setShowCoaModal(false);
       loadAccountsData();
     } catch (err) {
-      toast.error(`Gagal menambah akun: ${err instanceof Error ? err.message : String(err)}`);
+      toast.error(t("toast.coaCreateFailed", { error: err instanceof Error ? err.message : String(err) }));
     }
   };
 
@@ -169,7 +171,7 @@ export function useAccounting() {
   const handleJournalEntrySubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!journalForm.number || !journalForm.description) {
-      toast.error("Error: Nomor Bukti dan Keterangan harus diisi.");
+      toast.error(t("toast.journalFieldsRequired"));
       return;
     }
 
@@ -180,11 +182,11 @@ export function useAccounting() {
       totalCredit += Number(line.credit || 0);
     }
     if (totalDebit !== totalCredit) {
-      toast.error(`Error: Jurnal tidak seimbang. Selisih: Rp ${Math.abs(totalDebit - totalCredit).toLocaleString()}`);
+      toast.error(t("toast.journalUnbalanced", { diff: Math.abs(totalDebit - totalCredit).toLocaleString() }));
       return;
     }
     if (totalDebit === 0) {
-      toast.error("Error: Jumlah transaksi tidak boleh Rp 0.");
+      toast.error(t("toast.journalZeroAmount"));
       return;
     }
 
@@ -222,14 +224,14 @@ export function useAccounting() {
         }
       }
 
-      toast.success("Transaksi Jurnal berhasil disimpan!");
+      toast.success(t("toast.journalSaveSuccess"));
       setShowJournalModal(false);
       setJournalForm(JOURNAL_FORM_DEFAULT);
       loadJournalData();
       loadAccountsData();
       loadLedgerData();
     } catch (err) {
-      toast.error(`Gagal menyimpan transaksi: ${err instanceof Error ? err.message : String(err)}`);
+      toast.error(t("toast.journalSaveFailed", { error: err instanceof Error ? err.message : String(err) }));
     }
   };
 

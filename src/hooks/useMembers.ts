@@ -1,4 +1,5 @@
 import { useState, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import { getDb } from "@/db";
 import type { Member } from "@/types";
 import { useToast } from "@/hooks/useToast";
@@ -24,6 +25,7 @@ const MEMBER_DEFAULT: Member = {
 };
 
 export function useMembers() {
+  const { t } = useTranslation();
   const toast = useToast();
 
   const [membersList, setMembersList] = useState<Member[]>([]);
@@ -60,11 +62,11 @@ export function useMembers() {
   const handleMemberFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (memberFormValues.nik.length !== 16) {
-      toast.error("Error: NIK harus 16 digit.");
+      toast.error(t("toast.nikInvalid"));
       return;
     }
     if (!memberFormValues.name.trim()) {
-      toast.error("Error: Nama harus diisi.");
+      toast.error(t("toast.nameRequired"));
       return;
     }
     try {
@@ -130,23 +132,23 @@ export function useMembers() {
       setShowMemberModal(false);
       loadMembersData();
     } catch (err) {
-      toast.error(`Gagal menyimpan anggota: ${err instanceof Error ? err.message : String(err)}`);
+      toast.error(t("toast.memberSaveFailed", { error: err instanceof Error ? err.message : String(err) }));
     }
   };
 
   const handleDeleteMember = async (member: Member) => {
     if (member.loan_outstanding > 0) {
-      toast.error("Error: Tidak dapat menghapus anggota dengan pinjaman aktif.");
+      toast.error(t("toast.memberDeleteBlocked"));
       return;
     }
-    const yes = await toast.confirm(`Apakah Anda yakin ingin menghapus anggota ${member.name}?`);
+    const yes = await toast.confirm(t("toast.memberDeleteConfirm", { name: member.name }));
     if (!yes) return;
     try {
       const db = await getDb();
       await db.execute("DELETE FROM members WHERE id = ?", [member.id]);
       loadMembersData();
     } catch (err) {
-      toast.error(`Gagal menghapus anggota: ${err}`);
+      toast.error(t("toast.memberDeleteFailed", { error: String(err) }));
     }
   };
 

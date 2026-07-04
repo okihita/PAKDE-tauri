@@ -1,4 +1,5 @@
 import { Plus } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -29,6 +30,8 @@ export default function AccountingCoa({
   setNewValues,
   onSubmit,
 }: Props) {
+  const { t } = useTranslation();
+
   return (
     <div className="space-y-3">
       <div className="flex justify-end">
@@ -36,17 +39,27 @@ export default function AccountingCoa({
           onClick={() => setShowModal(true)}
           className="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold text-xs h-8"
         >
-          <Plus className="h-3 w-3 mr-1" /> Tambah Akun
+          <Plus className="h-3 w-3 mr-1" /> {t("accounting.coa.addButton")}
         </Button>
       </div>
       <Table>
         <TableHeader>
           <TableRow className="border-slate-900 hover:bg-transparent">
-            <TableHead className="text-[10px] font-mono text-slate-500 w-20">Kode</TableHead>
-            <TableHead className="text-[10px] font-mono text-slate-500">Nama Akun</TableHead>
-            <TableHead className="text-[10px] font-mono text-slate-500">Tipe</TableHead>
-            <TableHead className="text-[10px] font-mono text-slate-500">Saldo Normal</TableHead>
-            <TableHead className="text-[10px] font-mono text-slate-500 text-right">Saldo</TableHead>
+            <TableHead className="text-[10px] font-mono text-slate-500 w-20">
+              {t("accounting.coa.tableHeaders.code")}
+            </TableHead>
+            <TableHead className="text-[10px] font-mono text-slate-500">
+              {t("accounting.coa.tableHeaders.name")}
+            </TableHead>
+            <TableHead className="text-[10px] font-mono text-slate-500">
+              {t("accounting.coa.tableHeaders.type")}
+            </TableHead>
+            <TableHead className="text-[10px] font-mono text-slate-500">
+              {t("accounting.coa.tableHeaders.normalBalance")}
+            </TableHead>
+            <TableHead className="text-[10px] font-mono text-slate-500 text-right">
+              {t("accounting.coa.tableHeaders.balance")}
+            </TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -70,11 +83,13 @@ export default function AccountingCoa({
         <DialogContent className="bg-[#0b101c] border-slate-900 text-white max-w-sm">
           <form onSubmit={onSubmit}>
             <DialogHeader>
-              <DialogTitle className="text-sm font-bold">Tambah Akun COA</DialogTitle>
+              <DialogTitle className="text-sm font-bold">{t("accounting.coa.modal.title")}</DialogTitle>
             </DialogHeader>
             <div className="space-y-3 py-4 text-xs">
               <div className="space-y-1">
-                <label className="text-slate-500 font-mono text-[9px] uppercase">Kode Akun</label>
+                <label className="text-slate-500 font-mono text-[9px] uppercase">
+                  {t("accounting.coa.modal.codeLabel")}
+                </label>
                 <Input
                   value={newValues.code}
                   onChange={(e) => setNewValues({ ...newValues, code: e.target.value })}
@@ -82,7 +97,9 @@ export default function AccountingCoa({
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-slate-500 font-mono text-[9px] uppercase">Nama Akun</label>
+                <label className="text-slate-500 font-mono text-[9px] uppercase">
+                  {t("accounting.coa.modal.nameLabel")}
+                </label>
                 <Input
                   value={newValues.name}
                   onChange={(e) => setNewValues({ ...newValues, name: e.target.value })}
@@ -90,7 +107,9 @@ export default function AccountingCoa({
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-slate-500 font-mono text-[9px] uppercase">Tipe Akun</label>
+                <label className="text-slate-500 font-mono text-[9px] uppercase">
+                  {t("accounting.coa.modal.typeLabel")}
+                </label>
                 <Select
                   value={newValues.type}
                   onValueChange={(val) => setNewValues({ ...newValues, type: val as CoaAccount["type"] })}
@@ -99,16 +118,18 @@ export default function AccountingCoa({
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="bg-[#0b101c] border-slate-900 text-white text-xs">
-                    <SelectItem value="aset">Aset</SelectItem>
-                    <SelectItem value="kewajiban">Kewajiban</SelectItem>
-                    <SelectItem value="ekuitas">Ekuitas</SelectItem>
-                    <SelectItem value="pendapatan">Pendapatan</SelectItem>
-                    <SelectItem value="beban">Beban</SelectItem>
+                    <SelectItem value="aset">{t("accounting.coa.types.aset")}</SelectItem>
+                    <SelectItem value="kewajiban">{t("accounting.coa.types.kewajiban")}</SelectItem>
+                    <SelectItem value="ekuitas">{t("accounting.coa.types.ekuitas")}</SelectItem>
+                    <SelectItem value="pendapatan">{t("accounting.coa.types.pendapatan")}</SelectItem>
+                    <SelectItem value="beban">{t("accounting.coa.types.beban")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div className="space-y-1">
-                <label className="text-slate-500 font-mono text-[9px] uppercase">Saldo Normal</label>
+                <label className="text-slate-500 font-mono text-[9px] uppercase">
+                  {t("accounting.coa.modal.balanceTypeLabel")}
+                </label>
                 <Select
                   value={newValues.normal_balance}
                   onValueChange={(val) =>
@@ -119,13 +140,15 @@ export default function AccountingCoa({
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="bg-[#0b101c] border-slate-900 text-white text-xs">
-                    <SelectItem value="debit">Debit</SelectItem>
-                    <SelectItem value="kredit">Kredit</SelectItem>
+                    <SelectItem value="debit">{t("accounting.coa.balances.debit")}</SelectItem>
+                    <SelectItem value="kredit">{t("accounting.coa.balances.kredit")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div className="space-y-1">
-                <label className="text-slate-500 font-mono text-[9px] uppercase">Saldo Awal</label>
+                <label className="text-slate-500 font-mono text-[9px] uppercase">
+                  {t("accounting.coa.modal.initialBalanceLabel")}
+                </label>
                 <Input
                   type="number"
                   value={newValues.balance}
@@ -141,10 +164,10 @@ export default function AccountingCoa({
                 onClick={() => setShowModal(false)}
                 className="text-xs border-slate-900"
               >
-                Batal
+                {t("accounting.coa.modal.cancel")}
               </Button>
               <Button type="submit" className="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold text-xs">
-                Simpan Akun
+                {t("accounting.coa.modal.save")}
               </Button>
             </DialogFooter>
           </form>

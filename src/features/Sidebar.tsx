@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import {
   LayoutDashboard,
   Users,
@@ -21,30 +22,31 @@ interface SidebarProps {
   currentUser: { name: string; role: string } | null;
 }
 
-const NAV_ITEMS = [
-  { id: "home" as const, icon: LayoutDashboard, label: "Beranda Utama" },
-  { id: "members" as const, icon: Users, label: "Database Anggota" },
-  { id: "accounting" as const, icon: Receipt, label: "Akuntansi SAK EP" },
-  { id: "feasibility" as const, icon: TrendingUp, label: "Kelayakan Finansial" },
-  { id: "sync" as const, icon: RefreshCw, label: "Sinkronisasi Data" },
-  { id: "settings" as const, icon: Settings, label: "Pengaturan" },
-];
-
 export default function Sidebar({ activeTab, onTabChange, coopProfile, ewsAlerts, currentUser }: SidebarProps) {
+  const { t } = useTranslation();
   const criticalAlerts = ewsAlerts.filter((a) => a.level === "critical").length;
+
+  const NAV_ITEMS = [
+    { id: "home" as const, icon: LayoutDashboard, label: t("sidebar.nav.home") },
+    { id: "members" as const, icon: Users, label: t("sidebar.nav.members") },
+    { id: "accounting" as const, icon: Receipt, label: t("sidebar.nav.accounting") },
+    { id: "feasibility" as const, icon: TrendingUp, label: t("sidebar.nav.feasibility") },
+    { id: "sync" as const, icon: RefreshCw, label: t("sidebar.nav.sync") },
+    { id: "settings" as const, icon: Settings, label: t("sidebar.nav.settings") },
+  ];
 
   return (
     <aside className="w-64 border-r border-slate-900 bg-[#090e1a]/95 flex flex-col justify-between print:hidden">
       <div>
         <div className="px-6 py-6 border-b border-slate-900 flex flex-col gap-2">
           <div className="flex items-center gap-2">
-            <span className="text-xs font-mono font-black tracking-widest text-emerald-400">KDKMP</span>
+            <span className="text-xs font-mono font-black tracking-widest text-emerald-400">{t("splash.brand")}</span>
             <span className="text-xs font-mono text-slate-500">|</span>
             <span className="text-xs font-mono text-slate-300">{coopProfile?.village ?? "DESA"}</span>
           </div>
           <div className="flex items-center gap-1.5 mt-1">
             <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-[pulse_2s_infinite]" />
-            <span className="text-[10px] font-mono text-slate-400">Connected to local.db</span>
+            <span className="text-[10px] font-mono text-slate-400">{t("sidebar.connected")}</span>
           </div>
         </div>
 
@@ -71,11 +73,13 @@ export default function Sidebar({ activeTab, onTabChange, coopProfile, ewsAlerts
           <div className="px-3 py-3 rounded-xl bg-[#0b101c] border border-slate-900">
             <div className="flex items-center gap-2 mb-2">
               <Database className="h-3 w-3 text-emerald-400" />
-              <span className="text-[10px] font-mono text-slate-400">HEALTH SCORE</span>
+              <span className="text-[10px] font-mono text-slate-400">{t("sidebar.healthScore")}</span>
             </div>
             <div className="flex items-end gap-2">
               <span className="text-xl font-black text-emerald-400 font-mono">{coopProfile?.health_score}%</span>
-              <span className="text-[9px] text-slate-500 mb-1">RAG: {coopProfile?.rag_status}</span>
+              <span className="text-[9px] text-slate-500 mb-1">
+                {t("sidebar.rag")}: {coopProfile?.rag_status}
+              </span>
             </div>
           </div>
         )}
@@ -84,7 +88,9 @@ export default function Sidebar({ activeTab, onTabChange, coopProfile, ewsAlerts
           <div className="px-3 py-3 rounded-xl bg-rose-500/5 border border-rose-500/10">
             <div className="flex items-center gap-2">
               <AlertTriangle className="h-3 w-3 text-rose-400" />
-              <span className="text-[10px] font-mono text-rose-300">{criticalAlerts} Critical Alerts</span>
+              <span className="text-[10px] font-mono text-rose-300">
+                {t("sidebar.criticalAlerts", { count: criticalAlerts })}
+              </span>
             </div>
           </div>
         )}
@@ -95,7 +101,7 @@ export default function Sidebar({ activeTab, onTabChange, coopProfile, ewsAlerts
           <div className="px-3 py-3 rounded-xl bg-[#0b101c] border border-slate-900">
             <div className="flex items-center gap-2">
               <CheckCircle2 className="h-3 w-3 text-emerald-400" />
-              <span className="text-[10px] font-mono text-slate-400">Sistem Normal</span>
+              <span className="text-[10px] font-mono text-slate-400">{t("sidebar.systemNormal")}</span>
             </div>
           </div>
         )}

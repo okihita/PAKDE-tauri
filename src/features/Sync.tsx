@@ -1,10 +1,12 @@
 import { useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useSync } from "@/hooks/useSync";
 
 export default function Sync() {
+  const { t } = useTranslation();
   const s = useSync();
 
   useEffect(() => {
@@ -16,12 +18,8 @@ export default function Sync() {
     <div className="space-y-6">
       <Card className="bg-[#0b101c]/90 border-slate-900">
         <CardHeader>
-          <CardTitle className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-            Sinkronisasi & EWS Sync Dashboard
-          </CardTitle>
-          <CardDescription className="text-[10px] text-slate-500">
-            Hubungkan node desa Anda ke API kabupaten untuk upload data transaksi.
-          </CardDescription>
+          <CardTitle className="text-xs font-bold text-slate-400 uppercase tracking-wider">{t("sync.title")}</CardTitle>
+          <CardDescription className="text-[10px] text-slate-500">{t("sync.description")}</CardDescription>
         </CardHeader>
         <CardContent>
           <Button
@@ -29,7 +27,7 @@ export default function Sync() {
             disabled={s.isSyncing}
             className="w-full bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold text-xs h-9"
           >
-            {s.isSyncing ? "Mensinkronisasi..." : "Sinkronisasi Data Sekarang"}
+            {s.isSyncing ? t("sync.syncing") : t("sync.syncButton")}
           </Button>
           {s.syncProgress && (
             <div className="mt-3 text-center">
@@ -42,18 +40,22 @@ export default function Sync() {
       <Card className="bg-[#0b101c]/90 border-slate-900">
         <CardHeader>
           <CardTitle className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-            Riwayat Sinkronisasi
+            {t("sync.historyTitle")}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
               <TableRow className="border-slate-900 hover:bg-transparent">
-                <TableHead className="text-[10px] font-mono text-slate-500">ID</TableHead>
-                <TableHead className="text-[10px] font-mono text-slate-500">Arah</TableHead>
-                <TableHead className="text-[10px] font-mono text-slate-500">Waktu Mulai</TableHead>
-                <TableHead className="text-[10px] font-mono text-slate-500">Status</TableHead>
-                <TableHead className="text-[10px] font-mono text-slate-500">Entri</TableHead>
+                <TableHead className="text-[10px] font-mono text-slate-500">{t("sync.tableHeaders.id")}</TableHead>
+                <TableHead className="text-[10px] font-mono text-slate-500">
+                  {t("sync.tableHeaders.direction")}
+                </TableHead>
+                <TableHead className="text-[10px] font-mono text-slate-500">
+                  {t("sync.tableHeaders.startedAt")}
+                </TableHead>
+                <TableHead className="text-[10px] font-mono text-slate-500">{t("sync.tableHeaders.status")}</TableHead>
+                <TableHead className="text-[10px] font-mono text-slate-500">{t("sync.tableHeaders.entries")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -66,16 +68,18 @@ export default function Sync() {
                     <span
                       className={`font-mono text-xs font-bold ${hist.status === "success" ? "text-emerald-400" : "text-rose-400"}`}
                     >
-                      {hist.status === "success" ? "BERHASIL" : "GAGAL"}
+                      {hist.status === "success" ? t("sync.status.success") : t("sync.status.failed")}
                     </span>
                   </TableCell>
-                  <TableCell className="text-xs font-mono">{hist.entity_count} entri data</TableCell>
+                  <TableCell className="text-xs font-mono">
+                    {t("sync.entryLabel", { count: hist.entity_count })}
+                  </TableCell>
                 </TableRow>
               ))}
               {s.syncHistoryList.length === 0 && (
                 <TableRow className="border-slate-900">
                   <TableCell colSpan={5} className="text-center py-8 text-slate-500 text-xs font-mono">
-                    Belum ada riwayat sinkronisasi terdaftar di database.
+                    {t("sync.empty")}
                   </TableCell>
                 </TableRow>
               )}

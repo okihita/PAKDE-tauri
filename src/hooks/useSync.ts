@@ -1,8 +1,10 @@
 import { useState, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import { getDb } from "@/db";
 import type { SyncHistoryItem, CountRow } from "@/types";
 
 export function useSync() {
+  const { t } = useTranslation();
   const [syncHistoryList, setSyncHistoryList] = useState<SyncHistoryItem[]>([]);
   const [isSyncing, setIsSyncing] = useState(false);
   const [syncProgress, setSyncProgress] = useState("");
@@ -20,12 +22,12 @@ export function useSync() {
   const handleSyncNow = async () => {
     if (isSyncing) return;
     setIsSyncing(true);
-    setSyncProgress("Menghubungkan ke API server node Mojokerto...");
+    setSyncProgress(t("sync.steps.connecting"));
 
     setTimeout(() => {
-      setSyncProgress("Mengunggah log transaksi jurnal & anggota baru...");
+      setSyncProgress(t("sync.steps.uploading"));
       setTimeout(async () => {
-        setSyncProgress("Singkronisasi parameter rasio EWS kabupaten...");
+        setSyncProgress(t("sync.steps.syncing"));
         setTimeout(async () => {
           try {
             const db = await getDb();
@@ -37,13 +39,13 @@ export function useSync() {
               `INSERT INTO sync_history (id, cooperative_id, direction, status, entity_count, completed_at) VALUES (?, 'kdp-001', 'upload', 'success', ?, datetime('now'))`,
               [syncId, count],
             );
-            setSyncProgress("Sinkronisasi Selesai!");
+            setSyncProgress(t("sync.steps.done"));
             setIsSyncing(false);
             loadSyncHistoryData();
             setTimeout(() => setSyncProgress(""), 3000);
           } catch (e) {
             console.error(e);
-            setSyncProgress(`Sinkronisasi Gagal: ${e}`);
+            setSyncProgress(t("sync.steps.failed", { error: String(e) }));
             setIsSyncing(false);
           }
         }, 1000);

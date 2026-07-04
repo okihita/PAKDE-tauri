@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { Search, Plus, Trash2, Edit2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,14 +9,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useMembers } from "@/hooks/useMembers";
 import { useEffect } from "react";
 
-const STATUS_OPTIONS = [
-  { value: "semua", label: "Semua Status" },
-  { value: "aktif", label: "Aktif" },
-  { value: "nonaktif", label: "Nonaktif" },
-];
-
 export default function Members() {
+  const { t } = useTranslation();
   const m = useMembers();
+
+  const statusOptions = [
+    { value: "semua", label: t("members.filterAll") },
+    { value: "aktif", label: t("members.filterActive") },
+    { value: "nonaktif", label: t("members.filterInactive") },
+  ];
 
   useEffect(() => {
     m.loadMembersData();
@@ -26,12 +28,14 @@ export default function Members() {
     <div className="space-y-4">
       <Card className="bg-[#0b101c]/90 border-slate-900">
         <CardHeader className="flex flex-row items-center justify-between pb-2">
-          <CardTitle className="text-xs font-bold text-slate-400 uppercase tracking-wider">Database Anggota</CardTitle>
+          <CardTitle className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+            {t("members.title")}
+          </CardTitle>
           <Button
             onClick={m.openAddMemberModal}
             className="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold text-xs h-8"
           >
-            <Plus className="h-3 w-3 mr-1" /> Tambah Anggota
+            <Plus className="h-3 w-3 mr-1" /> {t("members.addButton")}
           </Button>
         </CardHeader>
         <CardContent>
@@ -39,7 +43,7 @@ export default function Members() {
             <div className="flex-1 relative">
               <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-slate-500" />
               <Input
-                placeholder="Cari NIK atau Nama Anggota..."
+                placeholder={t("members.searchPlaceholder")}
                 value={m.memberSearchQuery}
                 onChange={(e) => m.setMemberSearchQuery(e.target.value)}
                 className="pl-7 bg-slate-950 border-slate-900 text-xs h-8"
@@ -50,7 +54,7 @@ export default function Members() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent className="bg-[#0b101c] border-slate-900 text-white text-xs">
-                {STATUS_OPTIONS.map((o) => (
+                {statusOptions.map((o) => (
                   <SelectItem key={o.value} value={o.value}>
                     {o.label}
                   </SelectItem>
@@ -62,21 +66,33 @@ export default function Members() {
           <Table>
             <TableHeader>
               <TableRow className="border-slate-900 hover:bg-transparent">
-                <TableHead className="text-[10px] font-mono text-slate-500">NIK</TableHead>
-                <TableHead className="text-[10px] font-mono text-slate-500">Nama</TableHead>
-                <TableHead className="text-[10px] font-mono text-slate-500">Gender</TableHead>
-                <TableHead className="text-[10px] font-mono text-slate-500">Status</TableHead>
-                <TableHead className="text-[10px] font-mono text-slate-500 text-right">Simp. Pokok</TableHead>
-                <TableHead className="text-[10px] font-mono text-slate-500 text-right">Simp. Wajib</TableHead>
-                <TableHead className="text-[10px] font-mono text-slate-500 text-right">Outstanding</TableHead>
-                <TableHead className="text-[10px] font-mono text-slate-500 text-right w-16">Aksi</TableHead>
+                <TableHead className="text-[10px] font-mono text-slate-500">{t("members.tableHeaders.nik")}</TableHead>
+                <TableHead className="text-[10px] font-mono text-slate-500">{t("members.tableHeaders.name")}</TableHead>
+                <TableHead className="text-[10px] font-mono text-slate-500">
+                  {t("members.tableHeaders.gender")}
+                </TableHead>
+                <TableHead className="text-[10px] font-mono text-slate-500">
+                  {t("members.tableHeaders.status")}
+                </TableHead>
+                <TableHead className="text-[10px] font-mono text-slate-500 text-right">
+                  {t("members.tableHeaders.pokok")}
+                </TableHead>
+                <TableHead className="text-[10px] font-mono text-slate-500 text-right">
+                  {t("members.tableHeaders.wajib")}
+                </TableHead>
+                <TableHead className="text-[10px] font-mono text-slate-500 text-right">
+                  {t("members.tableHeaders.outstanding")}
+                </TableHead>
+                <TableHead className="text-[10px] font-mono text-slate-500 text-right w-16">
+                  {t("members.tableHeaders.action")}
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {m.filteredMembers.length === 0 && (
                 <TableRow className="border-slate-900">
                   <TableCell colSpan={8} className="text-center py-8 text-slate-500 text-xs font-mono">
-                    Tidak ada data anggota.
+                    {t("members.tableHeaders.noData")}
                   </TableCell>
                 </TableRow>
               )}
@@ -134,12 +150,12 @@ export default function Members() {
           <form onSubmit={m.handleMemberFormSubmit}>
             <DialogHeader>
               <DialogTitle className="text-sm font-bold text-slate-200">
-                {m.memberFormType === "add" ? "Tambah Anggota Baru" : "Edit Data Anggota"}
+                {m.memberFormType === "add" ? t("members.form.titleAdd") : t("members.form.titleEdit")}
               </DialogTitle>
             </DialogHeader>
             <div className="grid grid-cols-2 gap-3 py-4 text-xs">
               <div className="space-y-1">
-                <label className="text-slate-500 font-mono text-[9px] uppercase">NIK (16 digit)</label>
+                <label className="text-slate-500 font-mono text-[9px] uppercase">{t("members.form.labels.nik")}</label>
                 <Input
                   value={m.memberFormValues.nik}
                   onChange={(e) => m.setMemberFormValues({ ...m.memberFormValues, nik: e.target.value })}
@@ -148,7 +164,7 @@ export default function Members() {
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-slate-500 font-mono text-[9px] uppercase">Nama Lengkap</label>
+                <label className="text-slate-500 font-mono text-[9px] uppercase">{t("members.form.labels.name")}</label>
                 <Input
                   value={m.memberFormValues.name}
                   onChange={(e) => m.setMemberFormValues({ ...m.memberFormValues, name: e.target.value })}
@@ -156,7 +172,9 @@ export default function Members() {
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-slate-500 font-mono text-[9px] uppercase">Jenis Kelamin</label>
+                <label className="text-slate-500 font-mono text-[9px] uppercase">
+                  {t("members.form.labels.gender")}
+                </label>
                 <Select
                   value={m.memberFormValues.gender}
                   onValueChange={(val) => m.setMemberFormValues({ ...m.memberFormValues, gender: val as "L" | "P" })}
@@ -165,13 +183,15 @@ export default function Members() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="bg-[#0b101c] border-slate-900 text-white text-xs">
-                    <SelectItem value="L">Laki-laki</SelectItem>
-                    <SelectItem value="P">Perempuan</SelectItem>
+                    <SelectItem value="L">{t("common.male")}</SelectItem>
+                    <SelectItem value="P">{t("common.female")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div className="space-y-1">
-                <label className="text-slate-500 font-mono text-[9px] uppercase">Tempat Lahir</label>
+                <label className="text-slate-500 font-mono text-[9px] uppercase">
+                  {t("members.form.labels.placeOfBirth")}
+                </label>
                 <Input
                   value={m.memberFormValues.place_of_birth}
                   onChange={(e) => m.setMemberFormValues({ ...m.memberFormValues, place_of_birth: e.target.value })}
@@ -179,7 +199,9 @@ export default function Members() {
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-slate-500 font-mono text-[9px] uppercase">Tgl Lahir</label>
+                <label className="text-slate-500 font-mono text-[9px] uppercase">
+                  {t("members.form.labels.dateOfBirth")}
+                </label>
                 <Input
                   type="date"
                   value={m.memberFormValues.date_of_birth}
@@ -188,7 +210,9 @@ export default function Members() {
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-slate-500 font-mono text-[9px] uppercase">Pekerjaan</label>
+                <label className="text-slate-500 font-mono text-[9px] uppercase">
+                  {t("members.form.labels.occupation")}
+                </label>
                 <Input
                   value={m.memberFormValues.occupation}
                   onChange={(e) => m.setMemberFormValues({ ...m.memberFormValues, occupation: e.target.value })}
@@ -196,7 +220,9 @@ export default function Members() {
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-slate-500 font-mono text-[9px] uppercase">Pendidikan</label>
+                <label className="text-slate-500 font-mono text-[9px] uppercase">
+                  {t("members.form.labels.education")}
+                </label>
                 <Input
                   value={m.memberFormValues.education}
                   onChange={(e) => m.setMemberFormValues({ ...m.memberFormValues, education: e.target.value })}
@@ -204,16 +230,16 @@ export default function Members() {
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-slate-500 font-mono text-[9px] uppercase">RT / RW</label>
+                <label className="text-slate-500 font-mono text-[9px] uppercase">{t("members.form.labels.rtRw")}</label>
                 <div className="flex gap-2">
                   <Input
-                    placeholder="RT"
+                    placeholder={t("members.form.labels.rt")}
                     value={m.memberFormValues.rt}
                     onChange={(e) => m.setMemberFormValues({ ...m.memberFormValues, rt: e.target.value })}
                     className="bg-slate-950 border-slate-900 text-xs h-8 w-16"
                   />
                   <Input
-                    placeholder="RW"
+                    placeholder={t("members.form.labels.rw")}
                     value={m.memberFormValues.rw}
                     onChange={(e) => m.setMemberFormValues({ ...m.memberFormValues, rw: e.target.value })}
                     className="bg-slate-950 border-slate-900 text-xs h-8 w-16"
@@ -221,7 +247,9 @@ export default function Members() {
                 </div>
               </div>
               <div className="space-y-1">
-                <label className="text-slate-500 font-mono text-[9px] uppercase">Dusun</label>
+                <label className="text-slate-500 font-mono text-[9px] uppercase">
+                  {t("members.form.labels.hamlet")}
+                </label>
                 <Input
                   value={m.memberFormValues.hamlet}
                   onChange={(e) => m.setMemberFormValues({ ...m.memberFormValues, hamlet: e.target.value })}
@@ -229,7 +257,9 @@ export default function Members() {
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-slate-500 font-mono text-[9px] uppercase">Status Keanggotaan</label>
+                <label className="text-slate-500 font-mono text-[9px] uppercase">
+                  {t("members.form.labels.memberStatus")}
+                </label>
                 <Select
                   value={m.memberFormValues.status}
                   onValueChange={(val) =>
@@ -240,13 +270,15 @@ export default function Members() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="bg-[#0b101c] border-slate-900 text-white text-xs">
-                    <SelectItem value="aktif">Aktif</SelectItem>
-                    <SelectItem value="nonaktif">Nonaktif</SelectItem>
+                    <SelectItem value="aktif">{t("members.filterActive")}</SelectItem>
+                    <SelectItem value="nonaktif">{t("members.filterInactive")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div className="space-y-1">
-                <label className="text-slate-500 font-mono text-[9px] uppercase">Simpanan Pokok</label>
+                <label className="text-slate-500 font-mono text-[9px] uppercase">
+                  {t("members.form.labels.savingsPokok")}
+                </label>
                 <Input
                   type="number"
                   value={m.memberFormValues.savings_pokok}
@@ -257,7 +289,9 @@ export default function Members() {
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-slate-500 font-mono text-[9px] uppercase">Simpanan Wajib</label>
+                <label className="text-slate-500 font-mono text-[9px] uppercase">
+                  {t("members.form.labels.savingsWajib")}
+                </label>
                 <Input
                   type="number"
                   value={m.memberFormValues.savings_wajib}
@@ -268,7 +302,9 @@ export default function Members() {
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-slate-500 font-mono text-[9px] uppercase">Simpanan Sukarela</label>
+                <label className="text-slate-500 font-mono text-[9px] uppercase">
+                  {t("members.form.labels.savingsSukarela")}
+                </label>
                 <Input
                   type="number"
                   value={m.memberFormValues.savings_sukarela}
@@ -279,7 +315,9 @@ export default function Members() {
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-slate-500 font-mono text-[9px] uppercase">Total Pinjaman</label>
+                <label className="text-slate-500 font-mono text-[9px] uppercase">
+                  {t("members.form.labels.totalLoan")}
+                </label>
                 <Input
                   type="number"
                   value={m.memberFormValues.loan_total}
@@ -288,7 +326,9 @@ export default function Members() {
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-slate-500 font-mono text-[9px] uppercase">Outstanding Pinjaman</label>
+                <label className="text-slate-500 font-mono text-[9px] uppercase">
+                  {t("members.form.labels.outstandingLoan")}
+                </label>
                 <Input
                   type="number"
                   value={m.memberFormValues.loan_outstanding}
@@ -299,7 +339,9 @@ export default function Members() {
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-slate-500 font-mono text-[9px] uppercase">Status Pinjaman</label>
+                <label className="text-slate-500 font-mono text-[9px] uppercase">
+                  {t("members.form.labels.loanStatus")}
+                </label>
                 <Input
                   value={m.memberFormValues.loan_status}
                   onChange={(e) => m.setMemberFormValues({ ...m.memberFormValues, loan_status: e.target.value })}
@@ -314,10 +356,10 @@ export default function Members() {
                 onClick={() => m.setShowMemberModal(false)}
                 className="text-xs border-slate-900"
               >
-                Batal
+                {t("members.form.cancel")}
               </Button>
               <Button type="submit" className="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold text-xs">
-                {m.memberFormType === "add" ? "Simpan Anggota" : "Update Anggota"}
+                {m.memberFormType === "add" ? t("members.form.saveAdd") : t("members.form.saveEdit")}
               </Button>
             </DialogFooter>
           </form>

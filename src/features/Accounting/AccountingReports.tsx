@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { CoaAccount } from "@/types";
 
@@ -49,6 +50,7 @@ function Row({ label, value, accent = false }: { label: string; value: string; a
 }
 
 export default function AccountingReports({ coaAccounts }: { coaAccounts: CoaAccount[] }) {
+  const { t } = useTranslation();
   const r = computeReports(coaAccounts);
 
   return (
@@ -56,46 +58,62 @@ export default function AccountingReports({ coaAccounts }: { coaAccounts: CoaAcc
       {/* Neraca */}
       <div className="bg-[#0b101c]/90 border border-slate-900 rounded-xl p-4">
         <h4 className="text-xs font-bold text-slate-400 font-mono tracking-wider uppercase border-b border-slate-900 pb-2 mb-3">
-          Neraca (Statement of Financial Position)
+          {t("accounting.reports.neraca.title")}
         </h4>
         <Table>
           <TableHeader>
             <TableRow className="border-slate-900 hover:bg-transparent">
-              <TableHead className="text-[9px] font-mono text-slate-500 py-1">Akun</TableHead>
-              <TableHead className="text-[9px] font-mono text-slate-500 py-1 text-right">Saldo (Rp)</TableHead>
+              <TableHead className="text-[9px] font-mono text-slate-500 py-1">
+                {t("accounting.reports.neraca.account")}
+              </TableHead>
+              <TableHead className="text-[9px] font-mono text-slate-500 py-1 text-right">
+                {t("accounting.reports.neraca.balance")}
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             <TableRow className="border-slate-900">
               <TableCell className="text-[9px] font-mono text-emerald-400 font-bold py-1" colSpan={2}>
-                ASET
+                {t("accounting.reports.neraca.aset")}
               </TableCell>
             </TableRow>
             {r.assets.map((a) => (
               <Row key={a.code} label={a.name} value={a.balance.toLocaleString()} />
             ))}
-            <Row label="Total Aset" value={r.totalAssets.toLocaleString()} accent />
+            <Row
+              label={`${t("common.total")} ${t("accounting.reports.neraca.aset")}`}
+              value={r.totalAssets.toLocaleString()}
+              accent
+            />
             <TableRow className="border-slate-900">
               <TableCell className="text-[9px] font-mono text-amber-400 font-bold py-1" colSpan={2}>
-                KEWAJIBAN
+                {t("accounting.reports.neraca.kewajiban")}
               </TableCell>
             </TableRow>
             {r.liabilities.map((a) => (
               <Row key={a.code} label={a.name} value={a.balance.toLocaleString()} />
             ))}
-            <Row label="Total Kewajiban" value={r.totalLiabilities.toLocaleString()} accent />
+            <Row
+              label={`${t("common.total")} ${t("accounting.reports.neraca.kewajiban")}`}
+              value={r.totalLiabilities.toLocaleString()}
+              accent
+            />
             <TableRow className="border-slate-900">
               <TableCell className="text-[9px] font-mono text-blue-400 font-bold py-1" colSpan={2}>
-                EKUITAS
+                {t("accounting.reports.neraca.ekuitas")}
               </TableCell>
             </TableRow>
             {r.equity.map((a) => (
               <Row key={a.code} label={a.name} value={a.balance.toLocaleString()} />
             ))}
-            <Row label="Total Ekuitas" value={r.totalEquity.toLocaleString()} accent />
+            <Row
+              label={`${t("common.total")} ${t("accounting.reports.neraca.ekuitas")}`}
+              value={r.totalEquity.toLocaleString()}
+              accent
+            />
             <TableRow className="border-slate-900 bg-emerald-500/5">
               <TableCell className="text-[9px] font-mono text-white font-bold py-1">
-                Total Kewajiban + Ekuitas
+                {t("accounting.reports.neraca.totalLiabilitiesEquity")}
               </TableCell>
               <TableCell className="text-[9px] font-mono text-white font-bold py-1 text-right">
                 Rp {(r.totalLiabilities + r.totalEquity).toLocaleString()}
@@ -108,38 +126,52 @@ export default function AccountingReports({ coaAccounts }: { coaAccounts: CoaAcc
       {/* Laba Rugi */}
       <div className="bg-[#0b101c]/90 border border-slate-900 rounded-xl p-4">
         <h4 className="text-xs font-bold text-slate-400 font-mono tracking-wider uppercase border-b border-slate-900 pb-2 mb-3">
-          Laba Rugi (Income Statement)
+          {t("accounting.reports.labarugi.title")}
         </h4>
         <Table>
           <TableHeader>
             <TableRow className="border-slate-900 hover:bg-transparent">
-              <TableHead className="text-[9px] font-mono text-slate-500 py-1">Akun</TableHead>
-              <TableHead className="text-[9px] font-mono text-slate-500 py-1 text-right">Saldo (Rp)</TableHead>
+              <TableHead className="text-[9px] font-mono text-slate-500 py-1">
+                {t("accounting.reports.neraca.account")}
+              </TableHead>
+              <TableHead className="text-[9px] font-mono text-slate-500 py-1 text-right">
+                {t("accounting.reports.neraca.balance")}
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             <TableRow className="border-slate-900">
               <TableCell className="text-[9px] font-mono text-emerald-400 font-bold py-1" colSpan={2}>
-                PENDAPATAN
+                {t("accounting.reports.labarugi.pendapatan")}
               </TableCell>
             </TableRow>
             {r.revenues.map((a) => (
               <Row key={a.code} label={a.name} value={a.balance.toLocaleString()} />
             ))}
-            <Row label="Total Pendapatan" value={r.totalRevenue.toLocaleString()} accent />
+            <Row
+              label={`${t("common.total")} ${t("accounting.reports.labarugi.pendapatan")}`}
+              value={r.totalRevenue.toLocaleString()}
+              accent
+            />
             <TableRow className="border-slate-900">
               <TableCell className="text-[9px] font-mono text-rose-400 font-bold py-1" colSpan={2}>
-                BEBAN
+                {t("accounting.reports.labarugi.beban")}
               </TableCell>
             </TableRow>
             {r.expenses.map((a) => (
               <Row key={a.code} label={a.name} value={a.balance.toLocaleString()} />
             ))}
-            <Row label="Total Beban" value={r.totalExpense.toLocaleString()} accent />
-            <Row label="SHU Kotor" value={r.shuKotor.toLocaleString()} accent />
-            <Row label="Pajak (10%)" value={r.tax.toLocaleString()} />
+            <Row
+              label={`${t("common.total")} ${t("accounting.reports.labarugi.beban")}`}
+              value={r.totalExpense.toLocaleString()}
+              accent
+            />
+            <Row label={t("accounting.reports.labarugi.shuGross")} value={r.shuKotor.toLocaleString()} accent />
+            <Row label={t("accounting.reports.labarugi.tax")} value={r.tax.toLocaleString()} />
             <TableRow className="border-slate-900 bg-emerald-500/5">
-              <TableCell className="text-[9px] font-mono text-white font-bold py-1">SHU Bersih</TableCell>
+              <TableCell className="text-[9px] font-mono text-white font-bold py-1">
+                {t("accounting.reports.labarugi.shuNet")}
+              </TableCell>
               <TableCell className="text-[9px] font-mono text-emerald-400 font-bold py-1 text-right">
                 Rp {r.shuBersih.toLocaleString()}
               </TableCell>

@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { AlertTriangle, Info } from "lucide-react";
@@ -21,25 +22,27 @@ const LEVEL_ICON: Record<string, typeof Info> = {
   critical: AlertTriangle,
 };
 
-const PEND_ITEMS = [
-  { label: "Simpanan", value: 320 },
-  { label: "Pinjaman", value: 580 },
-  { label: "Unit Usaha", value: 210 },
-  { label: "Lain-lain", value: 165 },
-];
-
-const BEBAN_ITEMS = [
-  { label: "Operasional", value: 180 },
-  { label: "Bunga", value: 95 },
-  { label: "Penyusutan", value: 45 },
-  { label: "Lain-lain", value: 60 },
-];
-
 export default function Dashboard({ coopProfile, ewsAlerts, currentUser }: Props) {
+  const { t } = useTranslation();
+
   const activeAlerts = ewsAlerts.filter((a) => a.is_active === 1);
   const ragScore = coopProfile?.health_score ?? 0;
 
-  const maxBar = Math.max(...PEND_ITEMS.map((d) => d.value), ...BEBAN_ITEMS.map((d) => d.value));
+  const pendItems = [
+    { label: t("dashboard.simpanan"), value: 320 },
+    { label: t("dashboard.pinjaman"), value: 580 },
+    { label: t("dashboard.unitUsaha"), value: 210 },
+    { label: t("dashboard.lainLain"), value: 165 },
+  ];
+
+  const bebanItems = [
+    { label: t("dashboard.operasional"), value: 180 },
+    { label: t("dashboard.bunga"), value: 95 },
+    { label: t("dashboard.penyusutan"), value: 45 },
+    { label: t("dashboard.lainLain"), value: 60 },
+  ];
+
+  const maxBar = Math.max(...pendItems.map((d) => d.value), ...bebanItems.map((d) => d.value));
 
   return (
     <div className="flex-1 overflow-auto p-6 space-y-6">
@@ -50,7 +53,7 @@ export default function Dashboard({ coopProfile, ewsAlerts, currentUser }: Props
           <Card className="bg-[#0b101c]/90 border-slate-900 text-slate-300">
             <CardHeader>
               <CardTitle className="text-xs font-mono tracking-widest text-slate-400 uppercase">
-                Selamat Datang
+                {t("dashboard.welcome")}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
@@ -63,7 +66,9 @@ export default function Dashboard({ coopProfile, ewsAlerts, currentUser }: Props
               {coopProfile && (
                 <div className="space-y-1 pt-2 border-t border-slate-900">
                   <p className="text-sm font-semibold text-emerald-400">{coopProfile.name}</p>
-                  <p className="text-[10px] font-mono text-slate-500">BADAN HUKUM: {coopProfile.legal_id}</p>
+                  <p className="text-[10px] font-mono text-slate-500">
+                    {t("dashboard.legalId")}: {coopProfile.legal_id}
+                  </p>
                   <p className="text-[10px] font-mono text-slate-500">
                     {coopProfile.regency}, {coopProfile.province}
                   </p>
@@ -76,24 +81,32 @@ export default function Dashboard({ coopProfile, ewsAlerts, currentUser }: Props
             <CardHeader className="pb-2">
               <CardTitle className="text-xs font-mono tracking-widest text-slate-400 uppercase flex items-center gap-2">
                 <AlertTriangle className="h-3 w-3 text-amber-400" />
-                EWS Alerts
+                {t("dashboard.ewAlerts")}
               </CardTitle>
             </CardHeader>
             <CardContent className="p-0">
               <Table>
                 <TableHeader>
                   <TableRow className="border-slate-900 hover:bg-transparent">
-                    <TableHead className="text-[10px] font-mono text-slate-500 py-2 pl-4">Level</TableHead>
-                    <TableHead className="text-[10px] font-mono text-slate-500 py-2">Indikator</TableHead>
-                    <TableHead className="text-[10px] font-mono text-slate-500 py-2">Pesan</TableHead>
-                    <TableHead className="text-[10px] font-mono text-slate-500 py-2 pr-4 text-right">Waktu</TableHead>
+                    <TableHead className="text-[10px] font-mono text-slate-500 py-2 pl-4">
+                      {t("dashboard.level")}
+                    </TableHead>
+                    <TableHead className="text-[10px] font-mono text-slate-500 py-2">
+                      {t("dashboard.indicator")}
+                    </TableHead>
+                    <TableHead className="text-[10px] font-mono text-slate-500 py-2">
+                      {t("dashboard.message")}
+                    </TableHead>
+                    <TableHead className="text-[10px] font-mono text-slate-500 py-2 pr-4 text-right">
+                      {t("dashboard.time")}
+                    </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {activeAlerts.length === 0 && (
                     <TableRow className="border-slate-900 hover:bg-transparent">
                       <TableCell colSpan={4} className="text-[10px] text-slate-600 py-4 text-center">
-                        Tidak ada alert aktif
+                        {t("dashboard.noAlerts")}
                       </TableCell>
                     </TableRow>
                   )}
@@ -128,11 +141,11 @@ export default function Dashboard({ coopProfile, ewsAlerts, currentUser }: Props
         <div className="space-y-6">
           <div className="grid grid-cols-2 gap-4">
             {[
-              { label: "Total Anggota", value: "328", accent: "text-white" },
-              { label: "Total Aset", value: "Rp 1,275M", accent: "text-emerald-400" },
-              { label: "SHU Tahunan", value: "Rp 178M", accent: "text-emerald-400" },
+              { label: t("dashboard.totalMembers"), value: "328", accent: "text-white" },
+              { label: t("dashboard.totalAssets"), value: "Rp 1,275M", accent: "text-emerald-400" },
+              { label: t("dashboard.shuAnnual"), value: "Rp 178M", accent: "text-emerald-400" },
               {
-                label: "Kesehatan RAG",
+                label: t("dashboard.healthScore"),
                 value: ragScore > 0 ? `${ragScore}%` : "--",
                 accent: ragScore >= 70 ? "text-emerald-400" : "text-amber-400",
               },
@@ -149,15 +162,15 @@ export default function Dashboard({ coopProfile, ewsAlerts, currentUser }: Props
           <Card className="bg-[#0b101c]/90 border-slate-900 text-slate-300">
             <CardHeader className="pb-2">
               <CardTitle className="text-xs font-mono tracking-widest text-slate-400 uppercase">
-                Pendapatan &amp; Beban
+                {t("dashboard.incomeExpense")}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 <div>
-                  <p className="text-[10px] font-mono text-emerald-400 mb-2">PENDAPATAN</p>
+                  <p className="text-[10px] font-mono text-emerald-400 mb-2">{t("dashboard.income")}</p>
                   <div className="space-y-1.5">
-                    {PEND_ITEMS.map((d) => (
+                    {pendItems.map((d) => (
                       <div key={d.label} className="flex items-center gap-2">
                         <span className="text-[9px] font-mono text-slate-500 w-20 text-right">{d.label}</span>
                         <div className="flex-1 h-3 bg-slate-900 rounded-sm overflow-hidden">
@@ -172,9 +185,9 @@ export default function Dashboard({ coopProfile, ewsAlerts, currentUser }: Props
                   </div>
                 </div>
                 <div>
-                  <p className="text-[10px] font-mono text-rose-400 mb-2">BEBAN</p>
+                  <p className="text-[10px] font-mono text-rose-400 mb-2">{t("dashboard.expense")}</p>
                   <div className="space-y-1.5">
-                    {BEBAN_ITEMS.map((d) => (
+                    {bebanItems.map((d) => (
                       <div key={d.label} className="flex items-center gap-2">
                         <span className="text-[9px] font-mono text-slate-500 w-20 text-right">{d.label}</span>
                         <div className="flex-1 h-3 bg-slate-900 rounded-sm overflow-hidden">

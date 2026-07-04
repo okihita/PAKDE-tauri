@@ -42,6 +42,8 @@ export default tseslint.config(
     rules: {
       // File size
       "local/max-lines-per-file": ["error", { max: 500 }],
+      // Labels & i18n
+      "local/no-hardcoded-labels": "error",
       // TypeScript strictness
       "@typescript-eslint/no-explicit-any": "warn",
       "@typescript-eslint/consistent-type-imports": [

@@ -1,5 +1,6 @@
 /* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useState, useCallback, type ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 import { CheckCircle2, XCircle, AlertTriangle } from "lucide-react";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -23,6 +24,7 @@ const ToastContext = createContext<ToastContextValue | null>(null);
 let toastId = 0;
 
 export function ToastProvider({ children }: { children: ReactNode }) {
+  const { t } = useTranslation();
   const [toasts, setToasts] = useState<ToastItem[]>([]);
 
   // ── Confirm dialog state ──
@@ -87,19 +89,19 @@ export function ToastProvider({ children }: { children: ReactNode }) {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-sm font-bold text-slate-200">
               <AlertTriangle className="h-4 w-4 text-amber-400" />
-              Konfirmasi
+              {t("common.confirm")}
             </DialogTitle>
           </DialogHeader>
           <p className="text-xs text-slate-400 font-mono py-2">{confirmMessage}</p>
           <DialogFooter className="gap-2">
             <Button variant="outline" onClick={() => handleConfirm(false)} className="text-xs border-slate-900">
-              Batal
+              {t("common.cancel")}
             </Button>
             <Button
               onClick={() => handleConfirm(true)}
               className="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold text-xs"
             >
-              Lanjutkan
+              {t("common.continue")}
             </Button>
           </DialogFooter>
         </DialogContent>

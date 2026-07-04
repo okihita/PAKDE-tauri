@@ -1,0 +1,359 @@
+{
+  "common": {
+    "cancel": "Batal",
+    "save": "Simpan",
+    "delete": "Hapus",
+    "edit": "Edit",
+    "search": "Cari",
+    "loading": "Memuat...",
+    "yes": "Ya",
+    "no": "Tidak",
+    "confirm": "Konfirmasi",
+    "continue": "Lanjutkan",
+    "back": "Kembali",
+    "close": "Tutup",
+    "add": "Tambah",
+    "remove": "Hapus",
+    "update": "Update",
+    "all": "Semua",
+    "active": "Aktif",
+    "inactive": "Nonaktif",
+    "male": "Laki-laki",
+    "female": "Perempuan",
+    "none": "Tidak ada",
+    "total": "Total",
+    "amount": "Jumlah",
+    "date": "Tanggal",
+    "description": "Keterangan",
+    "status": "Status",
+    "action": "Aksi",
+    "name": "Nama",
+    "code": "Kode",
+    "type": "Tipe",
+    "balance": "Saldo"
+  },
+  "splash": {
+    "brand": "KDKMP",
+    "title": "COCKPIT PANEL",
+    "subtitle": "SQLite Local Node Initialization",
+    "version": "VER 0.5.0 • SAK EP COMPLIANT"
+  },
+  "dbError": {
+    "title": "Koneksi Database Gagal",
+    "message": "Sistem tidak dapat membaca database internal SQLite. Coba jalankan ulang aplikasi.",
+    "reload": "Muat Ulang"
+  },
+  "sidebar": {
+    "connected": "Connected to local.db",
+    "nav": {
+      "home": "Beranda Utama",
+      "members": "Database Anggota",
+      "accounting": "Akuntansi SAK EP",
+      "feasibility": "Kelayakan Finansial",
+      "sync": "Sinkronisasi Data",
+      "settings": "Pengaturan"
+    },
+    "healthScore": "HEALTH SCORE",
+    "rag": "RAG",
+    "systemNormal": "Sistem Normal",
+    "criticalAlerts_one": "{{count}} Critical Alert",
+    "criticalAlerts_other": "{{count}} Critical Alerts"
+  },
+  "dashboard": {
+    "welcome": "Selamat Datang",
+    "legalId": "BADAN HUKUM",
+    "ewAlerts": "EWS Alerts",
+    "noAlerts": "Tidak ada alert aktif",
+    "level": "Level",
+    "indicator": "Indikator",
+    "message": "Pesan",
+    "time": "Waktu",
+    "totalMembers": "Total Anggota",
+    "totalAssets": "Total Aset",
+    "shuAnnual": "SHU Tahunan",
+    "healthScore": "Kesehatan RAG",
+    "incomeExpense": "Pendapatan & Beban",
+    "income": "PENDAPATAN",
+    "expense": "BEBAN",
+    "simpanan": "Simpanan",
+    "pinjaman": "Pinjaman",
+    "unitUsaha": "Unit Usaha",
+    "lainLain": "Lain-lain",
+    "operasional": "Operasional",
+    "bunga": "Bunga",
+    "penyusutan": "Penyusutan"
+  },
+  "members": {
+    "title": "Database Anggota",
+    "addButton": "Tambah Anggota",
+    "searchPlaceholder": "Cari NIK atau Nama Anggota...",
+    "filterAll": "Semua Status",
+    "filterActive": "Aktif",
+    "filterInactive": "Nonaktif",
+    "tableHeaders": {
+      "nik": "NIK",
+      "name": "Nama",
+      "gender": "Gender",
+      "status": "Status",
+      "pokok": "Simp. Pokok",
+      "wajib": "Simp. Wajib",
+      "outstanding": "Outstanding",
+      "action": "Aksi",
+      "noData": "Tidak ada data anggota."
+    },
+    "form": {
+      "titleAdd": "Tambah Anggota Baru",
+      "titleEdit": "Edit Data Anggota",
+      "cancel": "Batal",
+      "saveAdd": "Simpan Anggota",
+      "saveEdit": "Update Anggota",
+      "labels": {
+        "nik": "NIK (16 digit)",
+        "name": "Nama Lengkap",
+        "gender": "Jenis Kelamin",
+        "placeOfBirth": "Tempat Lahir",
+        "dateOfBirth": "Tgl Lahir",
+        "occupation": "Pekerjaan",
+        "education": "Pendidikan",
+        "rtRw": "RT / RW",
+        "rt": "RT",
+        "rw": "RW",
+        "hamlet": "Dusun",
+        "memberStatus": "Status Keanggotaan",
+        "savingsPokok": "Simpanan Pokok",
+        "savingsWajib": "Simpanan Wajib",
+        "savingsSukarela": "Simpanan Sukarela",
+        "totalLoan": "Total Pinjaman",
+        "outstandingLoan": "Outstanding Pinjaman",
+        "loanStatus": "Status Pinjaman"
+      }
+    }
+  },
+  "accounting": {
+    "tabs": {
+      "coa": "COA",
+      "journal": "Jurnal",
+      "ledger": "Buku Besar",
+      "neraca": "Neraca",
+      "labarugi": "Laba Rugi"
+    },
+    "coa": {
+      "addButton": "Tambah Akun",
+      "tableHeaders": {
+        "code": "Kode",
+        "name": "Nama Akun",
+        "type": "Tipe",
+        "normalBalance": "Saldo Normal",
+        "balance": "Saldo"
+      },
+      "modal": {
+        "title": "Tambah Akun COA",
+        "codeLabel": "Kode Akun",
+        "nameLabel": "Nama Akun",
+        "typeLabel": "Tipe Akun",
+        "balanceTypeLabel": "Saldo Normal",
+        "initialBalanceLabel": "Saldo Awal",
+        "cancel": "Batal",
+        "save": "Simpan Akun"
+      },
+      "types": {
+        "aset": "Aset",
+        "kewajiban": "Kewajiban",
+        "ekuitas": "Ekuitas",
+        "pendapatan": "Pendapatan",
+        "beban": "Beban"
+      },
+      "balances": {
+        "debit": "Debit",
+        "kredit": "Kredit"
+      }
+    },
+    "journal": {
+      "addButton": "Entri Jurnal Baru",
+      "empty": "Belum ada entri jurnal. Buat entri baru untuk memulai.",
+      "modal": {
+        "title": "Entri Jurnal Baru",
+        "numberLabel": "Nomor Bukti",
+        "dateLabel": "Tanggal",
+        "descLabel": "Keterangan",
+        "linesLabel": "Baris Jurnal",
+        "codePlaceholder": "Kode Akun",
+        "debitPlaceholder": "Debit",
+        "creditPlaceholder": "Kredit",
+        "addLine": "+ Tambah Baris",
+        "cancel": "Batal",
+        "save": "Simpan Jurnal"
+      },
+      "tableHeaders": {
+        "account": "Akun",
+        "name": "Nama",
+        "debit": "Debit",
+        "kredit": "Kredit"
+      }
+    },
+    "ledger": {
+      "selectLabel": "Pilih Akun:",
+      "balanceStart": "Saldo Awal:",
+      "balanceEnd": "Saldo Akhir:",
+      "empty": "Tidak ada mutasi untuk akun ini.",
+      "tableHeaders": {
+        "date": "Tanggal",
+        "number": "No. Bukti",
+        "description": "Keterangan",
+        "debit": "Debit",
+        "kredit": "Kredit",
+        "balance": "Saldo"
+      }
+    },
+    "reports": {
+      "neraca": {
+        "title": "Neraca (Statement of Financial Position)",
+        "account": "Akun",
+        "balance": "Saldo (Rp)",
+        "aset": "ASET",
+        "kewajiban": "KEWAJIBAN",
+        "ekuitas": "EKUITAS",
+        "totalLiabilitiesEquity": "Total Kewajiban + Ekuitas"
+      },
+      "labarugi": {
+        "title": "Laba Rugi (Income Statement)",
+        "pendapatan": "PENDAPATAN",
+        "beban": "BEBAN",
+        "shuGross": "SHU Kotor",
+        "tax": "Pajak (10%)",
+        "shuNet": "SHU Bersih"
+      }
+    }
+  },
+  "feasibility": {
+    "tabs": {
+      "calculator": "Kalkulator Kelayakan",
+      "sensitivity": "Analisis Sensitivitas"
+    },
+    "calculator": {
+      "title": "Parameter Proyeksi Investasi",
+      "investment": "Investasi Awal (Rp)",
+      "years": "Tahun Proyeksi",
+      "cashFlows": "Arus Kas (koma)",
+      "discountRate": "Discount Rate (%)",
+      "opportunityCost": "Opportunity Cost (%)",
+      "calculate": "Hitung Kelayakan",
+      "resultsTitle": "Hasil Analisis Kelayakan",
+      "enpv": "ENPV",
+      "eirr": "EIRR",
+      "ebcr": "EBCR",
+      "tier": "Tier",
+      "pass": "PASS",
+      "fail": "FAIL",
+      "tiers": {
+        "1": "Layak Proyeksi",
+        "2": "Cukup Layak (Risiko Waspada)",
+        "3": "Tidak Layak"
+      }
+    },
+    "sensitivity": {
+      "title": "Skenario Sensitivitas",
+      "scenarios": {
+        "optimis": "Optimis",
+        "moderat": "Moderat",
+        "pesimis": "Pesimis"
+      },
+      "capital": "Kapital Skenario",
+      "enpv": "ENPV",
+      "eirr": "EIRR",
+      "ebcr": "EBCR",
+      "tier": "Tier",
+      "tiers": {
+        "1": "Layak",
+        "2": "Cukup Layak",
+        "3": "Tidak Layak"
+      }
+    }
+  },
+  "sync": {
+    "title": "Sinkronisasi & EWS Sync Dashboard",
+    "description": "Hubungkan node desa Anda ke API kabupaten untuk upload data transaksi.",
+    "syncButton": "Sinkronisasi Data Sekarang",
+    "syncing": "Mensinkronisasi...",
+    "historyTitle": "Riwayat Sinkronisasi",
+    "tableHeaders": {
+      "id": "ID",
+      "direction": "Arah",
+      "startedAt": "Waktu Mulai",
+      "status": "Status",
+      "entries": "Entri"
+    },
+    "status": {
+      "success": "BERHASIL",
+      "failed": "GAGAL"
+    },
+    "entryLabel": "{{count}} entri data",
+    "empty": "Belum ada riwayat sinkronisasi terdaftar di database.",
+    "steps": {
+      "connecting": "Menghubungkan ke API server node Mojokerto...",
+      "uploading": "Mengunggah log transaksi jurnal & anggota baru...",
+      "syncing": "Singkronisasi parameter rasio EWS kabupaten...",
+      "done": "Sinkronisasi Selesai!",
+      "failed": "Sinkronisasi Gagal: {{error}}"
+    }
+  },
+  "settings": {
+    "profileTitle": "Profil Organisasi Koperasi Desa",
+    "profileFields": {
+      "name": "Nama Koperasi",
+      "legalId": "Nomor Legal Hukum",
+      "address": "Alamat",
+      "village": "Desa/Kelurahan",
+      "district": "Kecamatan",
+      "regency": "Kabupaten/Kota",
+      "province": "Provinsi",
+      "postalCode": "Kode Pos",
+      "phone": "Telepon",
+      "email": "Email"
+    },
+    "saveProfile": "Simpan Profil Koperasi",
+    "updater": {
+      "title": "Pemeliharaan Aplikasi & Update OTA",
+      "description": "Sambungkan ke repositori GitHub untuk mengunduh update biner rilis KDKMP secara langsung.",
+      "checkButton": "Cek Pembaruan Sistem Sekarang",
+      "checking": "Menghubungi Repositori...",
+      "checkingRilis": "Memeriksa rilis KDKMP di GitHub...",
+      "downloading": "Mengunduh update v{{version}}...",
+      "installing": "Unduhan selesai. Menginstal...",
+      "relaunching": "Relaunching...",
+      "upToDate": "Aplikasi sudah di versi terbaru!",
+      "failed": "Gagal: {{error}}",
+      "progress": "Progress"
+    },
+    "preferences": {
+      "title": "Preferensi Interface",
+      "language": "Bahasa",
+      "languageId": "🇮🇩 Bahasa Indonesia",
+      "languageEn": "🇬🇧 English",
+      "theme": "Tema Warna Cockpit",
+      "themeDark": "🌙 MODE GELAP",
+      "themeLight": "☀️ MODE TERANG",
+      "fontSize": "Ukuran Skala Huruf",
+      "fontNormal": "NORMAL",
+      "fontLarge": "BESAR"
+    }
+  },
+  "toast": {
+    "profileSaveSuccess": "Profil Koperasi berhasil disimpan!",
+    "profileSaveFailed": "Gagal menyimpan profil: {{error}}",
+    "memberSaveFailed": "Gagal menyimpan anggota: {{error}}",
+    "nikInvalid": "Error: NIK harus 16 digit.",
+    "nameRequired": "Error: Nama harus diisi.",
+    "memberDeleteBlocked": "Error: Tidak dapat menghapus anggota dengan pinjaman aktif.",
+    "memberDeleteConfirm": "Apakah Anda yakin ingin menghapus anggota {{name}}?",
+    "memberDeleteFailed": "Gagal menghapus anggota: {{error}}",
+    "coaFieldsRequired": "Error: Kode dan Nama Akun harus diisi.",
+    "coaCreateFailed": "Gagal menambah akun: {{error}}",
+    "journalFieldsRequired": "Error: Nomor Bukti dan Keterangan harus diisi.",
+    "journalUnbalanced": "Error: Jurnal tidak seimbang. Selisih: Rp {{diff}}",
+    "journalZeroAmount": "Error: Jumlah transaksi tidak boleh Rp 0.",
+    "journalSaveSuccess": "Transaksi Jurnal berhasil disimpan!",
+    "journalSaveFailed": "Gagal menyimpan transaksi: {{error}}",
+    "feasibilityCashFlowMismatch": "Error: Jumlah elemen arus kas tidak sesuai dengan Tahun Proyeksi."
+  }
+}

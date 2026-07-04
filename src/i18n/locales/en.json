@@ -1,0 +1,359 @@
+{
+  "common": {
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "search": "Search",
+    "loading": "Loading...",
+    "yes": "Yes",
+    "no": "No",
+    "confirm": "Confirm",
+    "continue": "Continue",
+    "back": "Back",
+    "close": "Close",
+    "add": "Add",
+    "remove": "Remove",
+    "update": "Update",
+    "all": "All",
+    "active": "Active",
+    "inactive": "Inactive",
+    "male": "Male",
+    "female": "Female",
+    "none": "None",
+    "total": "Total",
+    "amount": "Amount",
+    "date": "Date",
+    "description": "Description",
+    "status": "Status",
+    "action": "Action",
+    "name": "Name",
+    "code": "Code",
+    "type": "Type",
+    "balance": "Balance"
+  },
+  "splash": {
+    "brand": "KDKMP",
+    "title": "COCKPIT PANEL",
+    "subtitle": "SQLite Local Node Initialization",
+    "version": "VER 0.5.0 • SAK EP COMPLIANT"
+  },
+  "dbError": {
+    "title": "Database Connection Failed",
+    "message": "The system cannot read the internal SQLite database. Please restart the application.",
+    "reload": "Reload"
+  },
+  "sidebar": {
+    "connected": "Connected to local.db",
+    "nav": {
+      "home": "Dashboard",
+      "members": "Member Database",
+      "accounting": "SAK EP Accounting",
+      "feasibility": "Financial Feasibility",
+      "sync": "Data Synchronization",
+      "settings": "Settings"
+    },
+    "healthScore": "HEALTH SCORE",
+    "rag": "RAG",
+    "systemNormal": "System Normal",
+    "criticalAlerts_one": "{{count}} Critical Alert",
+    "criticalAlerts_other": "{{count}} Critical Alerts"
+  },
+  "dashboard": {
+    "welcome": "Welcome",
+    "legalId": "LEGAL ID",
+    "ewAlerts": "EWS Alerts",
+    "noAlerts": "No active alerts",
+    "level": "Level",
+    "indicator": "Indicator",
+    "message": "Message",
+    "time": "Time",
+    "totalMembers": "Total Members",
+    "totalAssets": "Total Assets",
+    "shuAnnual": "Annual SHU",
+    "healthScore": "RAG Health",
+    "incomeExpense": "Income & Expense",
+    "income": "INCOME",
+    "expense": "EXPENSE",
+    "simpanan": "Savings",
+    "pinjaman": "Loans",
+    "unitUsaha": "Business Units",
+    "lainLain": "Others",
+    "operasional": "Operational",
+    "bunga": "Interest",
+    "penyusutan": "Depreciation"
+  },
+  "members": {
+    "title": "Member Database",
+    "addButton": "Add Member",
+    "searchPlaceholder": "Search NIK or Member Name...",
+    "filterAll": "All Status",
+    "filterActive": "Active",
+    "filterInactive": "Inactive",
+    "tableHeaders": {
+      "nik": "NIK",
+      "name": "Name",
+      "gender": "Gender",
+      "status": "Status",
+      "pokok": "Principal Savings",
+      "wajib": "Mandatory Savings",
+      "outstanding": "Outstanding",
+      "action": "Actions",
+      "noData": "No member data."
+    },
+    "form": {
+      "titleAdd": "Add New Member",
+      "titleEdit": "Edit Member Data",
+      "cancel": "Cancel",
+      "saveAdd": "Save Member",
+      "saveEdit": "Update Member",
+      "labels": {
+        "nik": "NIK (16 digits)",
+        "name": "Full Name",
+        "gender": "Gender",
+        "placeOfBirth": "Place of Birth",
+        "dateOfBirth": "Date of Birth",
+        "occupation": "Occupation",
+        "education": "Education",
+        "rtRw": "RT / RW",
+        "rt": "RT",
+        "rw": "RW",
+        "hamlet": "Hamlet",
+        "memberStatus": "Membership Status",
+        "savingsPokok": "Principal Savings",
+        "savingsWajib": "Mandatory Savings",
+        "savingsSukarela": "Voluntary Savings",
+        "totalLoan": "Total Loan",
+        "outstandingLoan": "Outstanding Loan",
+        "loanStatus": "Loan Status"
+      }
+    }
+  },
+  "accounting": {
+    "tabs": {
+      "coa": "COA",
+      "journal": "Journal",
+      "ledger": "General Ledger",
+      "neraca": "Balance Sheet",
+      "labarugi": "Income Statement"
+    },
+    "coa": {
+      "addButton": "Add Account",
+      "tableHeaders": {
+        "code": "Code",
+        "name": "Account Name",
+        "type": "Type",
+        "normalBalance": "Normal Balance",
+        "balance": "Balance"
+      },
+      "modal": {
+        "title": "Add COA Account",
+        "codeLabel": "Account Code",
+        "nameLabel": "Account Name",
+        "typeLabel": "Account Type",
+        "balanceTypeLabel": "Normal Balance",
+        "initialBalanceLabel": "Initial Balance",
+        "cancel": "Cancel",
+        "save": "Save Account"
+      },
+      "types": {
+        "aset": "Asset",
+        "kewajiban": "Liability",
+        "ekuitas": "Equity",
+        "pendapatan": "Revenue",
+        "beban": "Expense"
+      },
+      "balances": {
+        "debit": "Debit",
+        "kredit": "Credit"
+      }
+    },
+    "journal": {
+      "addButton": "New Journal Entry",
+      "empty": "No journal entries yet. Create a new entry to get started.",
+      "modal": {
+        "title": "New Journal Entry",
+        "numberLabel": "Document Number",
+        "dateLabel": "Date",
+        "descLabel": "Description",
+        "linesLabel": "Journal Lines",
+        "codePlaceholder": "Account Code",
+        "debitPlaceholder": "Debit",
+        "creditPlaceholder": "Credit",
+        "addLine": "+ Add Line",
+        "cancel": "Cancel",
+        "save": "Save Journal"
+      },
+      "tableHeaders": {
+        "account": "Account",
+        "name": "Name",
+        "debit": "Debit",
+        "kredit": "Credit"
+      }
+    },
+    "ledger": {
+      "selectLabel": "Select Account:",
+      "balanceStart": "Beginning Balance:",
+      "balanceEnd": "Ending Balance:",
+      "empty": "No transactions for this account.",
+      "tableHeaders": {
+        "date": "Date",
+        "number": "Doc No.",
+        "description": "Description",
+        "debit": "Debit",
+        "kredit": "Credit",
+        "balance": "Balance"
+      }
+    },
+    "reports": {
+      "neraca": {
+        "title": "Balance Sheet (Statement of Financial Position)",
+        "account": "Account",
+        "balance": "Balance (Rp)",
+        "aset": "ASSETS",
+        "kewajiban": "LIABILITIES",
+        "ekuitas": "EQUITY",
+        "totalLiabilitiesEquity": "Total Liabilities + Equity"
+      },
+      "labarugi": {
+        "title": "Income Statement",
+        "pendapatan": "REVENUE",
+        "beban": "EXPENSES",
+        "shuGross": "Gross Surplus",
+        "tax": "Tax (10%)",
+        "shuNet": "Net Surplus"
+      }
+    }
+  },
+  "feasibility": {
+    "tabs": {
+      "calculator": "Feasibility Calculator",
+      "sensitivity": "Sensitivity Analysis"
+    },
+    "calculator": {
+      "title": "Investment Projection Parameters",
+      "investment": "Initial Investment (Rp)",
+      "years": "Projection Years",
+      "cashFlows": "Cash Flows (comma-separated)",
+      "discountRate": "Discount Rate (%)",
+      "opportunityCost": "Opportunity Cost (%)",
+      "calculate": "Calculate Feasibility",
+      "resultsTitle": "Feasibility Analysis Results",
+      "enpv": "ENPV",
+      "eirr": "EIRR",
+      "ebcr": "EBCR",
+      "tier": "Tier",
+      "pass": "PASS",
+      "fail": "FAIL",
+      "tiers": {
+        "1": "Feasible",
+        "2": "Marginally Feasible (Caution)",
+        "3": "Not Feasible"
+      }
+    },
+    "sensitivity": {
+      "title": "Sensitivity Scenarios",
+      "scenarios": {
+        "optimis": "Optimistic",
+        "moderat": "Moderate",
+        "pesimis": "Pessimistic"
+      },
+      "capital": "Scenario Capital",
+      "enpv": "ENPV",
+      "eirr": "EIRR",
+      "ebcr": "EBCR",
+      "tier": "Tier",
+      "tiers": {
+        "1": "Feasible",
+        "2": "Marginally Feasible",
+        "3": "Not Feasible"
+      }
+    }
+  },
+  "sync": {
+    "title": "Sync & EWS Dashboard",
+    "description": "Connect your village node to the district API to upload transaction data.",
+    "syncButton": "Sync Data Now",
+    "syncing": "Syncing...",
+    "historyTitle": "Sync History",
+    "tableHeaders": {
+      "id": "ID",
+      "direction": "Direction",
+      "startedAt": "Start Time",
+      "status": "Status",
+      "entries": "Entries"
+    },
+    "status": {
+      "success": "SUCCESS",
+      "failed": "FAILED"
+    },
+    "entryLabel": "{{count}} data entries",
+    "empty": "No sync history recorded in the database.",
+    "steps": {
+      "connecting": "Connecting to Mojokerto district API server...",
+      "uploading": "Uploading journal transactions & new member logs...",
+      "syncing": "Syncing district EWS ratio parameters...",
+      "done": "Synchronization Complete!",
+      "failed": "Sync Failed: {{error}}"
+    }
+  },
+  "settings": {
+    "profileTitle": "Cooperative Organization Profile",
+    "profileFields": {
+      "name": "Cooperative Name",
+      "legalId": "Legal Registration Number",
+      "address": "Address",
+      "village": "Village/Sub-district",
+      "district": "District",
+      "regency": "Regency/City",
+      "province": "Province",
+      "postalCode": "Postal Code",
+      "phone": "Phone",
+      "email": "Email"
+    },
+    "saveProfile": "Save Cooperative Profile",
+    "updater": {
+      "title": "Application Maintenance & OTA Updates",
+      "description": "Connect to the GitHub repository to download KDKMP release binary updates directly.",
+      "checkButton": "Check for System Updates Now",
+      "checking": "Connecting to Repository...",
+      "checkingRilis": "Checking KDKMP releases on GitHub...",
+      "downloading": "Downloading update v{{version}}...",
+      "installing": "Download complete. Installing...",
+      "relaunching": "Relaunching...",
+      "upToDate": "Application is already up to date!",
+      "failed": "Failed: {{error}}",
+      "progress": "Progress"
+    },
+    "preferences": {
+      "title": "Interface Preferences",
+      "language": "Language",
+      "languageId": "🇮🇩 Bahasa Indonesia",
+      "languageEn": "🇬🇧 English",
+      "theme": "Cockpit Theme",
+      "themeDark": "🌙 DARK MODE",
+      "themeLight": "☀️ LIGHT MODE",
+      "fontSize": "Font Scale",
+      "fontNormal": "NORMAL",
+      "fontLarge": "LARGE"
+    }
+  },
+  "toast": {
+    "profileSaveSuccess": "Cooperative profile saved successfully!",
+    "profileSaveFailed": "Failed to save profile: {{error}}",
+    "memberSaveFailed": "Failed to save member: {{error}}",
+    "nikInvalid": "Error: NIK must be 16 digits.",
+    "nameRequired": "Error: Name is required.",
+    "memberDeleteBlocked": "Error: Cannot delete member with active loans.",
+    "memberDeleteConfirm": "Are you sure you want to delete member {{name}}?",
+    "memberDeleteFailed": "Failed to delete member: {{error}}",
+    "coaFieldsRequired": "Error: Account code and name are required.",
+    "coaCreateFailed": "Failed to add account: {{error}}",
+    "journalFieldsRequired": "Error: Document number and description are required.",
+    "journalUnbalanced": "Error: Journal is unbalanced. Difference: Rp {{diff}}",
+    "journalZeroAmount": "Error: Transaction amount cannot be Rp 0.",
+    "journalSaveSuccess": "Journal entry saved successfully!",
+    "journalSaveFailed": "Failed to save transaction: {{error}}",
+    "feasibilityCashFlowMismatch": "Error: Number of cash flow elements does not match projection years."
+  }
+}

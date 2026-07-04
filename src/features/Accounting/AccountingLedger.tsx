@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { CoaAccount, LedgerLine } from "@/types";
@@ -19,10 +20,12 @@ export default function AccountingLedger({
   balanceStart,
   balanceEnd,
 }: Props) {
+  const { t } = useTranslation();
+
   return (
     <div className="space-y-3">
       <div className="flex items-center gap-3">
-        <span className="text-[10px] font-mono text-slate-500">Pilih Akun:</span>
+        <span className="text-[10px] font-mono text-slate-500">{t("accounting.ledger.selectLabel")}</span>
         <Select value={selectedCode} onValueChange={setSelectedCode}>
           <SelectTrigger className="w-80 bg-slate-950 border-slate-900 text-xs h-8">
             <SelectValue />
@@ -39,29 +42,43 @@ export default function AccountingLedger({
 
       <div className="flex gap-6 text-xs mb-2">
         <span className="font-mono text-slate-400">
-          Saldo Awal: <span className="text-white font-bold">Rp {balanceStart.toLocaleString()}</span>
+          {t("accounting.ledger.balanceStart")}:{" "}
+          <span className="text-white font-bold">Rp {balanceStart.toLocaleString()}</span>
         </span>
         <span className="font-mono text-slate-400">
-          Saldo Akhir: <span className="text-emerald-400 font-bold">Rp {balanceEnd.toLocaleString()}</span>
+          {t("accounting.ledger.balanceEnd")}:{" "}
+          <span className="text-emerald-400 font-bold">Rp {balanceEnd.toLocaleString()}</span>
         </span>
       </div>
 
       <Table>
         <TableHeader>
           <TableRow className="border-slate-900 hover:bg-transparent">
-            <TableHead className="text-[9px] font-mono text-slate-500">Tanggal</TableHead>
-            <TableHead className="text-[9px] font-mono text-slate-500">No. Bukti</TableHead>
-            <TableHead className="text-[9px] font-mono text-slate-500">Keterangan</TableHead>
-            <TableHead className="text-[9px] font-mono text-slate-500 text-right">Debit</TableHead>
-            <TableHead className="text-[9px] font-mono text-slate-500 text-right">Kredit</TableHead>
-            <TableHead className="text-[9px] font-mono text-slate-500 text-right">Saldo</TableHead>
+            <TableHead className="text-[9px] font-mono text-slate-500">
+              {t("accounting.ledger.tableHeaders.date")}
+            </TableHead>
+            <TableHead className="text-[9px] font-mono text-slate-500">
+              {t("accounting.ledger.tableHeaders.number")}
+            </TableHead>
+            <TableHead className="text-[9px] font-mono text-slate-500">
+              {t("accounting.ledger.tableHeaders.description")}
+            </TableHead>
+            <TableHead className="text-[9px] font-mono text-slate-500 text-right">
+              {t("accounting.ledger.tableHeaders.debit")}
+            </TableHead>
+            <TableHead className="text-[9px] font-mono text-slate-500 text-right">
+              {t("accounting.ledger.tableHeaders.kredit")}
+            </TableHead>
+            <TableHead className="text-[9px] font-mono text-slate-500 text-right">
+              {t("accounting.ledger.tableHeaders.balance")}
+            </TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {entries.length === 0 && (
             <TableRow className="border-slate-900">
               <TableCell colSpan={6} className="text-center py-8 text-slate-500 text-xs font-mono">
-                Tidak ada mutasi untuk akun ini.
+                {t("accounting.ledger.empty")}
               </TableCell>
             </TableRow>
           )}

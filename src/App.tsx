@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import "@/i18n"; // initialize i18next before render
 import { initDb, getDb } from "@/db";
 import { ToastProvider } from "@/hooks/useToast";
 import SplashScreen from "@/features/SplashScreen";
