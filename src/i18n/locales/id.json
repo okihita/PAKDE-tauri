@@ -457,7 +457,18 @@
     }
   },
   "learn": {
-    "lessonsDone": "{{done}}/{{total}} pelajaran selesai"
+    "lessonsDone": "{{done}}/{{total}} pelajaran selesai",
+    "pickLesson": "Pilih pelajaran dari daftar modul untuk memulai kuis.",
+    "lessonComplete": "Pelajaran Selesai!",
+    "lessonCompleteDesc": "{{name}} telah diselesaikan.",
+    "backToModules": "Kembali ke Modul",
+    "questionsSoon": "Soal belum tersedia untuk pelajaran ini.",
+    "questionOf": "{{name}} — Soal {{current}} dari {{total}}",
+    "correct": "Benar!",
+    "tryAgain": "Coba lagi!",
+    "previous": "Sebelumnya",
+    "next": "Selanjutnya",
+    "finishLesson": "Selesaikan Pelajaran"
   },
   "planners": {
     "description": "Koleksi planner siap cetak untuk membantu operasional koperasi Anda.",

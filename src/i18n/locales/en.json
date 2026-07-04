@@ -457,7 +457,18 @@
     }
   },
   "learn": {
-    "lessonsDone": "{{done}}/{{total}} lessons completed"
+    "lessonsDone": "{{done}}/{{total}} lessons completed",
+    "pickLesson": "Select a lesson from the module list to start the quiz.",
+    "lessonComplete": "Lesson Complete!",
+    "lessonCompleteDesc": "{{name}} has been completed.",
+    "backToModules": "Back to Modules",
+    "questionsSoon": "Questions not yet available for this lesson.",
+    "questionOf": "{{name}} — Question {{current}} of {{total}}",
+    "correct": "Correct!",
+    "tryAgain": "Try again!",
+    "previous": "Previous",
+    "next": "Next",
+    "finishLesson": "Finish Lesson"
   },
   "planners": {
     "description": "Printable planner collection to support your cooperative operations.",
