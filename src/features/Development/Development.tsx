@@ -15,6 +15,9 @@ import {
   AlertTriangle,
   Play,
 } from "lucide-react";
+import DevDocStripe from "@/components/DevDocStripe";
+import readmeContent from "./README.md?raw";
+import "./Development.css";
 
 export default function Development() {
   const { t } = useTranslation();
@@ -28,49 +31,34 @@ export default function Development() {
   // Simulation steps interval
   useEffect(() => {
     if (!isAnalyzing) return;
-
-    const stepInterval = setInterval(() => {
-      setAnalysisStep((prev) => {
-        if (prev >= 4) {
-          clearInterval(stepInterval);
-          return 4;
-        }
-        return prev + 1;
-      });
-    }, 1200);
-
-    const progressInterval = setInterval(() => {
+    const interval = setInterval(() => {
       setProgress((prev) => {
         if (prev >= 100) {
-          clearInterval(progressInterval);
+          clearInterval(interval);
+          setIsAnalyzing(false);
+          setAnalysisCompleted(true);
           return 100;
         }
-        return prev + 2;
-      });
-    }, 90);
+        const next = prev + 5;
+        if (next >= 100) return 100;
 
-    return () => {
-      clearInterval(stepInterval);
-      clearInterval(progressInterval);
-    };
+        // Advance steps based on percentage
+        if (next >= 75) setAnalysisStep(4);
+        else if (next >= 50) setAnalysisStep(3);
+        else if (next >= 25) setAnalysisStep(2);
+        else setAnalysisStep(1);
+
+        return next;
+      });
+    }, 100);
+
+    return () => clearInterval(interval);
   }, [isAnalyzing]);
 
-  // Handle analysis completion
-  useEffect(() => {
-    if (progress === 100 && isAnalyzing) {
-      const timeout = setTimeout(() => {
-        setIsAnalyzing(false);
-        setAnalysisCompleted(true);
-        toast.success(t("development.simulation.success"));
-      }, 300);
-      return () => clearTimeout(timeout);
-    }
-  }, [progress, isAnalyzing, toast, t]);
-
   const handleStartAnalysis = () => {
-    setAnalysisCompleted(false);
     setProgress(0);
-    setAnalysisStep(1);
+    setAnalysisStep(0);
+    setAnalysisCompleted(false);
     setIsAnalyzing(true);
   };
 
@@ -87,6 +75,8 @@ export default function Development() {
 
   return (
     <div className="flex-1 overflow-auto p-6 space-y-6 max-w-4xl mx-auto">
+      <DevDocStripe content={readmeContent} />
+
       {/* Header section */}
       <div className="flex items-center gap-3">
         <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center">
@@ -282,7 +272,7 @@ export default function Development() {
               {/* Financial calculations grid */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <div className="p-3 rounded-lg border border-border bg-input/20">
-                  <span className="text-xxxs font-mono text-muted-foreground uppercase text-gray-400">
+                  <span className="text-xxxs font-mono text-gray-400 uppercase">
                     {t("development.preview.metrics.enpvLabel")}
                   </span>
                   <p className="text-xs font-bold font-mono mt-1 text-emerald-400">
@@ -290,7 +280,7 @@ export default function Development() {
                   </p>
                 </div>
                 <div className="p-3 rounded-lg border border-border bg-input/20">
-                  <span className="text-xxxs font-mono text-muted-foreground uppercase text-gray-400">
+                  <span className="text-xxxs font-mono text-gray-400 uppercase">
                     {t("development.preview.metrics.eirrLabel")}
                   </span>
                   <p className="text-xs font-bold font-mono mt-1 text-emerald-400">
@@ -298,7 +288,7 @@ export default function Development() {
                   </p>
                 </div>
                 <div className="p-3 rounded-lg border border-border bg-input/20">
-                  <span className="text-xxxs font-mono text-muted-foreground uppercase text-gray-400">
+                  <span className="text-xxxs font-mono text-gray-400 uppercase">
                     {t("development.preview.metrics.ebcrLabel")}
                   </span>
                   <p className="text-xs font-bold font-mono mt-1 text-emerald-400">
