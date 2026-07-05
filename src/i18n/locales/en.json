@@ -607,7 +607,19 @@
     "tiersTitle": "Member Engagement Tiers",
     "tierSuper": "Super Member",
     "tierActive": "Pillar Member",
-    "tierPassive": "Passive Member"
+    "tierPassive": "Passive Member",
+    "leaderboardTitle": "Weekly Top Contributors",
+    "pointsLabel": "Reputation XP",
+    "badgesTitle": "Community Badges",
+    "progressTitle": "Active Community Milestone",
+    "progressDesc": "Goal: RAT 2026 Preparation",
+    "badgeDemoTitle": "Democracy Pillar",
+    "badgeDemoDesc": "Attended RAT 3 years in a row",
+    "badgeEcoTitle": "Eco Hero",
+    "badgeEcoDesc": "Purchased 5+ bags of organic fertilizer",
+    "badgeHealthTitle": "Health Ally",
+    "badgeHealthDesc": "Completed 3+ apothecary orders",
+    "progressLabel": "Completion Progress"
   },
   "toast": {
     "profileSaveSuccess": "Cooperative profile saved successfully!",

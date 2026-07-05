@@ -174,7 +174,7 @@ function AppContent() {
         {activeTab === "development" && <Development />}
         {activeTab === "learn" && <Learn />}
         {activeTab === "planners" && <Planners />}
-        {activeTab === "participation" && <Participation />}
+        {activeTab === "participation" && <Participation onTabChange={setActiveTab} />}
         {activeTab === "members" && <Members />}
         {activeTab === "event" && <CreateEvent />}
         {activeTab === "impact" && <Impact />}

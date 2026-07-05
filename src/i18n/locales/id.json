@@ -607,7 +607,19 @@
     "tiersTitle": "Tingkatan Partisipasi Anggota",
     "tierSuper": "Super Anggota",
     "tierActive": "Pilar Koperasi",
-    "tierPassive": "Anggota Pasif"
+    "tierPassive": "Anggota Pasif",
+    "leaderboardTitle": "Kontributor Teraktif Pekan Ini",
+    "pointsLabel": "XP Reputasi",
+    "badgesTitle": "Lencana Komunitas",
+    "progressTitle": "Pencapaian Komunitas Aktif",
+    "progressDesc": "Target: Persiapan RAT 2026",
+    "badgeDemoTitle": "Pilar Demokrasi",
+    "badgeDemoDesc": "Menghadiri RAT 3 tahun berturut-turut",
+    "badgeEcoTitle": "Pahlawan Hijau",
+    "badgeEcoDesc": "Membeli 5+ sak pupuk organik",
+    "badgeHealthTitle": "Sahabat Sehat",
+    "badgeHealthDesc": "Menyelesaikan 3+ pesanan apotek",
+    "progressLabel": "Progres Capaian"
   },
   "toast": {
     "profileSaveSuccess": "Profil Koperasi berhasil disimpan!",
