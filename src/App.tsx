@@ -8,7 +8,7 @@ import Sidebar from "@/features/Sidebar";
 import Dashboard from "@/features/Home/Dashboard/Dashboard";
 import Statistics from "@/features/Analytics/Statistics/Statistics";
 import Leveling from "@/features/Analytics/Leveling/Leveling";
-import Members from "@/features/Database/Members/Members";
+import Members from "@/features/Community/Members/Members";
 import Units from "@/features/Business/Units/Units";
 import Equipment from "@/features/Business/Equipment/Equipment";
 import Sales from "@/features/Business/Sales/Sales";
@@ -18,7 +18,8 @@ import Planners from "@/features/Education/Planners/Planners";
 import Accounting from "@/features/Finance/Accounting";
 import Feasibility from "@/features/Finance/Feasibility/Feasibility";
 import Ranking from "@/features/Analytics/Ranking/Ranking";
-import CreateEvent from "@/features/Database/CreateEvent/CreateEvent";
+import CreateEvent from "@/features/Community/CreateEvent/CreateEvent";
+import Impact from "@/features/Community/Impact/Impact";
 import Sync from "@/features/System/Sync/Sync";
 import Settings from "@/features/System/Settings/Settings";
 import { getErrorMessage, type CooperativeProfile, type EwsAlert, type CountRow } from "@/types";
@@ -49,6 +50,7 @@ function AppContent() {
     | "planners"
     | "members"
     | "event"
+    | "impact"
     | "accounting"
     | "feasibility"
     | "sync"
@@ -172,6 +174,7 @@ function AppContent() {
         {activeTab === "planners" && <Planners />}
         {activeTab === "members" && <Members />}
         {activeTab === "event" && <CreateEvent />}
+        {activeTab === "impact" && <Impact />}
         {activeTab === "accounting" && <Accounting />}
         {activeTab === "feasibility" && <Feasibility />}
         {activeTab === "sync" && <Sync />}

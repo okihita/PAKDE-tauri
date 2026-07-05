@@ -61,6 +61,7 @@
       "ranking": "Ranking",
       "members": "Member Database",
       "event": "Create Event",
+      "impact": "Social Impact",
       "accounting": "SAK EP Accounting",
       "feasibility": "Financial Feasibility",
       "sync": "Data Synchronization",
@@ -557,6 +558,34 @@
       "createFailed": "Failed to register business unit: {{error}}",
       "statusChangeSuccess": "Business unit status updated successfully.",
       "statusChangeFailed": "Failed to update business unit status: {{error}}"
+    }
+  },
+  "impact": {
+    "title": "Social Impact Tracking",
+    "description": "Measure and audit the social, economic, and environmental impact of cooperative activities.",
+    "metrics": {
+      "employmentTitle": "Local Employment",
+      "employmentDesc": "Jobs created across all units",
+      "welfareTitle": "Farmer Income Uplift",
+      "welfareDesc": "Average seasonal crop profit increase",
+      "ecoTitle": "Sustainability Index",
+      "ecoDesc": "Organic fertilizers distributed",
+      "ecoValue": "15 Tons",
+      "genderTitle": "Gender Empowerment",
+      "genderDesc": "Women participation in committees"
+    },
+    "auditTitle": "Social Return on Investment (SROI)",
+    "auditDesc": "Run standard audit models to quantify non-financial social value created.",
+    "runAudit": "Initiate SROI Impact Audit",
+    "auditing": "Auditing social indexes...",
+    "auditComplete": "Audit Complete!",
+    "sroiVal": "Social SROI Return",
+    "sroiLabel": "SROI Ratio",
+    "sroiRatio": "For every Rp 1 invested, the cooperative generates Rp 2.45 in community social value.",
+    "feedbackTitle": "Member Impact Feedback Feed",
+    "noFeedback": "No social feedback gathered yet.",
+    "toast": {
+      "auditSuccess": "Social Return on Investment (SROI) audited successfully."
     }
   },
   "toast": {

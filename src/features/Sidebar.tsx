@@ -26,6 +26,7 @@ import {
   Building2,
   BookOpen,
   FileText,
+  HeartHandshake,
 } from "lucide-react";
 import { getCurrentLevel } from "@/data/leveling";
 import type { CooperativeProfile, EwsAlert } from "@/types";
@@ -46,6 +47,7 @@ interface SidebarProps {
       | "planners"
       | "members"
       | "event"
+      | "impact"
       | "accounting"
       | "feasibility"
       | "sync"
@@ -149,6 +151,7 @@ export default function Sidebar({
       items: [
         { id: "members", icon: Users, label: t("sidebar.nav.members") },
         { id: "event", icon: CalendarPlus, label: t("sidebar.nav.event") },
+        { id: "impact", icon: HeartHandshake, label: t("sidebar.nav.impact") },
       ],
     },
     {

@@ -61,6 +61,7 @@
       "leveling": "Leveling",
       "members": "Database Anggota",
       "event": "Buat Acara",
+      "impact": "Dampak Sosial",
       "accounting": "Akuntansi SAK EP",
       "feasibility": "Kelayakan Finansial",
       "sync": "Sinkronisasi Data",
@@ -557,6 +558,34 @@
       "createFailed": "Gagal mendaftarkan unit usaha: {{error}}",
       "statusChangeSuccess": "Status unit usaha berhasil diperbarui.",
       "statusChangeFailed": "Gagal memperbarui status unit usaha: {{error}}"
+    }
+  },
+  "impact": {
+    "title": "Pemantauan Dampak Sosial",
+    "description": "Ukur dan audit dampak sosial, ekonomi, dan lingkungan dari aktivitas koperasi desa.",
+    "metrics": {
+      "employmentTitle": "Penyerapan Kerja",
+      "employmentDesc": "Lapangan kerja di seluruh unit",
+      "welfareTitle": "Peningkatan Pendapatan",
+      "welfareDesc": "Rata-rata peningkatan profit panen",
+      "ecoTitle": "Indeks Keberlanjutan",
+      "ecoDesc": "Pupuk organik yang disalurkan",
+      "ecoValue": "15 Ton",
+      "genderTitle": "Pemberdayaan Gender",
+      "genderDesc": "Partisipasi perempuan di pengurus"
+    },
+    "auditTitle": "Social Return on Investment (SROI)",
+    "auditDesc": "Jalankan model audit standar untuk menghitung nilai sosial non-finansial.",
+    "runAudit": "Mulai Audit Dampak SROI",
+    "auditing": "Mengaudit indeks sosial...",
+    "auditComplete": "Audit Selesai!",
+    "sroiVal": "Return SROI Sosial",
+    "sroiLabel": "Rasio SROI",
+    "sroiRatio": "Setiap Rp 1 yang diinvestasikan menghasilkan Rp 2,45 nilai manfaat sosial di masyarakat.",
+    "feedbackTitle": "Umpan Balik Dampak Anggota",
+    "noFeedback": "Belum ada umpan balik yang tercatat.",
+    "toast": {
+      "auditSuccess": "Audit Social Return on Investment (SROI) berhasil diselesaikan."
     }
   },
   "toast": {
