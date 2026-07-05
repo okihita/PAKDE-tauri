@@ -45,6 +45,7 @@ interface SidebarProps {
       | "development"
       | "learn"
       | "planners"
+      | "participation"
       | "members"
       | "event"
       | "impact"
@@ -149,6 +150,7 @@ export default function Sidebar({
       icon: Users,
       label: t("sidebar.groups.komunitas"),
       items: [
+        { id: "participation", icon: BarChart3, label: t("sidebar.nav.participation") },
         { id: "members", icon: Users, label: t("sidebar.nav.members") },
         { id: "event", icon: CalendarPlus, label: t("sidebar.nav.event") },
         { id: "impact", icon: HeartHandshake, label: t("sidebar.nav.impact") },

@@ -20,6 +20,7 @@ import Feasibility from "@/features/Finance/Feasibility/Feasibility";
 import Ranking from "@/features/Analytics/Ranking/Ranking";
 import CreateEvent from "@/features/Community/CreateEvent/CreateEvent";
 import Impact from "@/features/Community/Impact/Impact";
+import Participation from "@/features/Community/Participation/Participation";
 import Sync from "@/features/System/Sync/Sync";
 import Settings from "@/features/System/Settings/Settings";
 import { getErrorMessage, type CooperativeProfile, type EwsAlert, type CountRow } from "@/types";
@@ -48,6 +49,7 @@ function AppContent() {
     | "development"
     | "learn"
     | "planners"
+    | "participation"
     | "members"
     | "event"
     | "impact"
@@ -172,6 +174,7 @@ function AppContent() {
         {activeTab === "development" && <Development />}
         {activeTab === "learn" && <Learn />}
         {activeTab === "planners" && <Planners />}
+        {activeTab === "participation" && <Participation />}
         {activeTab === "members" && <Members />}
         {activeTab === "event" && <CreateEvent />}
         {activeTab === "impact" && <Impact />}

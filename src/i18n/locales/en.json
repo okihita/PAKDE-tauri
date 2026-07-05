@@ -59,7 +59,8 @@
       "leveling": "Leveling",
       "statistics": "Summary",
       "ranking": "Ranking",
-      "members": "Member Database",
+      "members": "Members",
+      "participation": "Participation",
       "event": "Create Event",
       "impact": "Social Impact",
       "accounting": "SAK EP Accounting",
@@ -587,6 +588,26 @@
     "toast": {
       "auditSuccess": "Social Return on Investment (SROI) audited successfully."
     }
+  },
+  "participation": {
+    "title": "Community Participation Analysis",
+    "description": "Analyze member attendance, voting patterns, and economic engagement records.",
+    "metrics": {
+      "attendanceTitle": "Meeting Attendance",
+      "attendanceDesc": "RAT and training courses",
+      "votingTitle": "Decision Voting Rate",
+      "votingDesc": "Policy votes and elections",
+      "loyaltyTitle": "Economic Engagement",
+      "loyaltyDesc": "Active trades with business units",
+      "activeStreak": "Participation Streak",
+      "activeStreakDesc": "Members with 3+ activities"
+    },
+    "heatmapTitle": "Community Activity Heatmap",
+    "heatmapDesc": "Daily record of cooperative events, assemblies, and training sessions.",
+    "tiersTitle": "Member Engagement Tiers",
+    "tierSuper": "Super Member",
+    "tierActive": "Pillar Member",
+    "tierPassive": "Passive Member"
   },
   "toast": {
     "profileSaveSuccess": "Cooperative profile saved successfully!",

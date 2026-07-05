@@ -59,7 +59,8 @@
       "statistics": "Rangkuman",
       "ranking": "Peringkat",
       "leveling": "Leveling",
-      "members": "Database Anggota",
+      "members": "Anggota",
+      "participation": "Partisipasi",
       "event": "Buat Acara",
       "impact": "Dampak Sosial",
       "accounting": "Akuntansi SAK EP",
@@ -587,6 +588,26 @@
     "toast": {
       "auditSuccess": "Audit Social Return on Investment (SROI) berhasil diselesaikan."
     }
+  },
+  "participation": {
+    "title": "Analisis Partisipasi Komunitas",
+    "description": "Analisis tingkat kehadiran anggota, pola pemungutan suara, dan riwayat transaksi ekonomi.",
+    "metrics": {
+      "attendanceTitle": "Kehadiran Rapat",
+      "attendanceDesc": "Kehadiran RAT dan pelatihan",
+      "votingTitle": "Tingkat Partisipasi Voting",
+      "votingDesc": "Partisipasi voting kebijakan & pengurus",
+      "loyaltyTitle": "Keterlibatan Ekonomi",
+      "loyaltyDesc": "Transaksi aktif di unit-unit usaha",
+      "activeStreak": "Streak Keaktifan",
+      "activeStreakDesc": "Anggota dengan 3+ aktivitas beruntun"
+    },
+    "heatmapTitle": "Peta Aktivitas Komunitas",
+    "heatmapDesc": "Catatan harian penyelenggaraan acara, rapat, dan sesi edukasi.",
+    "tiersTitle": "Tingkatan Partisipasi Anggota",
+    "tierSuper": "Super Anggota",
+    "tierActive": "Pilar Koperasi",
+    "tierPassive": "Anggota Pasif"
   },
   "toast": {
     "profileSaveSuccess": "Profil Koperasi berhasil disimpan!",
