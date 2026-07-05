@@ -29,7 +29,14 @@ export function useMembers() {
   const toast = useToast();
 
   const [membersList, setMembersList] = useState<Member[]>([]);
-  const [memberSearchQuery, setMemberSearchQuery] = useState("");
+  const [memberSearchQuery, setMemberSearchQuery] = useState(() => {
+    const saved = localStorage.getItem("pakde-member-search-filter");
+    if (saved) {
+      localStorage.removeItem("pakde-member-search-filter");
+      return saved;
+    }
+    return "";
+  });
   const [memberFilterStatus, setMemberFilterStatus] = useState("semua");
   const [showMemberModal, setShowMemberModal] = useState(false);
   const [memberFormType, setMemberFormType] = useState<"add" | "edit">("add");

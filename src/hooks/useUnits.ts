@@ -21,6 +21,7 @@ export function useUnits() {
   const [activeUnitIds, setActiveUnitIds] = useState<string[]>([]);
   const [categoriesList, setCategoriesList] = useState<BusinessCategory[]>([]);
   const [revenues, setRevenues] = useState<Record<string, number>>({});
+  const [members, setMembers] = useState<Array<{ id: string; name: string }>>([]);
 
   // Load all necessary units data
   const loadUnitsData = useCallback(async () => {
@@ -64,6 +65,12 @@ export function useUnits() {
         }
       }
       setRevenues(revMap);
+
+      // 4. Fetch database members to assign to units
+      const memRes = await db.select<Array<{ id: string; name: string }>>(
+        "SELECT id, name FROM members ORDER BY name ASC",
+      );
+      setMembers(memRes);
     } catch (e) {
       console.error("Failed to load units data:", e);
     }
@@ -156,6 +163,7 @@ export function useUnits() {
     activeUnitIds,
     categoriesList,
     revenues,
+    members,
     loadUnitsData,
     toggleUnitStatus,
     createBusinessUnit,

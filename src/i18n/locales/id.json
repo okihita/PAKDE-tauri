@@ -536,6 +536,10 @@
     "inactiveBadge": "Nonaktif",
     "revenue": "Pendapatan",
     "noRevenues": "Belum ada riwayat transaksi.",
+    "teamTitle": "Tim Operasional",
+    "roleManager": "Manajer Unit",
+    "roleTreasurer": "Bendahara Unit",
+    "roleOperator": "Staf Operasional",
     "toggleActive": "Nonaktifkan",
     "toggleInactive": "Aktifkan",
     "form": {

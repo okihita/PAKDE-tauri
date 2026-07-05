@@ -164,7 +164,7 @@ function AppContent() {
         )}
         {activeTab === "ranking" && <Ranking coopProfile={coopProfile} />}
         {activeTab === "leveling" && <Leveling healthScore={coopProfile?.health_score ?? 0} />}
-        {activeTab === "units" && <Units />}
+        {activeTab === "units" && <Units onTabChange={setActiveTab} />}
         {activeTab === "equipment" && <Equipment />}
         {activeTab === "sales" && <Sales />}
         {activeTab === "development" && <Development />}

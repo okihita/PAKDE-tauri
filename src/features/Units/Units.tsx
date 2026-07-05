@@ -10,7 +10,11 @@ import DevDocStripe from "@/components/DevDocStripe";
 import readmeContent from "./README.md?raw";
 import "./Units.css";
 
-export default function Units() {
+interface UnitsProps {
+  onTabChange?: (tab: "members") => void;
+}
+
+export default function Units({ onTabChange }: UnitsProps) {
   const { t } = useTranslation();
   const u = useUnits();
   useEffect(() => {
@@ -67,8 +71,36 @@ export default function Units() {
           {t("units.active")}
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {activeUnits.map((unit) => {
+          {activeUnits.map((unit, idx) => {
             const revenue = u.revenues[unit.id] ?? 0;
+            // Resolve 3 staff members based on indices
+            const manager =
+              u.members.length > 0 ? u.members[(idx * 3) % u.members.length] : { id: "mock-1", name: "Budi Santoso" };
+            const treasurer =
+              u.members.length > 0
+                ? u.members[(idx * 3 + 1) % u.members.length]
+                : { id: "mock-2", name: "Siti Aminah" };
+            const operator =
+              u.members.length > 0
+                ? u.members[(idx * 3 + 2) % u.members.length]
+                : { id: "mock-3", name: "Ahmad Dahlan" };
+
+            const getInitials = (n: string) => {
+              return n
+                .split(" ")
+                .map((p) => p[0])
+                .join("")
+                .slice(0, 2)
+                .toUpperCase();
+            };
+
+            const handleMemberClick = (n: string) => {
+              if (onTabChange) {
+                localStorage.setItem("pakde-member-search-filter", n);
+                onTabChange("members");
+              }
+            };
+
             return (
               <Card
                 key={unit.id}
@@ -97,6 +129,59 @@ export default function Units() {
                       {revenue > 0 ? `Rp ${revenue.toLocaleString("id-ID")}` : t("units.noRevenues")}
                     </p>
                   </div>
+
+                  {/* Operational Team management */}
+                  <div className="space-y-2 pt-1 border-t border-border/50">
+                    <span className="text-xxxs font-mono text-muted-foreground uppercase">{t("units.teamTitle")}</span>
+                    <div className="space-y-2">
+                      {/* Manager */}
+                      <div className="flex items-center justify-between text-xxs bg-input/20 p-1.5 rounded border border-border/30">
+                        <span className="text-muted-foreground font-mono">{t("units.roleManager")}</span>
+                        <div className="flex items-center gap-1.5">
+                          <span className="w-4 h-4 rounded-full bg-emerald-500/10 text-emerald-400 text-xxxs font-bold flex items-center justify-center border border-emerald-500/20 shrink-0">
+                            {getInitials(manager.name)}
+                          </span>
+                          <button
+                            onClick={() => handleMemberClick(manager.name)}
+                            className="text-emerald-400 font-bold hover:underline"
+                          >
+                            {manager.name}
+                          </button>
+                        </div>
+                      </div>
+                      {/* Treasurer */}
+                      <div className="flex items-center justify-between text-xxs bg-input/20 p-1.5 rounded border border-border/30">
+                        <span className="text-muted-foreground font-mono">{t("units.roleTreasurer")}</span>
+                        <div className="flex items-center gap-1.5">
+                          <span className="w-4 h-4 rounded-full bg-blue-500/10 text-blue-400 text-xxxs font-bold flex items-center justify-center border border-blue-500/20 shrink-0">
+                            {getInitials(treasurer.name)}
+                          </span>
+                          <button
+                            onClick={() => handleMemberClick(treasurer.name)}
+                            className="text-blue-400 font-bold hover:underline"
+                          >
+                            {treasurer.name}
+                          </button>
+                        </div>
+                      </div>
+                      {/* Operator */}
+                      <div className="flex items-center justify-between text-xxs bg-input/20 p-1.5 rounded border border-border/30">
+                        <span className="text-muted-foreground font-mono">{t("units.roleOperator")}</span>
+                        <div className="flex items-center gap-1.5">
+                          <span className="w-4 h-4 rounded-full bg-amber-500/10 text-amber-400 text-xxxs font-bold flex items-center justify-center border border-amber-500/20 shrink-0">
+                            {getInitials(operator.name)}
+                          </span>
+                          <button
+                            onClick={() => handleMemberClick(operator.name)}
+                            className="text-amber-400 font-bold hover:underline"
+                          >
+                            {operator.name}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
                   <Button
                     onClick={() => u.toggleUnitStatus(unit.id, true)}
                     variant="outline"

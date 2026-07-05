@@ -536,6 +536,10 @@
     "inactiveBadge": "Inactive",
     "revenue": "Revenue",
     "noRevenues": "No transactions recorded yet.",
+    "teamTitle": "Operational Team",
+    "roleManager": "Manager",
+    "roleTreasurer": "Treasurer",
+    "roleOperator": "Operator",
     "toggleActive": "Deactivate",
     "toggleInactive": "Activate",
     "form": {
