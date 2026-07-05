@@ -65,6 +65,7 @@
       "feasibility": "Kelayakan Finansial",
       "sync": "Sinkronisasi Data",
       "settings": "Pengaturan",
+      "units": "Unit Usaha",
       "equipment": "Peralatan",
       "sales": "Penjualan & Vendor",
       "development": "Ekspansi & Pengembangan",
@@ -520,6 +521,36 @@
     "description": "Koleksi planner siap cetak untuk membantu operasional koperasi Anda.",
     "pages": "{{n}} hlm",
     "pdf": "PDF"
+  },
+  "units": {
+    "title": "Unit Usaha Koperasi",
+    "idLabel": "ID",
+    "description": "Kelola divisi operasional aktif, daftarkan usaha baru, dan pantau riwayat transaksi keuangan per unit usaha.",
+    "register": "Daftarkan Unit Usaha Baru",
+    "active": "Unit Usaha Aktif",
+    "inactive": "Unit Usaha Nonaktif",
+    "activeBadge": "Aktif",
+    "inactiveBadge": "Nonaktif",
+    "revenue": "Pendapatan",
+    "noRevenues": "Belum ada riwayat transaksi.",
+    "toggleActive": "Nonaktifkan",
+    "toggleInactive": "Aktifkan",
+    "form": {
+      "title": "Daftarkan Unit Usaha Baru",
+      "name": "Nama Unit",
+      "namePlaceholder": "misal: Unit Air Bersih",
+      "icon": "Ikon (Emoji)",
+      "iconPlaceholder": "misal: 💧, 🌾, 💊",
+      "submit": "Daftar Unit",
+      "cancel": "Batal"
+    },
+    "toast": {
+      "fieldsRequired": "Nama unit dan emoji ikon wajib diisi.",
+      "createSuccess": "Unit usaha '{{name}}' berhasil didaftarkan.",
+      "createFailed": "Gagal mendaftarkan unit usaha: {{error}}",
+      "statusChangeSuccess": "Status unit usaha berhasil diperbarui.",
+      "statusChangeFailed": "Gagal memperbarui status unit usaha: {{error}}"
+    }
   },
   "toast": {
     "profileSaveSuccess": "Profil Koperasi berhasil disimpan!",

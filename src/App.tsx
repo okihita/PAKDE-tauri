@@ -9,6 +9,7 @@ import Dashboard from "@/features/Dashboard";
 import Statistics from "@/features/Statistics";
 import Leveling from "@/features/Leveling";
 import Members from "@/features/Members";
+import Units from "@/features/Units";
 import Equipment from "@/features/Equipment";
 import Sales from "@/features/Sales";
 import Development from "@/features/Development";
@@ -40,6 +41,7 @@ function AppContent() {
     | "statistics"
     | "ranking"
     | "leveling"
+    | "units"
     | "equipment"
     | "sales"
     | "development"
@@ -162,6 +164,7 @@ function AppContent() {
         )}
         {activeTab === "ranking" && <Ranking coopProfile={coopProfile} />}
         {activeTab === "leveling" && <Leveling healthScore={coopProfile?.health_score ?? 0} />}
+        {activeTab === "units" && <Units />}
         {activeTab === "equipment" && <Equipment />}
         {activeTab === "sales" && <Sales />}
         {activeTab === "development" && <Development />}

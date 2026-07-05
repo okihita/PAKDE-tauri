@@ -38,6 +38,7 @@ interface SidebarProps {
       | "statistics"
       | "ranking"
       | "leveling"
+      | "units"
       | "equipment"
       | "sales"
       | "development"
@@ -126,6 +127,7 @@ export default function Sidebar({
       icon: TrendingUp,
       label: t("sidebar.groups.bisnis"),
       items: [
+        { id: "units", icon: Building2, label: t("sidebar.nav.units") },
         { id: "equipment", icon: Wrench, label: t("sidebar.nav.equipment") },
         { id: "sales", icon: Handshake, label: t("sidebar.nav.sales") },
         { id: "development", icon: Building2, label: t("sidebar.nav.development") },

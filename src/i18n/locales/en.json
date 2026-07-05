@@ -65,6 +65,7 @@
       "feasibility": "Financial Feasibility",
       "sync": "Data Synchronization",
       "settings": "Settings",
+      "units": "Business Units",
       "equipment": "Equipment",
       "sales": "Sales & Vendors",
       "development": "Expansion & Development",
@@ -520,6 +521,36 @@
     "description": "Printable planner collection to support your cooperative operations.",
     "pages": "{{n}} pgs",
     "pdf": "PDF"
+  },
+  "units": {
+    "title": "Business Units",
+    "idLabel": "ID",
+    "description": "Manage active operational divisions, register new ventures, and monitor financial transactions per business unit.",
+    "register": "Register New Business Unit",
+    "active": "Active Business Units",
+    "inactive": "Inactive Business Units",
+    "activeBadge": "Active",
+    "inactiveBadge": "Inactive",
+    "revenue": "Revenue",
+    "noRevenues": "No transactions recorded yet.",
+    "toggleActive": "Deactivate",
+    "toggleInactive": "Activate",
+    "form": {
+      "title": "Register New Business Unit",
+      "name": "Unit Name",
+      "namePlaceholder": "e.g. Unit Air Bersih",
+      "icon": "Icon (Emoji)",
+      "iconPlaceholder": "e.g. 💧, 🌾, 💊",
+      "submit": "Register Unit",
+      "cancel": "Cancel"
+    },
+    "toast": {
+      "fieldsRequired": "Unit name and icon emoji are required.",
+      "createSuccess": "Business unit '{{name}}' successfully registered.",
+      "createFailed": "Failed to register business unit: {{error}}",
+      "statusChangeSuccess": "Business unit status updated successfully.",
+      "statusChangeFailed": "Failed to update business unit status: {{error}}"
+    }
   },
   "toast": {
     "profileSaveSuccess": "Cooperative profile saved successfully!",
