@@ -40,6 +40,7 @@ Rural cooperative managers are not accountants. They are farmers, shopkeepers, a
 - **Indonesian-first** UI with full English fallback (switchable at runtime)
 - **15-minute task windows** — every interaction is a micro-quest that completes in a coffee break
 - **Sound feedback** — procedural 8-bit tones confirm actions without reading text
+- **No external training** — the Home Dashboard serves quests that link directly to each feature; completing a quest *is* learning the feature
 
 ### 2. Offline-First Is Not a Feature; It's a Requirement
 In Indonesian villages, internet is a luxury. PAKDE operates entirely offline. All modules — accounting, inventory, member records, floor plan editor — work with zero connectivity. The sync layer queues changes and pushes anonymized aggregates when the network returns. No loading spinners. No "connection lost" modals. Ever.
@@ -99,6 +100,39 @@ Kop A  Kop B  Kop C  Kop D  Kop N
 - **Zero-knowledge backups** — AES-256-GCM encrypted full-DB backup sent to cloud for disaster recovery; decryption key held only by the cooperative
 - **National leaderboard** — Regional rankings show cooperative health without exposing individual financial data
 
+### 7. The App Is the Training. The App Is the Deck. The App Is the Guide.
+
+Conventional software ships with three external artifacts: a **training manual** (how to use it), a **pitch deck** (why to buy it), and a **progress report** (what you've achieved). Cooperatives never read any of them. So we built all three into the application itself.
+
+**Home Dashboard = Quest Hub**
+
+The home screen is not a blank landing page. It is a daily command center with three quest tiers:
+
+| Quest Type | Cadence | Examples | Links To |
+|-----------|---------|----------|----------|
+| **Daily** | Resets every 24h | "Assign 3 inventory items to shelf bins" | Store Layout editor |
+| **Weekly** | Resets every 7 days | "Create a new journal entry for this week's sales" | Accounting module |
+| **Main** | Persistent milestones | "Reach Level 3 by completing your first feasibility study" | Feasibility calculator |
+
+Every quest card has a **one-click link** that navigates directly to the relevant feature page. The cooperative manager doesn't search for a menu item — the quest tells them where to go and what to do when they get there.
+
+**No Manual. No Training Video. No Consultant.**
+
+The onboarding flow is self-contained:
+
+1. Manager opens PAKDE → sees the Home Dashboard
+2. Three quests are displayed: one daily, one weekly, one main
+3. Manager clicks the daily quest: *"Register 5 new members"*
+4. App navigates to the Members page, pre-focused on the Add Member button
+5. Manager completes the task → XP awarded → chime plays → next quest unlocks
+6. After 15 minutes, they've learned the Members module without reading a single instruction
+
+This pattern repeats for every module. The **sense of direction** comes from the quest queue always showing the next recommended action. The **sense of progress** comes from the Aspect Leveling panel showing tier advancement across all 6 dimensions. The **pitch** is self-evident: the app demonstrates its value by letting the manager achieve real work in their first session.
+
+**Why This Matters for Adoption**
+
+Rural cooperative digitization consistently fails because of the "training gap" — the assumption that someone will read a PDF manual or watch a YouTube tutorial before using software. PAKDE eliminates that assumption. The app is the pitch deck because it proves its value immediately. The app is the training because every quest is a guided tour. The app is the progress report because every completed task visibly advances the cooperative's level.
+
 ---
 
 ## Stack
@@ -124,6 +158,7 @@ Kop A  Kop B  Kop C  Kop D  Kop N
 | Indonesian UI | ✅ Native | ⚠️ Partial | ❌ | ❌ |
 | Gamified Adoption | ✅ Quests | ❌ | ❌ | ❌ |
 | Shelf-Level Inventory | ✅ Visual | ❌ | ❌ | ❌ |
+| Built-in Training/Guide | ✅ In-app quests | ❌ External docs | ❌ | ❌ |
 | Cost | Free (open) | Subscription | Free | Millions |
 | Training Required | None (play) | Days | Weeks | Months |
 
