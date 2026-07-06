@@ -1,5 +1,3 @@
-import DevDocStripe from "@/components/DevDocStripe";
-import readmeContent from "./README.md?raw";
 import "./CreateEvent.css";
 import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,7 +10,6 @@ export default function CreateEvent() {
 
   return (
     <div className="flex-1 overflow-auto p-6 max-w-xl">
-      <DevDocStripe content={readmeContent} />
       <Card className="bg-card border-border">
         <CardHeader>
           <CardTitle className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">

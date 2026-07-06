@@ -1,8 +1,6 @@
 import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BarChart3, Users, CheckSquare, Wallet, Flame, Calendar, Award, Leaf, HeartHandshake } from "lucide-react";
-import DevDocStripe from "@/components/DevDocStripe";
-import readmeContent from "./README.md?raw";
 import "./Participation.css";
 
 // Constants for i18n/linter rules bypass
@@ -82,8 +80,6 @@ export default function Participation({ onTabChange }: ParticipationProps) {
 
   return (
     <div className="flex-1 overflow-auto p-6 space-y-6 max-w-4xl mx-auto">
-      <DevDocStripe content={readmeContent} />
-
       {/* Header section */}
       <div className="flex items-center gap-3">
         <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center">

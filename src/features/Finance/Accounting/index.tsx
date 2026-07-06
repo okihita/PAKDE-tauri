@@ -1,5 +1,3 @@
-import DevDocStripe from "@/components/DevDocStripe";
-import readmeContent from "./README.md?raw";
 import "./Accounting.css";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -69,14 +67,12 @@ export default function Accounting({ financeTier, onTierChange }: AccountingProp
     setTimeout(() => {
       setAuditing(false);
       setAuditComplete(true);
-      toast.success("SAK EP compliance audit simulation completed with zero ledger variances.");
+      toast.success(t("accounting.audit.successMessage"));
     }, 1500);
   };
 
   return (
     <div className="space-y-6">
-      <DevDocStripe content={readmeContent} />
-
       {/* Tier Selector widget */}
       <Card className="bg-card border-border">
         <CardContent className="p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -136,7 +132,7 @@ export default function Accounting({ financeTier, onTierChange }: AccountingProp
                 <CardTitle className="text-xs font-bold text-foreground flex items-center justify-between">
                   <span className="flex items-center gap-2">
                     <Wallet className="h-3.5 w-3.5 text-emerald-400" />
-                    Cash Runway Sovereignty
+                    {t("accounting.runway.title")}
                   </span>
                   <span className="text-xxxs font-mono font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full">
                     {RUNWAY_STATUS}
@@ -151,7 +147,7 @@ export default function Accounting({ financeTier, onTierChange }: AccountingProp
                   </div>
                   <div className="px-5 py-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-center shrink-0">
                     <span className="text-xxxs font-mono text-emerald-400 uppercase tracking-widest block">
-                      Survival Months
+                      {t("accounting.runway.months")}
                     </span>
                     <span className="text-lg font-black text-emerald-400 font-mono block mt-1">{RUNWAY_VAL}</span>
                   </div>
@@ -163,7 +159,7 @@ export default function Accounting({ financeTier, onTierChange }: AccountingProp
               <CardHeader className="pb-3 border-b border-border/55">
                 <CardTitle className="text-xs font-bold text-foreground flex items-center gap-2">
                   <Sparkles className="h-3.5 w-3.5 text-amber-400" />
-                  Simplified Health
+                  {t("accounting.health.title")}
                 </CardTitle>
               </CardHeader>
               <CardContent className="pt-5 space-y-3 font-mono text-xxxs">
@@ -172,11 +168,11 @@ export default function Accounting({ financeTier, onTierChange }: AccountingProp
                   <span className="text-emerald-400 font-bold">{RUNWAY_CASH_VAL}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Runway Status</span>
-                  <span className="text-emerald-400 font-bold">Excellent</span>
+                  <span className="text-muted-foreground">{t("accounting.health.status")}</span>
+                  <span className="text-emerald-400 font-bold">{t("accounting.health.excellent")}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Financial Health Score</span>
+                  <span className="text-muted-foreground">{t("accounting.health.score")}</span>
                   <span className="text-emerald-400 font-bold">92 / 100</span>
                 </div>
               </CardContent>
@@ -276,7 +272,7 @@ export default function Accounting({ financeTier, onTierChange }: AccountingProp
                   {auditing && (
                     <div className="text-xxxs font-mono text-amber-400 animate-pulse flex items-center gap-1.5 justify-center py-2">
                       <span className="w-1.5 h-1.5 bg-amber-500 rounded-full animate-ping" />
-                      Auditing trial registers...
+                      {t("accounting.audit.checking")}
                     </div>
                   )}
                   {auditComplete && (

@@ -1,5 +1,3 @@
-import DevDocStripe from "@/components/DevDocStripe";
-import readmeContent from "./README.md?raw";
 import "./Members.css";
 import { useTranslation } from "react-i18next";
 import { Search, Plus, Trash2, Edit2, Sprout } from "lucide-react";
@@ -41,7 +39,6 @@ export default function Members() {
 
   return (
     <div className="space-y-4">
-      <DevDocStripe content={readmeContent} />
       <Card className="bg-card border-border">
         <CardHeader className="flex flex-row items-center justify-between pb-2">
           <CardTitle className="text-xs font-bold text-muted-foreground uppercase tracking-wider">

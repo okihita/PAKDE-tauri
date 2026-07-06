@@ -1,5 +1,3 @@
-import DevDocStripe from "@/components/DevDocStripe";
-import readmeContent from "./README.md?raw";
 import "./Learn.css";
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
@@ -94,7 +92,6 @@ export default function Learn() {
 
   return (
     <div className="flex-1 overflow-auto p-6 space-y-4">
-      <DevDocStripe content={readmeContent} />
       {/* Header */}
       <Card className="bg-card border-border">
         <CardContent className="p-5 flex items-center justify-between">

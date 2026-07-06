@@ -11,8 +11,6 @@ import { SortableContext, useSortable, arrayMove, rectSortingStrategy } from "@d
 import { CSS } from "@dnd-kit/utilities";
 import CalendarWidget from "./DashboardCalendar";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import DevDocStripe from "@/components/DevDocStripe";
-import readmeContent from "./README.md?raw";
 import "./Dashboard.css";
 
 interface Todo {
@@ -384,7 +382,6 @@ export default function Dashboard() {
 
   return (
     <div className="flex-1 overflow-auto p-6">
-      <DevDocStripe content={readmeContent} />
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
         <SortableContext items={cardOrder} strategy={rectSortingStrategy}>
           <div className="grid grid-cols-12 gap-4 auto-rows-min">

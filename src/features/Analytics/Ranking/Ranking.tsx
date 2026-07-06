@@ -1,5 +1,3 @@
-import DevDocStripe from "@/components/DevDocStripe";
-import readmeContent from "./README.md?raw";
 import "./Ranking.css";
 import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -222,7 +220,6 @@ export default function Ranking({ coopProfile }: Props) {
 
   return (
     <div className="flex-1 overflow-auto space-y-4">
-      <DevDocStripe content={readmeContent} />
       {/* ── Rank Summary Cards ── */}
       <div className="grid grid-cols-3 gap-4">
         {levels.map((lv) => (

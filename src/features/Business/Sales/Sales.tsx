@@ -7,8 +7,6 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ShoppingCart, History, Package, Search, MinusCircle, PlusCircle, CreditCard, Trash2 } from "lucide-react";
-import DevDocStripe from "@/components/DevDocStripe";
-import readmeContent from "./README.md?raw";
 import SalesHistory from "./SalesHistory";
 import SalesInventory from "./SalesInventory";
 import "./Sales.css";
@@ -69,8 +67,6 @@ export default function Sales() {
 
   return (
     <div className="flex-1 overflow-auto p-6 space-y-6 max-w-6xl mx-auto">
-      <DevDocStripe content={readmeContent} />
-
       {/* Header section */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
@@ -84,7 +80,11 @@ export default function Sales() {
         </div>
       </div>
 
-      <Tabs value={activeSubTab} onValueChange={(v) => setActiveSubTab(v as "checkout" | "history" | "inventory")} className="w-full">
+      <Tabs
+        value={activeSubTab}
+        onValueChange={(v) => setActiveSubTab(v as "checkout" | "history" | "inventory")}
+        className="w-full"
+      >
         <TabsList className="bg-sidebar border border-border text-muted-foreground p-0.5 rounded-lg flex w-fit mb-6">
           <TabsTrigger
             value="checkout"
@@ -286,11 +286,9 @@ export default function Sales() {
                       {selectedMemberId !== "walk-in" && (
                         <p className="text-xxs font-mono text-amber-400 mt-1">
                           {t("sales.checkout.memberLoan", {
-                            amount: `Rp ${
-                              (
-                                s.membersList.find((mbr) => mbr.id === selectedMemberId)?.loan_outstanding ?? 0
-                              ).toLocaleString("id-ID")
-                            }`,
+                            amount: `Rp ${(
+                              s.membersList.find((mbr) => mbr.id === selectedMemberId)?.loan_outstanding ?? 0
+                            ).toLocaleString("id-ID")}`,
                           })}
                         </p>
                       )}
@@ -382,10 +380,7 @@ export default function Sales() {
 
         {/* ── TAB 2: SALES TRANSACTION HISTORY ────────────────────────── */}
         <TabsContent value="history" className="outline-none">
-          <SalesHistory
-            transactionsList={s.transactionsList}
-            membersList={s.membersList}
-          />
+          <SalesHistory transactionsList={s.transactionsList} membersList={s.membersList} />
         </TabsContent>
 
         {/* ── TAB 3: INVENTORY MANAGEMENT ────────────────────────────── */}

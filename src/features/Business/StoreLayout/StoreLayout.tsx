@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import DevDocStripe from "@/components/DevDocStripe";
 import { sfx } from "@/features/System/ProfileSelect/sfx";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -122,7 +121,6 @@ export default function StoreLayout() {
   if (mode === "list") {
     return (
       <div className="flex-1 overflow-auto p-6">
-        <DevDocStripe content="# Store Layout\n\nGrid-based 2D shelf layout editor. Design your cooperative store floor plan, place shelves, and assign inventory items to specific shelf positions." />
         <div className="space-y-4">
           <div className="flex items-center">
             <h3 className="text-xxs font-mono text-muted-foreground uppercase tracking-widest flex items-center gap-2">
@@ -153,35 +151,36 @@ export default function StoreLayout() {
                 className="bg-slate-950/60 border-slate-900/80 hover:border-emerald-500/20 cursor-pointer transition-all"
                 onClick={() => handleEditLayout(layout)}
               >
-                  <CardContent className="p-4 space-y-3">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <h4 className="text-sm font-bold text-foreground">{layout.name}</h4>
-                        <p className="text-xxxs font-mono text-slate-400 mt-0.5">
-                          {((layout.grid_width ?? 1) * (layout.cell_size ?? 1)).toFixed(1)}m × {((layout.grid_height ?? 1) * (layout.cell_size ?? 1)).toFixed(1)}m
-                        </p>
-                        <p className="text-xxxs font-mono text-slate-500">
-                          {layout.grid_width}×{layout.grid_height} {t("storeLayout.grid")} · 1 {t("storeLayout.cellLabel")} = {layout.cell_size ?? 1}m
-                        </p>
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-7 w-7 text-rose-400 hover:text-rose-300 hover:bg-rose-500/10"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          deleteLayout(layout.id);
-                        }}
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </Button>
+                <CardContent className="p-4 space-y-3">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h4 className="text-sm font-bold text-foreground">{layout.name}</h4>
+                      <p className="text-xxxs font-mono text-slate-400 mt-0.5">
+                        {`${((layout.grid_width ?? 1) * (layout.cell_size ?? 1)).toFixed(1)}m × ${((layout.grid_height ?? 1) * (layout.cell_size ?? 1)).toFixed(1)}m`}
+                      </p>
+                      <p className="text-xxxs font-mono text-slate-500">
+                        {layout.grid_width}×{layout.grid_height} {t("storeLayout.grid")} · 1{" "}
+                        {t("storeLayout.cellLabel")} = {layout.cell_size ?? 1}m
+                      </p>
                     </div>
-                    <p className="text-xxxs font-mono text-slate-500">
-                      {t("storeLayout.created")}: {layout.created_at?.slice(0, 10) || "-"}
-                    </p>
-                  </CardContent>
-                </Card>
-              ))}
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7 text-rose-400 hover:text-rose-300 hover:bg-rose-500/10"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        deleteLayout(layout.id);
+                      }}
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                  <p className="text-xxxs font-mono text-slate-500">
+                    {t("storeLayout.created")}: {layout.created_at?.slice(0, 10) || "-"}
+                  </p>
+                </CardContent>
+              </Card>
+            ))}
           </div>
         </div>
 
@@ -195,9 +194,7 @@ export default function StoreLayout() {
               }}
             >
               <DialogHeader>
-                <DialogTitle className="text-sm font-bold text-foreground">
-                  {t("storeLayout.dialogNew")}
-                </DialogTitle>
+                <DialogTitle className="text-sm font-bold text-foreground">{t("storeLayout.dialogNew")}</DialogTitle>
               </DialogHeader>
               <div className="space-y-3.5 py-4 text-xs">
                 <div className="space-y-1">
@@ -214,7 +211,7 @@ export default function StoreLayout() {
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1">
                     <label className="text-muted-foreground font-mono text-xxxs uppercase">
-                      {t("storeLayout.roomWidth")} (m)
+                      {`${t("storeLayout.roomWidth")} (m)`}
                     </label>
                     <Input
                       type="number"
@@ -228,7 +225,7 @@ export default function StoreLayout() {
                   </div>
                   <div className="space-y-1">
                     <label className="text-muted-foreground font-mono text-xxxs uppercase">
-                      {t("storeLayout.roomDepth")} (m)
+                      {`${t("storeLayout.roomDepth")} (m)`}
                     </label>
                     <Input
                       type="number"
@@ -245,7 +242,8 @@ export default function StoreLayout() {
                   <label className="text-muted-foreground font-mono text-xxxs uppercase flex items-center justify-between">
                     <span>{t("storeLayout.cellSize")}</span>
                     <span className="font-bold text-emerald-400">
-                      1{t("storeLayout.cellLabel")} = {cellSize === 1 ? "1 m" : cellSize === 0.5 ? "0.5 m" : `${cellSize} m`}
+                      1{t("storeLayout.cellLabel")} ={" "}
+                      {cellSize === 1 ? "1 m" : cellSize === 0.5 ? "0.5 m" : `${cellSize} m`}
                     </span>
                   </label>
                   <div className="flex gap-2">
@@ -266,7 +264,8 @@ export default function StoreLayout() {
                   </div>
                 </div>
                 <p className="text-xxxs font-mono text-slate-500">
-                  {t("storeLayout.gridPreview")}: {Math.ceil(roomWidth / cellSize)}×{Math.ceil(roomDepth / cellSize)} {t("storeLayout.grid")}
+                  {t("storeLayout.gridPreview")}: {Math.ceil(roomWidth / cellSize)}×{Math.ceil(roomDepth / cellSize)}{" "}
+                  {t("storeLayout.grid")}
                 </p>
               </div>
               <DialogFooter>
@@ -310,7 +309,7 @@ export default function StoreLayout() {
           </Button>
           <span className="text-xs font-bold text-foreground">{activeLayout?.name}</span>
           <span className="text-xxxs font-mono text-slate-500">
-            {((activeLayout?.grid_width ?? 0) * (activeLayout?.cell_size ?? 1)).toFixed(1)}m × {((activeLayout?.grid_height ?? 0) * (activeLayout?.cell_size ?? 1)).toFixed(1)}m
+            {`${((activeLayout?.grid_width ?? 0) * (activeLayout?.cell_size ?? 1)).toFixed(1)}m × ${((activeLayout?.grid_height ?? 0) * (activeLayout?.cell_size ?? 1)).toFixed(1)}m`}
           </span>
         </div>
         <Button

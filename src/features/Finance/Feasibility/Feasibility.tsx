@@ -1,5 +1,3 @@
-import DevDocStripe from "@/components/DevDocStripe";
-import readmeContent from "./README.md?raw";
 import "./Feasibility.css";
 import { Info } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -17,7 +15,6 @@ export default function Feasibility() {
 
   return (
     <div className="space-y-4">
-      <DevDocStripe content={readmeContent} />
       <Tabs
         value={f.feasibilityActiveTab}
         onValueChange={(val) => f.setFeasibilityActiveTab(val as typeof f.feasibilityActiveTab)}

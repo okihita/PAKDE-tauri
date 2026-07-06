@@ -6,8 +6,6 @@ import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useUnits } from "@/hooks/useUnits";
 import { Building2, Plus, Sparkles, Power, Activity } from "lucide-react";
-import DevDocStripe from "@/components/DevDocStripe";
-import readmeContent from "./README.md?raw";
 import "./Units.css";
 
 interface UnitsProps {
@@ -40,8 +38,6 @@ export default function Units({ onTabChange }: UnitsProps) {
 
   return (
     <div className="flex-1 overflow-auto p-6 space-y-6 max-w-4xl mx-auto">
-      <DevDocStripe content={readmeContent} />
-
       {/* Header section */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">

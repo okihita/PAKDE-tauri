@@ -1,5 +1,3 @@
-import DevDocStripe from "@/components/DevDocStripe";
-import readmeContent from "./README.md?raw";
 import "./Statistics.css";
 import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -49,7 +47,6 @@ export default function Statistics({ coopProfile, ewsAlerts, currentUser }: Prop
 
   return (
     <div className="flex-1 overflow-auto p-6 space-y-6">
-      <DevDocStripe content={readmeContent} />
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* ── COLUMN 1 ──────────────────────────────────────────── */}
 

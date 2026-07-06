@@ -14,8 +14,6 @@ import {
   Play,
   CheckCircle2,
 } from "lucide-react";
-import DevDocStripe from "@/components/DevDocStripe";
-import readmeContent from "./README.md?raw";
 import "./Impact.css";
 
 interface FeedbackItem {
@@ -83,8 +81,6 @@ export default function Impact() {
 
   return (
     <div className="flex-1 overflow-auto p-6 space-y-6 max-w-4xl mx-auto">
-      <DevDocStripe content={readmeContent} />
-
       {/* Header section */}
       <div className="flex items-center gap-3">
         <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center">

@@ -290,6 +290,21 @@
         "tax": "Pajak (10%)",
         "shuNet": "SHU Bersih"
       }
+    },
+    "audit": {
+      "title": "Kontrol Audit SAK EP",
+      "successMessage": "Simulasi audit kepatuhan SAK EP selesai dengan nol varians buku besar.",
+      "checking": "Mengaudit register percobaan..."
+    },
+    "runway": {
+      "title": "Kedaulatan Arus Kas",
+      "months": "Bulan Bertahan"
+    },
+    "health": {
+      "title": "Kesehatan Ringkas",
+      "status": "Status Arus Kas",
+      "excellent": "Sangat Baik",
+      "score": "Skor Kesehatan Keuangan"
     }
   },
   "feasibility": {

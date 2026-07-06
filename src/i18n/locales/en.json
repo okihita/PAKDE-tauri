@@ -290,6 +290,21 @@
         "tax": "Tax (10%)",
         "shuNet": "Net Surplus"
       }
+    },
+    "audit": {
+      "title": "SAK EP Audit Controls",
+      "successMessage": "SAK EP compliance audit simulation completed with zero ledger variances.",
+      "checking": "Auditing trial registers..."
+    },
+    "runway": {
+      "title": "Cash Runway Sovereignty",
+      "months": "Survival Months"
+    },
+    "health": {
+      "title": "Simplified Health",
+      "status": "Runway Status",
+      "excellent": "Excellent",
+      "score": "Financial Health Score"
     }
   },
   "feasibility": {
