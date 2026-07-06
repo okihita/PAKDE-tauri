@@ -24,7 +24,9 @@ class RetroAudioEngine {
     try {
       this.init();
       const ctx = this.ctx;
-      if (!ctx || ctx.state === "suspended") return;
+      if (!ctx) return;
+      // Resume on first interaction so subsequent calls work immediately
+      if (ctx.state === "suspended") { ctx.resume().catch(() => {}); return; }
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.type = type;
@@ -40,12 +42,59 @@ class RetroAudioEngine {
     }
   }
 
+  playSoftThud(frequency = 80, duration = 0.12) {
+    // Louder, fuller thud for placing zones/shelves — triangle wave for warmth
+    if (!this.enabled) return;
+    try {
+      this.init();
+      const ctx = this.ctx;
+      if (!ctx) return;
+      if (ctx.state === "suspended") { ctx.resume().catch(() => {}); return; }
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "triangle";
+      osc.frequency.value = frequency;
+      gain.gain.setValueAtTime(0.06, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + duration);
+    } catch {
+      // ignore
+    }
+  }
+
+  playClick(frequency = 350, duration = 0.04) {
+    // Short square-wave snap for erase / assign
+    if (!this.enabled) return;
+    try {
+      this.init();
+      const ctx = this.ctx;
+      if (!ctx) return;
+      if (ctx.state === "suspended") { ctx.resume().catch(() => {}); return; }
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "square";
+      osc.frequency.value = frequency;
+      gain.gain.setValueAtTime(0.03, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + duration);
+    } catch {
+      // ignore
+    }
+  }
+
   playChime() {
     if (!this.enabled) return;
     try {
       this.init();
       const ctx = this.ctx;
-      if (!ctx || ctx.state === "suspended") return;
+      if (!ctx) return;
+      if (ctx.state === "suspended") { ctx.resume().catch(() => {}); return; }
       const now = ctx.currentTime;
       // Soft, pleasant C-major arpeggio (C5 -> E5 -> G5 -> C6) using triangle wave for warmth
       const notes = [523.25, 659.25, 783.99, 1046.5];
@@ -73,7 +122,8 @@ class RetroAudioEngine {
     try {
       this.init();
       const ctx = this.ctx;
-      if (!ctx || ctx.state === "suspended") return;
+      if (!ctx) return;
+      if (ctx.state === "suspended") { ctx.resume().catch(() => {}); return; }
       const now = ctx.currentTime;
       // Ultra-short soft click slide
       const osc = ctx.createOscillator();

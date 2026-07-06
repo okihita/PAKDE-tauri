@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import DevDocStripe from "@/components/DevDocStripe";
+import { sfx } from "@/features/System/ProfileSelect/sfx";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -89,7 +90,10 @@ export default function StoreLayout() {
   const handleSaveZones = async () => {
     if (!activeLayout) return null;
     const fresh = await saveZones(activeLayout.id, editingZones);
-    if (fresh) setEditingZones(fresh);
+    if (fresh) {
+      setEditingZones(fresh);
+      sfx.playChime();
+    }
     return fresh;
   };
 

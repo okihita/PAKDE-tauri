@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { sfx } from "@/features/System/ProfileSelect/sfx";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -50,6 +51,7 @@ export default function ShelfPanel({
   const handleAssign = async () => {
     if (!assigningBin || !selectedItemId) return;
     await onItemAssign(selectedItemId, zone.id, assigningBin.row, assigningBin.col);
+    sfx.playClick(220, 0.06);
     setAssigningBin(null);
     setSelectedItemId("");
   };

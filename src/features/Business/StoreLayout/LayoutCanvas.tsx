@@ -2,6 +2,7 @@ import { useState, useCallback, useMemo, useRef, useEffect } from "react";
 import { Stage, Layer, Rect, Line, Text, Group, Circle } from "react-konva";
 import type Konva from "konva";
 import type { LayoutZone, InventoryItem } from "@/types";
+import { sfx } from "@/features/System/ProfileSelect/sfx";
 import { MousePointer2, Square, Box, Eraser, ZoomIn, ZoomOut, Maximize } from "lucide-react";
 import "./index.css";
 
@@ -202,6 +203,7 @@ export default function LayoutCanvas({
             color: "#4CAF50",
           },
         ]);
+        sfx.playSoftThud(100, 0.08);
       }
     },
     [activeTool, offset, scale, gridPxW, gridPxH, shelfZones, zonesSetter],
@@ -245,6 +247,7 @@ export default function LayoutCanvas({
         color: zoneColor,
       },
     ]);
+    sfx.playSoftThud(80, 0.12);
 
     isDrawingRef.current = false;
     drawStartRef.current = null;
@@ -442,6 +445,7 @@ const nx = clampPos(snap(node.x()), zw, gridPxW);
                 }}
                 onClick={() => {
                   if (activeTool === "erase") {
+                    sfx.playClick(350, 0.04);
                     zonesSetter((prev) => prev.filter((z) => z.id !== zone.id));
                     return;
                   }
@@ -530,6 +534,7 @@ const nx = clampPos(snap(node.x()), zw, gridPxW);
                 }}
                 onClick={() => {
                   if (activeTool === "erase") {
+                    sfx.playClick(350, 0.04);
                     zonesSetter((prev) => prev.filter((z) => z.id !== zone.id));
                     return;
                   }
