@@ -3,7 +3,19 @@ import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { CalendarPlus, MapPin, Clock, FileText, ArrowLeft, CalendarDays, Sparkles, Users } from "lucide-react";
+import {
+  CalendarPlus,
+  MapPin,
+  Clock,
+  FileText,
+  ArrowLeft,
+  CalendarDays,
+  Sparkles,
+  Users,
+  Lightbulb,
+  CheckSquare,
+  TrendingUp,
+} from "lucide-react";
 import { computePredictions, importanceStars, type EventTemplate } from "./eventTemplates";
 import EventTemplatePicker from "./EventTemplatePicker";
 import EventPredictionPanels from "./EventPredictionPanels";
@@ -349,6 +361,62 @@ export default function CreateEvent() {
           {/* Prediction panels */}
           {!isCustom && predictions && (
             <EventPredictionPanels predictions={predictions} recommendedStartDate={predictions.recommendedStartDate} />
+          )}
+
+          {/* Rationale + Checklist + ROI */}
+          {!isCustom && tmpl!.rationaleKeys.length > 0 && (
+            <div className="space-y-3 pt-2">
+              <div className="flex items-center gap-2 text-xxs font-mono text-slate-500 uppercase tracking-wider">
+                <Lightbulb className="h-3 w-3 text-amber-400" />
+                {t("event.rationale.heading")}
+              </div>
+
+              {/* Why this event */}
+              <div className="rounded-lg border border-amber-500/10 bg-amber-500/[0.03] p-3 space-y-1.5">
+                <h4 className="text-xxs font-mono font-bold text-amber-400 flex items-center gap-1.5">
+                  <Lightbulb className="h-3 w-3" />
+                  {t("event.rationale.whyTitle")}
+                </h4>
+                {tmpl!.rationaleKeys.map((key) => (
+                  <p key={key} className="text-xxxs text-slate-400 leading-relaxed">
+                    {t(key)}
+                  </p>
+                ))}
+              </div>
+
+              {/* Checklist */}
+              {tmpl!.checklistKeys.length > 0 && (
+                <div className="rounded-lg border border-emerald-500/10 bg-emerald-500/[0.03] p-3 space-y-1.5">
+                  <h4 className="text-xxs font-mono font-bold text-emerald-400 flex items-center gap-1.5">
+                    <CheckSquare className="h-3 w-3" />
+                    {t("event.rationale.checklistTitle")}
+                  </h4>
+                  <div className="space-y-1">
+                    {tmpl!.checklistKeys.map((key) => (
+                      <div key={key} className="flex items-center gap-2 text-xxxs font-mono text-slate-400">
+                        <span className="text-emerald-400/60">☐</span>
+                        {t(key)}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Cooperative ROI */}
+              {tmpl!.roiKeys.length > 0 && (
+                <div className="rounded-lg border border-blue-500/10 bg-blue-500/[0.03] p-3 space-y-1.5">
+                  <h4 className="text-xxs font-mono font-bold text-blue-400 flex items-center gap-1.5">
+                    <TrendingUp className="h-3 w-3" />
+                    {t("event.rationale.roiTitle")}
+                  </h4>
+                  {tmpl!.roiKeys.map((key) => (
+                    <p key={key} className="text-xxxs text-slate-400 leading-relaxed">
+                      {t(key)}
+                    </p>
+                  ))}
+                </div>
+              )}
+            </div>
           )}
 
           {/* Note + Buttons */}

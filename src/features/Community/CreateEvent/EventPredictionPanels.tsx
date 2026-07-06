@@ -47,7 +47,8 @@ export default function EventPredictionPanels({ predictions, recommendedStartDat
         <p className="text-xxxs text-slate-400 leading-relaxed">
           {t("event.prediction.engagementDesc", {
             expected: predictions.expectedAttendees,
-            total: predictions.prepDays > 0 ? "N/A" : "—", // fallback rendered via template params
+            total: predictions.totalAttendees,
+            pct: predictions.engagementPct,
           })}
         </p>
       </div>
