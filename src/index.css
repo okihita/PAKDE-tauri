@@ -105,6 +105,8 @@
   html {
     font-size: 19px;
     overscroll-behavior: none;
+    overflow: hidden;
+    height: 100%;
   }
   html[data-font-size="small"] {
     font-size: 16px;
@@ -124,9 +126,8 @@
     font-feature-settings:
       "rlig" 1,
       "calt" 1;
-    border: 2px solid #b91c1c; /* Red Alert tactical window border */
-    min-height: 100vh;
-    box-sizing: border-box;
+    overflow: hidden;
+    height: 100%;
   }
 }
 
