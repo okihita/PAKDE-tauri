@@ -86,10 +86,9 @@ function AppContent() {
         const db = await getDb();
         const lastProfileId = localStorage.getItem("pakde-active-profile-id");
         if (lastProfileId) {
-          const profile = await db.select<CooperativeProfile[]>(
-            "SELECT * FROM cooperatives WHERE id = ?",
-            [lastProfileId]
-          );
+          const profile = await db.select<CooperativeProfile[]>("SELECT * FROM cooperatives WHERE id = ?", [
+            lastProfileId,
+          ]);
           if (profile.length > 0) {
             setCoopProfile(profile[0]);
             setAppState("main");
@@ -157,10 +156,7 @@ function AppContent() {
         const db = await getDb();
         const activeId = coopProfile?.id || localStorage.getItem("pakde-active-profile-id");
         if (activeId) {
-          const profile = await db.select<CooperativeProfile[]>(
-            "SELECT * FROM cooperatives WHERE id = ?",
-            [activeId]
-          );
+          const profile = await db.select<CooperativeProfile[]>("SELECT * FROM cooperatives WHERE id = ?", [activeId]);
           if (profile.length > 0) setCoopProfile(profile[0]);
         } else {
           const profile = await db.select<CooperativeProfile[]>("SELECT * FROM cooperatives LIMIT 1");
@@ -253,48 +249,48 @@ function AppContent() {
         <main
           className={cn(
             "flex-1 max-h-full overscroll-contain",
-            activeTab === "storelayout" ? "overflow-hidden p-0" : "overflow-y-auto p-6",
+            activeTab === "storelayout" ? "flex flex-col overflow-hidden p-0" : "overflow-y-auto p-6",
           )}
         >
-        {activeTab === "home" && <Dashboard />}
-        {activeTab === "statistics" && (
-          <Statistics coopProfile={coopProfile} ewsAlerts={ewsAlerts} currentUser={currentUser} />
-        )}
-        {activeTab === "ranking" && <Ranking coopProfile={coopProfile} />}
-        {activeTab === "leveling" && <Leveling healthScore={coopProfile?.health_score ?? 0} />}
-        {activeTab === "units" && <Units onTabChange={setActiveTab} />}
-        {activeTab === "equipment" && <Equipment />}
-        {activeTab === "sales" && <Sales />}
-        {activeTab === "storelayout" && <StoreLayout />}
-        {activeTab === "development" && <Development />}
-        {activeTab === "learn" && <Learn />}
-        {activeTab === "planners" && <Planners />}
-        {activeTab === "participation" && <Participation onTabChange={setActiveTab} />}
-        {activeTab === "members" && <Members />}
-        {activeTab === "event" && <CreateEvent />}
-        {activeTab === "impact" && <Impact />}
-        {activeTab === "accounting" && (
-          <Accounting
-            financeTier={financeTier}
-            onTierChange={(t) => {
-              setFinanceTier(t);
-              localStorage.setItem("pakde-finance-tier", t);
-            }}
-          />
-        )}
-        {activeTab === "feasibility" && <Feasibility />}
-        {activeTab === "sync" && <Sync />}
-        {activeTab === "settings" && (
-          <Settings
-            coopProfile={coopProfile}
-            setCoopProfile={setCoopProfile}
-            fontSizeSetting={fontSizeSetting}
-            setFontSizeSetting={setFontSizeSetting}
-            appTheme={appTheme}
-            setAppTheme={setAppTheme}
-          />
-        )}
-      </main>
+          {activeTab === "home" && <Dashboard />}
+          {activeTab === "statistics" && (
+            <Statistics coopProfile={coopProfile} ewsAlerts={ewsAlerts} currentUser={currentUser} />
+          )}
+          {activeTab === "ranking" && <Ranking coopProfile={coopProfile} />}
+          {activeTab === "leveling" && <Leveling healthScore={coopProfile?.health_score ?? 0} />}
+          {activeTab === "units" && <Units onTabChange={setActiveTab} />}
+          {activeTab === "equipment" && <Equipment />}
+          {activeTab === "sales" && <Sales />}
+          {activeTab === "storelayout" && <StoreLayout />}
+          {activeTab === "development" && <Development />}
+          {activeTab === "learn" && <Learn />}
+          {activeTab === "planners" && <Planners />}
+          {activeTab === "participation" && <Participation onTabChange={setActiveTab} />}
+          {activeTab === "members" && <Members />}
+          {activeTab === "event" && <CreateEvent />}
+          {activeTab === "impact" && <Impact />}
+          {activeTab === "accounting" && (
+            <Accounting
+              financeTier={financeTier}
+              onTierChange={(t) => {
+                setFinanceTier(t);
+                localStorage.setItem("pakde-finance-tier", t);
+              }}
+            />
+          )}
+          {activeTab === "feasibility" && <Feasibility />}
+          {activeTab === "sync" && <Sync />}
+          {activeTab === "settings" && (
+            <Settings
+              coopProfile={coopProfile}
+              setCoopProfile={setCoopProfile}
+              fontSizeSetting={fontSizeSetting}
+              setFontSizeSetting={setFontSizeSetting}
+              appTheme={appTheme}
+              setAppTheme={setAppTheme}
+            />
+          )}
+        </main>
       </div>
     </div>
   );
