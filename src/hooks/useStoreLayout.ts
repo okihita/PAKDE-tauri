@@ -2,7 +2,7 @@ import { useState, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { getDb } from "@/db";
 import { useToast } from "@/hooks/useToast";
-import { devLog } from "@/components/DevConsole";
+
 import type { StoreLayout, LayoutZone, InventoryItem } from "@/types";
 import type { CategoryRow } from "@/features/Business/StoreLayout/StoreLayout";
 
@@ -14,14 +14,9 @@ function generateId(): string {
 // earlier version of init.ts (e.g. store_layouts pre-dating the cell_size
 // column). Idempotent — runs only what's actually missing.
 async function ensureStoreLayoutSchema(db: Awaited<ReturnType<typeof getDb>>) {
-  const cols = await db.select<Array<{ name: string }>>(
-    "SELECT name FROM pragma_table_info('store_layouts')",
-  );
-  const invCols = await db.select<Array<{ name: string }>>(
-    "SELECT name FROM pragma_table_info('inventory_items')",
-  );
-  const has = (rows: Array<{ name: string }>, n: string) =>
-    rows.some((r) => r.name === n);
+  const cols = await db.select<Array<{ name: string }>>("SELECT name FROM pragma_table_info('store_layouts')");
+  const invCols = await db.select<Array<{ name: string }>>("SELECT name FROM pragma_table_info('inventory_items')");
+  const has = (rows: Array<{ name: string }>, n: string) => rows.some((r) => r.name === n);
 
   if (!has(cols, "cell_size")) {
     await db.execute("ALTER TABLE store_layouts ADD COLUMN cell_size REAL DEFAULT 1.0");
@@ -101,36 +96,35 @@ export function useStoreLayout() {
   const loadLayouts = useCallback(async () => {
     try {
       const db = await getReadyDb();
-      const res = await db.select<StoreLayout[]>(
-        "SELECT * FROM store_layouts ORDER BY created_at DESC",
-      );
+      const res = await db.select<StoreLayout[]>("SELECT * FROM store_layouts ORDER BY created_at DESC");
       setLayouts(res);
     } catch (e) {
       console.error("Failed to load store layouts:", e);
     }
   }, [getReadyDb]);
 
-  const loadZones = useCallback(async (layoutId: string) => {
-    try {
-      const db = await getReadyDb();
-      const res = await db.select<LayoutZone[]>(
-        "SELECT * FROM layout_zones WHERE layout_id = ? ORDER BY created_at ASC",
-        [layoutId],
-      );
-      setZones(res);
-      return res;
-    } catch (e) {
-      console.error("Failed to load layout zones:", e);
-      return [];
-    }
-  }, [getReadyDb]);
+  const loadZones = useCallback(
+    async (layoutId: string) => {
+      try {
+        const db = await getReadyDb();
+        const res = await db.select<LayoutZone[]>(
+          "SELECT * FROM layout_zones WHERE layout_id = ? ORDER BY created_at ASC",
+          [layoutId],
+        );
+        setZones(res);
+        return res;
+      } catch (e) {
+        console.error("Failed to load layout zones:", e);
+        return [];
+      }
+    },
+    [getReadyDb],
+  );
 
   const loadCategories = useCallback(async () => {
     try {
       const db = await getReadyDb();
-      const res = await db.select<CategoryRow[]>(
-        "SELECT * FROM categories WHERE id LIKE 'unit_%' ORDER BY name ASC",
-      );
+      const res = await db.select<CategoryRow[]>("SELECT * FROM categories WHERE id LIKE 'unit_%' ORDER BY name ASC");
       setCategories(res);
     } catch (e) {
       console.error("Failed to load categories:", e);
@@ -140,9 +134,7 @@ export function useStoreLayout() {
   const loadInventory = useCallback(async () => {
     try {
       const db = await getReadyDb();
-      const res = await db.select<InventoryItem[]>(
-        "SELECT * FROM inventory_items ORDER BY name ASC",
-      );
+      const res = await db.select<InventoryItem[]>("SELECT * FROM inventory_items ORDER BY name ASC");
       setInventoryItems(res);
     } catch (e) {
       console.error("Failed to load inventory:", e);
@@ -165,7 +157,6 @@ export function useStoreLayout() {
         return id;
       } catch (e) {
         const msg = e instanceof Error ? e.message : String(e);
-        devLog(`createLayout failed: ${msg}`);
         console.error("Failed to create layout:", msg);
         toast.error(`${t("storeLayout.toast.layoutCreateFailed")}: ${msg}`);
         return null;
@@ -200,7 +191,6 @@ export function useStoreLayout() {
         toast.success(t("storeLayout.toast.layoutDeleted"));
       } catch (e) {
         const msg = e instanceof Error ? e.message : String(e);
-        devLog(`deleteLayout failed: ${msg}`);
         console.error("Failed to delete layout:", msg);
         toast.error(`${t("storeLayout.toast.layoutDeleteFailed")}: ${msg}`);
       }
@@ -222,10 +212,9 @@ export function useStoreLayout() {
         const db = await getReadyDb();
 
         // 1. Existing zone ids in DB for this layout
-        const rows = await db.select<Array<{ id: string }>>(
-          "SELECT id FROM layout_zones WHERE layout_id = ?",
-          [layoutId],
-        );
+        const rows = await db.select<Array<{ id: string }>>("SELECT id FROM layout_zones WHERE layout_id = ?", [
+          layoutId,
+        ]);
         const existingIds = new Set(rows.map((r) => r.id));
         const keptIds = new Set(zoneList.map((z) => z.id));
 
@@ -251,25 +240,12 @@ export function useStoreLayout() {
                width=excluded.width, height=excluded.height,
                rows=excluded.rows, cols=excluded.cols,
                color=excluded.color`,
-            [
-              z.id,
-              layoutId,
-              z.name,
-              z.zone_type,
-              z.x,
-              z.y,
-              z.width,
-              z.height,
-              z.rows,
-              z.cols,
-              z.color,
-            ],
+            [z.id, layoutId, z.name, z.zone_type, z.x, z.y, z.width, z.height, z.rows, z.cols, z.color],
           );
         }
 
         return await loadZones(layoutId);
       } catch (e) {
-        devLog(`saveZones failed: ${e}`);
         console.error("Failed to save zones:", e);
         toast.error(t("storeLayout.toast.zonesSaveFailed"));
         return null;
@@ -309,16 +285,16 @@ export function useStoreLayout() {
     async (itemId: string, zoneId: string | null, row: number | null, col: number | null) => {
       try {
         const db = await getReadyDb();
-        await db.execute(
-          `UPDATE inventory_items SET zone_id = ?, shelf_row = ?, shelf_col = ? WHERE id = ?`,
-          [zoneId, row, col, itemId],
-        );
+        await db.execute(`UPDATE inventory_items SET zone_id = ?, shelf_row = ?, shelf_col = ? WHERE id = ?`, [
+          zoneId,
+          row,
+          col,
+          itemId,
+        ]);
         // Patch the item in the local state directly — avoids a full SELECT *
         // roundtrip and prevents every shelf stock indicator from re-computing.
         setInventoryItems((prev) =>
-          prev.map((i) =>
-            i.id === itemId ? { ...i, zone_id: zoneId, shelf_row: row, shelf_col: col } : i,
-          ),
+          prev.map((i) => (i.id === itemId ? { ...i, zone_id: zoneId, shelf_row: row, shelf_col: col } : i)),
         );
       } catch (e) {
         console.error("Failed to assign item to shelf:", e);

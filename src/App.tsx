@@ -26,7 +26,6 @@ import Participation from "@/features/Community/Participation/Participation";
 import Sync from "@/features/System/Sync/Sync";
 import Settings from "@/features/System/Settings/Settings";
 import ProfileSelect from "@/features/System/ProfileSelect/ProfileSelect";
-import DevConsole from "@/components/DevConsole";
 import { getErrorMessage, type CooperativeProfile, type EwsAlert, type CountRow } from "@/types";
 
 type FontLevel = "small" | "normal" | "large" | "xlarge";
@@ -304,7 +303,6 @@ export default function App() {
         style={{ backgroundImage: 'url("/background.jpg")' }}
       />
       <AppContent />
-      <DevConsole />
     </ToastProvider>
   );
 }
