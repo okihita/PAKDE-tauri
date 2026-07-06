@@ -1,9 +1,14 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { CalendarPlus, MapPin, Clock, FileText, ArrowLeft, CalendarDays, Sparkles } from "lucide-react";
+import { CalendarPlus, MapPin, Clock, FileText, ArrowLeft, CalendarDays, Sparkles, Users } from "lucide-react";
+import { computePredictions, importanceStars, type EventTemplate } from "./eventTemplates";
+import EventTemplatePicker from "./EventTemplatePicker";
+import EventPredictionPanels from "./EventPredictionPanels";
+
+/* ── Types ────────────────────────────────────────────── */
 
 interface CalendarEvent {
   id: string;
@@ -14,6 +19,8 @@ interface CalendarEvent {
   description: string;
   createdAt: string;
 }
+
+/* ── Storage ──────────────────────────────────────────── */
 
 const STORAGE_KEY = "pakde-events";
 
@@ -30,21 +37,67 @@ function saveEvents(events: CalendarEvent[]) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(events));
 }
 
+/* ══════════════════════════════════════════════════════════
+   COMPONENT
+   ══════════════════════════════════════════════════════════ */
+
 export default function CreateEvent() {
   const { t } = useTranslation();
-  const [mode, setMode] = useState<"list" | "create">("list");
+  const [mode, setMode] = useState<"list" | "templates" | "create">("list");
   const [events, setEvents] = useState<CalendarEvent[]>(loadEvents);
+  const [selectedTemplate, setSelectedTemplate] = useState<EventTemplate | null>(null);
 
   // Form state
   const [name, setName] = useState("");
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
   const [location, setLocation] = useState("");
+  const [attendees, setAttendees] = useState(0);
   const [description, setDescription] = useState("");
 
+  // ── Predictions (recomputed live) ──
+  const predictions = useMemo(() => {
+    if (!selectedTemplate || selectedTemplate.id === "custom") return null;
+    return computePredictions(selectedTemplate, attendees || selectedTemplate.defaultAttendees, date);
+  }, [selectedTemplate, attendees, date]);
+
+  /* ── Navigation ── */
+  const openTemplates = () => setMode("templates");
+
+  const selectTemplate = (tmpl: EventTemplate) => {
+    setSelectedTemplate(tmpl);
+    if (tmpl.id === "custom") {
+      setName("");
+      setDate("");
+      setTime("");
+      setLocation("");
+      setAttendees(0);
+      setDescription("");
+    } else {
+      setName(tmpl.suggestedNameKey ? t(tmpl.suggestedNameKey) : "");
+      setDate("");
+      setTime("");
+      setLocation(tmpl.suggestedLocationKey ? t(tmpl.suggestedLocationKey) : "");
+      setAttendees(tmpl.defaultAttendees);
+      setDescription(
+        tmpl.suggestedAgendaKeys
+          .map((k) => t(k))
+          .filter(Boolean)
+          .join("\n"),
+      );
+    }
+    setMode("create");
+  };
+
+  const backToTemplates = () => setMode("templates");
+  const backToList = () => {
+    setMode("list");
+    setSelectedTemplate(null);
+  };
+
+  /* ── Save ── */
   const handleSave = () => {
     if (!name.trim() || !date) return;
-
     const newEvent: CalendarEvent = {
       id: `evt-${Date.now()}`,
       name: name.trim(),
@@ -54,18 +107,16 @@ export default function CreateEvent() {
       description: description.trim(),
       createdAt: new Date().toISOString(),
     };
-
     const updated = [newEvent, ...events];
     setEvents(updated);
     saveEvents(updated);
-
-    // Reset form
     setName("");
     setDate("");
     setTime("");
     setLocation("");
+    setAttendees(0);
     setDescription("");
-
+    setSelectedTemplate(null);
     setMode("list");
   };
 
@@ -75,11 +126,12 @@ export default function CreateEvent() {
     saveEvents(updated);
   };
 
-  // ── LIST MODE ──
+  /* ═══════════════════════════════════════════════
+     LIST MODE
+     ═══════════════════════════════════════════════ */
   if (mode === "list") {
     return (
       <div className="flex-1 overflow-auto p-6">
-        {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-xxs font-mono text-muted-foreground uppercase tracking-widest flex items-center gap-2">
             <CalendarDays className="h-3.5 w-3.5 text-amber-400" />
@@ -87,7 +139,7 @@ export default function CreateEvent() {
           </h3>
           {events.length > 0 && (
             <Button
-              onClick={() => setMode("create")}
+              onClick={openTemplates}
               className="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold text-xs h-8 px-3"
             >
               <CalendarPlus className="h-3.5 w-3.5 mr-1.5" />
@@ -96,28 +148,22 @@ export default function CreateEvent() {
           )}
         </div>
 
-        {/* ── Empty state ── */}
-        {events.length === 0 && (
+        {events.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 px-6 text-center">
-            {/* Icon ring */}
             <div className="w-20 h-20 rounded-full bg-amber-500/10 border border-amber-500/20 flex items-center justify-center mb-6">
               <CalendarDays className="h-9 w-9 text-amber-400/60" />
             </div>
-
             <h2 className="text-sm font-bold text-foreground mb-2">{t("event.empty.title")}</h2>
             <p className="text-xxs text-muted-foreground max-w-xs mb-8 leading-relaxed">
               {t("event.empty.description")}
             </p>
-
             <Button
-              onClick={() => setMode("create")}
+              onClick={openTemplates}
               className="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold text-xs h-9 px-5"
             >
               <Sparkles className="h-3.5 w-3.5 mr-1.5" />
               {t("event.empty.cta")}
             </Button>
-
-            {/* Subtle feature hints */}
             <div className="mt-10 grid grid-cols-2 gap-3 max-w-xs w-full">
               {[
                 { icon: CalendarDays, label: t("event.empty.hint1") },
@@ -132,10 +178,7 @@ export default function CreateEvent() {
               ))}
             </div>
           </div>
-        )}
-
-        {/* ── Event list ── */}
-        {events.length > 0 && (
+        ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {events.map((ev) => (
               <Card
@@ -185,26 +228,50 @@ export default function CreateEvent() {
     );
   }
 
-  // ── CREATE MODE ──
+  /* ═══════════════════════════════════════════════
+     TEMPLATE PICKER
+     ═══════════════════════════════════════════════ */
+  if (mode === "templates") {
+    return <EventTemplatePicker onSelect={selectTemplate} onBack={backToList} />;
+  }
+
+  /* ═══════════════════════════════════════════════
+     CREATE FORM
+     ═══════════════════════════════════════════════ */
+  const tmpl = selectedTemplate;
+  const isCustom = !tmpl || tmpl.id === "custom";
+  const FormIcon = isCustom ? CalendarPlus : tmpl!.icon;
+
   return (
-    <div className="flex-1 overflow-auto p-6 max-w-xl">
-      {/* Back button */}
+    <div className="flex-1 overflow-auto p-6 max-w-2xl">
       <button
-        onClick={() => setMode("list")}
+        onClick={backToTemplates}
         className="flex items-center gap-1.5 text-xxs text-muted-foreground hover:text-foreground mb-4 transition-colors"
       >
         <ArrowLeft className="h-3.5 w-3.5" />
-        {t("common.back")}
+        {t("event.form.backToTemplates")}
       </button>
 
       <Card className="bg-card border-border">
-        <CardHeader>
+        <CardHeader className="pb-0">
           <CardTitle className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
-            <CalendarPlus className="h-3.5 w-3.5 text-amber-400" />
-            {t("event.form.title")}
+            <FormIcon className="h-3.5 w-3.5 text-amber-400" />
+            {isCustom ? t("event.form.title") : t(tmpl!.i18nKey)}
+            {!isCustom && (
+              <span className="ml-auto flex items-center gap-1">
+                <span className="text-xxxs font-mono text-amber-400/80">{importanceStars(tmpl!.importance)}</span>
+                {tmpl!.legalNoteKey && (
+                  <span className="text-xxxs font-mono text-amber-400/60 bg-amber-500/10 px-1.5 py-0.5 rounded">
+                    {t(tmpl!.legalNoteKey)}
+                  </span>
+                )}
+              </span>
+            )}
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
+
+        <CardContent className="space-y-4 pt-4">
+          {/* Name */}
           <div className="space-y-1.5">
             <label className="text-xxs font-mono text-muted-foreground">{t("event.form.name")}</label>
             <Input
@@ -214,6 +281,8 @@ export default function CreateEvent() {
               className="bg-input border-border text-xs h-9"
             />
           </div>
+
+          {/* Date / Time */}
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <label className="text-xxs font-mono text-muted-foreground">{t("event.form.date")}</label>
@@ -234,6 +303,8 @@ export default function CreateEvent() {
               />
             </div>
           </div>
+
+          {/* Location */}
           <div className="space-y-1.5">
             <label className="text-xxs font-mono text-muted-foreground flex items-center gap-1">
               <MapPin className="h-3 w-3" /> {t("event.form.location")}
@@ -245,6 +316,24 @@ export default function CreateEvent() {
               className="bg-input border-border text-xs h-9"
             />
           </div>
+
+          {/* Attendees */}
+          <div className="space-y-1.5">
+            <label className="text-xxs font-mono text-muted-foreground flex items-center gap-1">
+              <Users className="h-3 w-3" /> {t("event.form.attendees")}
+            </label>
+            <Input
+              type="number"
+              min={0}
+              max={10000}
+              value={attendees || ""}
+              onChange={(e) => setAttendees(Math.max(0, Number(e.target.value)))}
+              placeholder={t("event.form.attendeesPlaceholder")}
+              className="bg-input border-border text-xs h-9"
+            />
+          </div>
+
+          {/* Description */}
           <div className="space-y-1.5">
             <label className="text-xxs font-mono text-muted-foreground flex items-center gap-1">
               <FileText className="h-3 w-3" /> {t("event.form.description")}
@@ -256,6 +345,13 @@ export default function CreateEvent() {
               placeholder={t("event.form.descriptionPlaceholder")}
             />
           </div>
+
+          {/* Prediction panels */}
+          {!isCustom && predictions && (
+            <EventPredictionPanels predictions={predictions} recommendedStartDate={predictions.recommendedStartDate} />
+          )}
+
+          {/* Note + Buttons */}
           <div className="flex items-center gap-2 text-xxs text-muted-foreground">
             <Clock className="h-3 w-3" />
             <span>{t("event.form.note")}</span>
@@ -263,7 +359,7 @@ export default function CreateEvent() {
           <div className="flex gap-2">
             <Button
               variant="outline"
-              onClick={() => setMode("list")}
+              onClick={backToTemplates}
               className="border-border text-muted-foreground text-xs h-9 flex-1"
             >
               {t("common.cancel")}

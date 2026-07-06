@@ -453,6 +453,99 @@
       "hint3": "Penjadwalan waktu",
       "hint4": "Pengingat otomatis"
     },
+    "importance": {
+      "star1": "Prioritas Rendah",
+      "star2": "Rendah-Sedang",
+      "star3": "Prioritas Sedang",
+      "star4": "Prioritas Tinggi",
+      "star5": "Kritis"
+    },
+    "template": {
+      "heading": "Pilih Template Acara",
+      "prepDays": "{{days}}hr persiapan",
+      "prepCustom": "Kustom",
+      "estCost": "Est. {{cost}}",
+      "rat": {
+        "label": "RAT — Rapat Anggota Tahunan",
+        "legal": "Wajib oleh undang-undang",
+        "name": "Rapat Anggota Tahunan — Koperasi Desa",
+        "agenda1": "1. Pembukaan dan laporan pertanggungjawaban pengurus",
+        "agenda2": "2. Laporan keuangan tahunan dan pembagian SHU",
+        "agenda3": "3. Rencana kerja dan anggaran tahun mendatang",
+        "location": "Balai Desa",
+        "prep_d30": "H-30: Bentuk panitia dan tetapkan tugas",
+        "prep_d21": "H-21: Finalisasi perhitungan SHU dengan data akuntansi",
+        "prep_d14": "H-14: Cetak undangan dan distribusikan ke seluruh anggota",
+        "prep_d7": "H-7: Konfirmasi pembicara, finalisasi agenda rapat",
+        "prep_d3": "H-3: Cetak laporan keuangan dan siapkan tata ruang",
+        "prep_d1": "H-1: Persiapan venue, konfirmasi katering, cek suara"
+      },
+      "training": {
+        "label": "Pelatihan Anggota / Workshop",
+        "legal": "Kepatuhan SKKNI",
+        "name": "Pelatihan Anggota — ",
+        "agenda1": "1. Pembukaan dan pre-test",
+        "agenda2": "2. Workshop praktik dan diskusi kelompok",
+        "prep_d14": "H-14: Koordinasi dengan pelatih dan siapkan kurikulum",
+        "prep_d7": "H-7: Cetak materi pelatihan dan booking venue",
+        "prep_d3": "H-3: Konfirmasi daftar hadir dan kirim pengingat",
+        "prep_d1": "H-1: Siapkan sertifikat, alat tulis, dan peralatan"
+      },
+      "gathering": {
+        "label": "Silaturahmi & Halal Bihalal",
+        "name": "Silaturahmi & Halal Bihalal Anggota",
+        "agenda1": "1. Makan bersama, permainan, dan door prize",
+        "prep_d7": "H-7: Booking venue dan katering, umumkan ke anggota",
+        "prep_d3": "H-3: Beli door prize dan dekorasi",
+        "prep_d1": "H-1: Finalisasi daftar tamu dan susunan acara"
+      },
+      "market": {
+        "label": "Bazar & Pasar Rakyat",
+        "name": "Bazar & Pasar Rakyat Koperasi",
+        "agenda1": "1. Siapkan stan pedagang dan pameran produk koperasi",
+        "agenda2": "2. Penjualan langsung, promosi anggota, dan booth pendaftaran anggota baru",
+        "location": "Lapangan Desa",
+        "prep_d14": "H-14: Daftarkan pedagang dan urus izin",
+        "prep_d7": "H-7: Promosikan acara, siapkan tata letak stan",
+        "prep_d3": "H-3: Konfirmasi pedagang, cetak label harga dan spanduk",
+        "prep_d1": "H-1: Pasang stan, uji peralatan POS, cek stok akhir"
+      },
+      "financial": {
+        "label": "Pemaparan Laporan Keuangan",
+        "name": "Pemaparan Laporan Keuangan Tahunan",
+        "agenda1": "1. Presentasi neraca dan laporan laba rugi",
+        "agenda2": "2. Sesi tanya jawab dengan anggota tentang kesehatan keuangan",
+        "prep_d7": "H-7: Kompilasi data keuangan dari modul akuntansi",
+        "prep_d3": "H-3: Siapkan slide presentasi dan cetak ringkasan laporan",
+        "prep_d1": "H-1: Latihan presentasi, konfirmasi peralatan AV"
+      },
+      "environment": {
+        "label": "Hari Peduli Lingkungan",
+        "name": "Hari Peduli Lingkungan Koperasi",
+        "agenda1": "1. Penanaman pohon, bersih sungai, dan daur ulang",
+        "prep_d5": "H-5: Siapkan bibit dan koordinasi dengan dinas lingkungan desa",
+        "prep_d1": "H-1: Siapkan alat, sarung tangan, kantong sampah, dan minuman"
+      },
+      "custom": {
+        "label": "Acara Kustom"
+      }
+    },
+    "prediction": {
+      "heading": "Prediksi & Perencanaan",
+      "costTitle": "Estimasi Biaya",
+      "costBase": "Biaya dasar",
+      "costAttendee": "Biaya per peserta",
+      "costVenue": "Tempat",
+      "costFixed": "Biaya tetap (izin, cetak, honorarium)",
+      "costContingency": "Dana tak terduga (15%)",
+      "costTotal": "Estimasi Total",
+      "engagementTitle": "Prediksi Kehadiran",
+      "engagementDesc": "Perkiraan hadir: {{expected}} / {{total}} undangan ({{pct}}%). Berdasarkan pola kehadiran untuk jenis acara ini.",
+      "prepTitle": "Linimasa Persiapan",
+      "prepDaysNeeded": "Persiapan dibutuhkan",
+      "prepDaysValue": "{{days}} hari",
+      "prepStartBy": "Disarankan mulai sebelum"
+    },
     "form": {
       "title": "Buat Acara",
       "name": "Nama Acara",
@@ -461,10 +554,13 @@
       "time": "Waktu",
       "location": "Lokasi",
       "locationPlaceholder": "Contoh: Balai Desa",
+      "attendees": "Perkiraan Peserta",
+      "attendeesPlaceholder": "Contoh: 200",
       "description": "Deskripsi",
       "descriptionPlaceholder": "Deskripsi acara...",
       "note": "Acara akan muncul di Kalender setelah disimpan",
-      "save": "Simpan Acara"
+      "save": "Simpan Acara",
+      "backToTemplates": "Kembali ke Template"
     }
   },
   "equipment": {

@@ -453,6 +453,99 @@
       "hint3": "Time scheduling",
       "hint4": "Auto-reminders"
     },
+    "importance": {
+      "star1": "Low Priority",
+      "star2": "Low-Medium",
+      "star3": "Medium Priority",
+      "star4": "High Priority",
+      "star5": "Critical"
+    },
+    "template": {
+      "heading": "Choose an Event Template",
+      "prepDays": "{{days}}d prep",
+      "prepCustom": "Custom",
+      "estCost": "Est. {{cost}}",
+      "rat": {
+        "label": "RAT — Annual Member Meeting",
+        "legal": "Mandatory by law",
+        "name": "Rapat Anggota Tahunan — Koperasi Desa",
+        "agenda1": "1. Opening and board accountability report",
+        "agenda2": "2. Annual financial report and SHU distribution",
+        "agenda3": "3. Work plan and budget for the upcoming year",
+        "location": "Village Hall",
+        "prep_d30": "D-30: Form steering committee and assign roles",
+        "prep_d21": "D-21: Finalize SHU calculation with accounting data",
+        "prep_d14": "D-14: Print invitations and distribute to all members",
+        "prep_d7": "D-7: Confirm speakers, finalize meeting agenda",
+        "prep_d3": "D-3: Print financial reports and prepare venue layout",
+        "prep_d1": "D-1: Venue setup, catering confirmation, sound check"
+      },
+      "training": {
+        "label": "Member Training / Workshop",
+        "legal": "SKKNI compliance",
+        "name": "Pelatihan Anggota — ",
+        "agenda1": "1. Opening and pre-test assessment",
+        "agenda2": "2. Hands-on workshop and group discussion",
+        "prep_d14": "D-14: Coordinate with trainer and prepare curriculum",
+        "prep_d7": "D-7: Print training materials and book venue",
+        "prep_d3": "D-3: Confirm attendee list and send reminders",
+        "prep_d1": "D-1: Prepare certificates, stationery, and equipment"
+      },
+      "gathering": {
+        "label": "Community Gathering",
+        "name": "Silaturahmi & Halal Bihalal Anggota",
+        "agenda1": "1. Community meal, games, and door prizes",
+        "prep_d7": "D-7: Book venue and caterer, announce to members",
+        "prep_d3": "D-3: Purchase door prizes and decorations",
+        "prep_d1": "D-1: Finalize guest list and prepare event rundown"
+      },
+      "market": {
+        "label": "Market Day / Bazaar",
+        "name": "Bazar & Pasar Rakyat Koperasi",
+        "agenda1": "1. Set up vendor stalls and cooperative product showcase",
+        "agenda2": "2. Live sales, member promotions, and new member registration booth",
+        "location": "Village Square / Lapangan Desa",
+        "prep_d14": "D-14: Register vendors and secure permits",
+        "prep_d7": "D-7: Promote event, prepare stall layouts",
+        "prep_d3": "D-3: Confirm vendors, print price tags and banners",
+        "prep_d1": "D-1: Set up stalls, test POS equipment, final inventory check"
+      },
+      "financial": {
+        "label": "Financial Report Presentation",
+        "name": "Pemaparan Laporan Keuangan Tahunan",
+        "agenda1": "1. Presentation of balance sheet and income statement",
+        "agenda2": "2. Q&A session with members on financial health",
+        "prep_d7": "D-7: Compile financial data from accounting module",
+        "prep_d3": "D-3: Prepare slide deck and print summary reports",
+        "prep_d1": "D-1: Rehearse presentation, confirm AV equipment"
+      },
+      "environment": {
+        "label": "Environment Day",
+        "name": "Hari Peduli Lingkungan Koperasi",
+        "agenda1": "1. Tree planting, river cleanup, and recycling drive",
+        "prep_d5": "D-5: Source saplings and coordinate with village environmental office",
+        "prep_d1": "D-1: Prepare tools, gloves, trash bags, and refreshments"
+      },
+      "custom": {
+        "label": "Custom Event"
+      }
+    },
+    "prediction": {
+      "heading": "Predictions & Planning",
+      "costTitle": "Cost Estimate",
+      "costBase": "Base cost",
+      "costAttendee": "Attendee cost",
+      "costVenue": "Venue",
+      "costFixed": "Fixed costs (permits, printing, honorarium)",
+      "costContingency": "Contingency (15%)",
+      "costTotal": "Estimated Total",
+      "engagementTitle": "Engagement Forecast",
+      "engagementDesc": "Expected turnout: {{expected}} / {{total}} invitees ({{pct}}%). Based on typical attendance patterns for this event type.",
+      "prepTitle": "Preparation Timeline",
+      "prepDaysNeeded": "Preparation needed",
+      "prepDaysValue": "{{days}} days",
+      "prepStartBy": "Recommended start by"
+    },
     "form": {
       "title": "Create Event",
       "name": "Event Name",
@@ -461,10 +554,13 @@
       "time": "Time",
       "location": "Location",
       "locationPlaceholder": "e.g., Village Hall",
+      "attendees": "Expected Attendees",
+      "attendeesPlaceholder": "e.g., 200",
       "description": "Description",
       "descriptionPlaceholder": "Event description...",
       "note": "Event will appear on the Calendar after saving",
-      "save": "Save Event"
+      "save": "Save Event",
+      "backToTemplates": "Back to Templates"
     }
   },
   "equipment": {
