@@ -194,6 +194,15 @@
       "neraca": "Neraca",
       "labarugi": "Laba Rugi"
     },
+    "tiers": {
+      "selectLabel": "Pilihan Tingkat Keuangan",
+      "simplified": "Sederhana (Arus Kas)",
+      "standard": "Standar (Buku SAK EP)",
+      "advanced": "Lanjutan (SAK EP Korporat)",
+      "simplifiedDesc": "Fokus pada arus kas masuk/keluar sederhana, indeks daya tahan kas, dan skor kesehatan basic.",
+      "standardDesc": "Menampilkan laporan neraca, buku besar SAK EP standar, dan pemantauan piutang/utang (AR/AP).",
+      "advancedDesc": "Menyediakan trial balance penuh, simulasi audit eksternal, ekspor paket laporan, dan rasio korporat (ROA, ROE, Current Ratio)."
+    },
     "coa": {
       "addButton": "Tambah Akun",
       "tableHeaders": {
@@ -442,12 +451,82 @@
     }
   },
   "sales": {
-    "table": {
-      "name": "Nama",
+    "tabs": {
+      "checkout": "Kasir POS",
+      "history": "Riwayat Penjualan",
+      "inventory": "Stok Barang"
+    },
+    "checkout": {
+      "title": "Point of Sale (POS)",
+      "customer": "Pelanggan",
+      "walkIn": "Pelanggan Umum (Walk-in)",
+      "selectMember": "Pilih Anggota...",
+      "memberLoan": "Piutang: {{amount}}",
+      "businessUnit": "Unit Usaha",
+      "selectUnit": "Pilih Unit Usaha...",
+      "paymentType": "Metode Pembayaran",
+      "cash": "Tunai (Cash)",
+      "credit": "Kredit (Yarnen - Bayar Pas Panen)",
+      "searchProducts": "Cari barang...",
+      "allCategories": "Semua Kategori",
+      "emptyCart": "Keranjang kosong. Klik produk untuk menambahkan.",
+      "total": "Total Belanja",
+      "itemCount": "{{count}} barang",
+      "itemCount_plural": "{{count}} barang",
+      "process": "Selesaikan Transaksi",
+      "processing": "Memproses checkout...",
+      "cartTitle": "Keranjang Belanja",
+      "price": "Harga",
+      "stock": "Stok: {{n}} {{unit}}",
+      "outOfStock": "Stok Habis"
+    },
+    "history": {
+      "title": "Buku Pembantu Penjualan",
+      "id": "ID Transaksi",
+      "date": "Tanggal",
+      "customer": "Pelanggan",
+      "payment": "Pembayaran",
+      "amount": "Total Belanja",
+      "action": "Struk",
+      "detailsTitle": "Detail Struk Belanja",
+      "items": "Daftar Barang Belanja",
+      "quantity": "Jumlah",
+      "subtotal": "Subtotal",
+      "journalRef": "Ref Jurnal Akuntansi: {{num}}",
+      "empty": "Belum ada transaksi penjualan."
+    },
+    "inventory": {
+      "title": "Daftar Inventaris & Stok Toko",
+      "addItem": "Tambah Barang",
+      "restock": "Tambah Stok",
+      "name": "Nama Barang",
       "category": "Kategori",
-      "contact": "Kontak",
-      "phone": "Telepon",
-      "transactions": "Transaksi"
+      "cost": "Harga Pokok (Rp)",
+      "price": "Harga Jual (Rp)",
+      "stock": "Jumlah Stok",
+      "unit": "Satuan (misal: sak, kg, pcs)",
+      "action": "Aksi",
+      "dialogAdd": "Tambah Produk Baru ke Toko",
+      "dialogRestock": "Tambah Stok Barang",
+      "restockQty": "Jumlah Stok Tambahan",
+      "empty": "Belum ada barang di toko.",
+      "placeholderName": "misal: Pupuk Urea",
+      "placeholderUnit": "misal: sak",
+      "submit": "Simpan Produk"
+    },
+    "toast": {
+      "outOfStock": "Stok {{name}} tidak mencukupi!",
+      "emptyCart": "Keranjang belanja Anda kosong!",
+      "memberRequiredForCredit": "Wajib memilih anggota koperasi untuk pembayaran Kredit (Yarnen)!",
+      "checkoutSuccess": "Checkout POS berhasil diselesaikan! Akun akuntansi dan anggota telah diperbarui.",
+      "fieldsRequired": "Semua kolom wajib diisi!",
+      "qtyInvalid": "Jumlah stok tambahan harus lebih besar dari nol!",
+      "itemCreated": "Produk berhasil ditambahkan ke inventaris.",
+      "itemRestocked": "Stok produk berhasil ditambahkan.",
+      "itemDeleted": "Produk berhasil dihapus dari inventaris.",
+      "deleteConfirm": "Apakah Anda yakin ingin menghapus produk ini?",
+      "deleteFailed": "Gagal menghapus produk dari database.",
+      "saveFailed": "Gagal menyimpan produk ke database."
     }
   },
   "development": {

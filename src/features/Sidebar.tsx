@@ -137,15 +137,6 @@ export default function Sidebar({
       ],
     },
     {
-      id: "learn",
-      icon: BookOpen,
-      label: t("sidebar.groups.learn"),
-      items: [
-        { id: "learn", icon: BookOpen, label: t("sidebar.nav.learn") },
-        { id: "planners", icon: FileText, label: t("sidebar.nav.planners") },
-      ],
-    },
-    {
       id: "komunitas",
       icon: Users,
       label: t("sidebar.groups.komunitas"),
@@ -163,6 +154,15 @@ export default function Sidebar({
       items: [
         { id: "accounting", icon: Receipt, label: t("sidebar.nav.accounting") },
         { id: "feasibility", icon: TrendingUp, label: t("sidebar.nav.feasibility") },
+      ],
+    },
+    {
+      id: "learn",
+      icon: BookOpen,
+      label: t("sidebar.groups.learn"),
+      items: [
+        { id: "learn", icon: BookOpen, label: t("sidebar.nav.learn") },
+        { id: "planners", icon: FileText, label: t("sidebar.nav.planners") },
       ],
     },
     {

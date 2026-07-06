@@ -58,6 +58,9 @@ function AppContent() {
     | "sync"
     | "settings"
   >("home");
+  const [financeTier, setFinanceTier] = useState<"simplified" | "standard" | "advanced">(() => {
+    return (localStorage.getItem("pakde-finance-tier") as any) || "simplified";
+  });
   const [appTheme, setAppTheme] = useState<"dark" | "light">(() => {
     return (localStorage.getItem("pakde-theme") as "dark" | "light") || "dark";
   });
@@ -178,7 +181,15 @@ function AppContent() {
         {activeTab === "members" && <Members />}
         {activeTab === "event" && <CreateEvent />}
         {activeTab === "impact" && <Impact />}
-        {activeTab === "accounting" && <Accounting />}
+        {activeTab === "accounting" && (
+          <Accounting
+            financeTier={financeTier}
+            onTierChange={(t) => {
+              setFinanceTier(t);
+              localStorage.setItem("pakde-finance-tier", t);
+            }}
+          />
+        )}
         {activeTab === "feasibility" && <Feasibility />}
         {activeTab === "sync" && <Sync />}
         {activeTab === "settings" && (

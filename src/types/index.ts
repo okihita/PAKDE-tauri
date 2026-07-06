@@ -173,6 +173,42 @@ export interface CountRow {
   count: number;
 }
 
+export interface InventoryItem {
+  id: string;
+  name: string;
+  category_id: string;
+  stock_quantity: number;
+  unit: string;
+  cost_price: number;
+  selling_price: number;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface SalesTransaction {
+  id: string;
+  cooperative_id: string;
+  member_id: string | null;
+  member_name?: string;
+  total_amount: number;
+  payment_type: "cash" | "credit";
+  category_id: string;
+  category_name?: string;
+  journal_entry_id: string | null;
+  transaction_date: string;
+  items?: SalesTransactionItem[];
+}
+
+export interface SalesTransactionItem {
+  id: string;
+  transaction_id: string;
+  item_id: string;
+  item_name?: string;
+  quantity: number;
+  price: number;
+  cost: number;
+}
+
 // ── Utility ──────────────────────────────────────────────────────
 
 export function getErrorMessage(err: unknown): string {

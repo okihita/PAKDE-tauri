@@ -194,6 +194,15 @@
       "neraca": "Balance Sheet",
       "labarugi": "Income Statement"
     },
+    "tiers": {
+      "selectLabel": "Finance Tier Selection",
+      "simplified": "Simplified (Cash-Flow)",
+      "standard": "Standard (SAK EP Ledger)",
+      "advanced": "Advanced (Corporate SAK EP)",
+      "simplifiedDesc": "Focuses on simple cash receipt/disbursement feed, survival runway index, and basic health scoring.",
+      "standardDesc": "Enables balance sheets, standard SAK EP ledgers, and AR/AP aging dashboard.",
+      "advancedDesc": "Performs trials, audits, PDF/CSV pack exports, and detailed ratio analysis (ROA, ROE, Current Ratio)."
+    },
     "coa": {
       "addButton": "Add Account",
       "tableHeaders": {
@@ -442,12 +451,82 @@
     }
   },
   "sales": {
-    "table": {
-      "name": "Name",
+    "tabs": {
+      "checkout": "POS Checkout",
+      "history": "Sales Ledger",
+      "inventory": "Inventory Management"
+    },
+    "checkout": {
+      "title": "Point of Sale (POS)",
+      "customer": "Customer",
+      "walkIn": "Walk-in Customer",
+      "selectMember": "Select Member...",
+      "memberLoan": "Piutang: {{amount}}",
+      "businessUnit": "Business Unit",
+      "selectUnit": "Select Business Unit...",
+      "paymentType": "Payment Type",
+      "cash": "Cash (Tunai)",
+      "credit": "Credit (Yarnen - Pay at Harvest)",
+      "searchProducts": "Search items...",
+      "allCategories": "All Categories",
+      "emptyCart": "Cart is empty. Click on products to add.",
+      "total": "Total Amount",
+      "itemCount": "{{count}} item",
+      "itemCount_plural": "{{count}} items",
+      "process": "Complete Transaction",
+      "processing": "Processing checkout...",
+      "cartTitle": "Shopping Cart",
+      "price": "Price",
+      "stock": "Stock: {{n}} {{unit}}",
+      "outOfStock": "Out of Stock"
+    },
+    "history": {
+      "title": "Sales History Ledger",
+      "id": "Transaction ID",
+      "date": "Date",
+      "customer": "Customer",
+      "payment": "Payment",
+      "amount": "Total Amount",
+      "action": "Receipt",
+      "detailsTitle": "Receipt Details",
+      "items": "Items Sold",
+      "quantity": "Qty",
+      "subtotal": "Subtotal",
+      "journalRef": "Journal Entry Ref: {{num}}",
+      "empty": "No sales transactions found."
+    },
+    "inventory": {
+      "title": "Cooperative Inventory",
+      "addItem": "Add Product",
+      "restock": "Restock",
+      "name": "Product Name",
       "category": "Category",
-      "contact": "Contact",
-      "phone": "Phone",
-      "transactions": "Transactions"
+      "cost": "Cost Price (Rp)",
+      "price": "Selling Price (Rp)",
+      "stock": "Stock Quantity",
+      "unit": "Unit (e.g. sak, kg, pcs)",
+      "action": "Actions",
+      "dialogAdd": "Add New Inventory Product",
+      "dialogRestock": "Restock Product",
+      "restockQty": "Quantity to add",
+      "empty": "No inventory products found.",
+      "placeholderName": "e.g., Urea Fertilizer",
+      "placeholderUnit": "e.g., sak",
+      "submit": "Save Product"
+    },
+    "toast": {
+      "outOfStock": "{{name}} does not have enough stock!",
+      "emptyCart": "Your shopping cart is empty!",
+      "memberRequiredForCredit": "A valid cooperative member is required for Credit (Yarnen) transactions!",
+      "checkoutSuccess": "POS checkout completed successfully! Accounts updated.",
+      "fieldsRequired": "All fields are required!",
+      "qtyInvalid": "Restock quantity must be greater than zero!",
+      "itemCreated": "Product created successfully in inventory.",
+      "itemRestocked": "Inventory product restocked successfully.",
+      "itemDeleted": "Product deleted successfully.",
+      "deleteConfirm": "Are you sure you want to delete this product?",
+      "deleteFailed": "Failed to delete item from database.",
+      "saveFailed": "Failed to save product in database."
     }
   },
   "development": {

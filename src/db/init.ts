@@ -140,6 +140,50 @@ export async function initDb(): Promise<void> {
     );
   `);
 
+  await db.execute(`
+    CREATE TABLE IF NOT EXISTS inventory_items (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      category_id TEXT NOT NULL,
+      stock_quantity REAL DEFAULT 0,
+      unit TEXT NOT NULL,
+      cost_price REAL DEFAULT 0,
+      selling_price REAL DEFAULT 0,
+      created_at TEXT DEFAULT (datetime('now')),
+      updated_at TEXT DEFAULT (datetime('now')),
+      FOREIGN KEY (category_id) REFERENCES categories(id)
+    );
+  `);
+
+  await db.execute(`
+    CREATE TABLE IF NOT EXISTS sales_transactions (
+      id TEXT PRIMARY KEY,
+      cooperative_id TEXT NOT NULL DEFAULT 'kdp-001',
+      member_id TEXT,
+      total_amount REAL NOT NULL,
+      payment_type TEXT CHECK(payment_type IN ('cash', 'credit')),
+      category_id TEXT NOT NULL,
+      journal_entry_id TEXT,
+      transaction_date TEXT DEFAULT (datetime('now')),
+      FOREIGN KEY (member_id) REFERENCES members(id),
+      FOREIGN KEY (journal_entry_id) REFERENCES journal_entries(id),
+      FOREIGN KEY (category_id) REFERENCES categories(id)
+    );
+  `);
+
+  await db.execute(`
+    CREATE TABLE IF NOT EXISTS sales_transaction_items (
+      id TEXT PRIMARY KEY,
+      transaction_id TEXT NOT NULL,
+      item_id TEXT NOT NULL,
+      quantity REAL NOT NULL,
+      price REAL NOT NULL,
+      cost REAL NOT NULL,
+      FOREIGN KEY (transaction_id) REFERENCES sales_transactions(id) ON DELETE CASCADE,
+      FOREIGN KEY (item_id) REFERENCES inventory_items(id)
+    );
+  `);
+
   // ── Seed default data ──────────────────────────────────────────
 
   const cooperatives = await db.select<Array<{ id: string }>>("SELECT * FROM cooperatives LIMIT 1");
@@ -208,6 +252,26 @@ export async function initDb(): Promise<void> {
         cat.name,
         cat.icon,
       ]);
+    }
+  }
+
+  const inv = await db.select<Array<{ id: string }>>("SELECT * FROM inventory_items LIMIT 1");
+  if (inv.length === 0) {
+    const items = [
+      { id: "item_urea", name: "Pupuk Urea Bersubsidi", category_id: "unit_pupuk", stock_quantity: 120, unit: "sak", cost_price: 110000, selling_price: 150000 },
+      { id: "item_npk", name: "Pupuk NPK Phonska", category_id: "unit_pupuk", stock_quantity: 85, unit: "sak", cost_price: 130000, selling_price: 170000 },
+      { id: "item_benih", name: "Benih Padi Ciherang 5kg", category_id: "unit_pupuk", stock_quantity: 50, unit: "kantong", cost_price: 65000, selling_price: 85000 },
+      { id: "item_paracetamol", name: "Paracetamol 500mg", category_id: "unit_apotek", stock_quantity: 200, unit: "strip", cost_price: 2500, selling_price: 4500 },
+      { id: "item_amoxicillin", name: "Amoxicillin 500mg", category_id: "unit_apotek", stock_quantity: 150, unit: "strip", cost_price: 5000, selling_price: 9000 },
+      { id: "item_organik", name: "Pupuk Organik Granul", category_id: "unit_pupuk", stock_quantity: 150, unit: "sak", cost_price: 70000, selling_price: 90000 },
+      { id: "item_karung", name: "Karung Plastik 50kg", category_id: "unit_pemasaran", stock_quantity: 500, unit: "pcs", cost_price: 1800, selling_price: 3000 }
+    ];
+    for (const item of items) {
+      await db.execute(
+        `INSERT INTO inventory_items (id, name, category_id, stock_quantity, unit, cost_price, selling_price)
+         VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        [item.id, item.name, item.category_id, item.stock_quantity, item.unit, item.cost_price, item.selling_price]
+      );
     }
   }
 }
