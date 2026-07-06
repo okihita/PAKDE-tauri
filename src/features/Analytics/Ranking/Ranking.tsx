@@ -239,7 +239,7 @@ export default function Ranking({ coopProfile }: Props) {
       </div>
 
       {/* ── Leaderboard Tabs ── */}
-      <Card className="bg-card border-border">
+      <Card className="bg-card border-border hover-glow-card">
         <CardHeader className="pb-0">
           <CardTitle className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
             <Trophy className="h-3 w-3 text-amber-400" />

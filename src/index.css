@@ -126,3 +126,14 @@
       "calt" 1;
   }
 }
+
+/* ── Gamified Glow Effects ────────────────────────────────────────── */
+
+.hover-glow-card {
+  transition: border-color 0.25s ease-in-out, box-shadow 0.25s ease-in-out !important;
+}
+
+.hover-glow-card:hover {
+  border-color: rgba(16, 185, 129, 0.45) !important; /* emerald border glow */
+  box-shadow: 0 0 16px rgba(16, 185, 129, 0.1) !important; /* subtle emerald shadow glow */
+}

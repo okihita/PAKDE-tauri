@@ -206,7 +206,7 @@ export default function CalendarWidget({ t }: { t: (key: string) => string }) {
 
   return (
     <>
-      <Card className="bg-card border-border text-foreground">
+      <Card className="bg-card border-border text-foreground hover-glow-card">
         <CardHeader className="pb-2 flex flex-row items-center justify-between">
           <CardTitle className="text-xs font-mono tracking-widest text-muted-foreground uppercase flex items-center gap-2">
             <CalendarDays className="h-3 w-3" />

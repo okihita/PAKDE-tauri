@@ -69,7 +69,7 @@ function LevelCard({
 
   return (
     <Card
-      className={`bg-card border-border text-foreground overflow-hidden transition-all ${
+      className={`bg-card border-border text-foreground overflow-hidden transition-all hover-glow-card ${
         isCurrent ? "ring-1 ring-emerald-500/30" : ""
       } ${!isUnlocked ? "opacity-60" : ""}`}
     >

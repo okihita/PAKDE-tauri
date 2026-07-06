@@ -106,7 +106,7 @@ export default function SalesInventory({
         </Button>
       </div>
 
-      <Card className="bg-card border-border">
+      <Card className="bg-card border-border hover-glow-card">
         <CardContent className="p-0">
           <Table>
             <TableHeader>

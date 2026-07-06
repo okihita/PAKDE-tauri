@@ -196,7 +196,7 @@ export default function Dashboard() {
 
   const cardContents: Record<string, React.ReactNode> = {
     mainquest: (
-      <Card className="bg-card border-border text-foreground">
+      <Card className="bg-card border-border text-foreground hover-glow-card">
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <CardTitle className="text-xs font-mono tracking-widest text-muted-foreground uppercase flex items-center gap-2">
@@ -239,7 +239,7 @@ export default function Dashboard() {
       </Card>
     ),
     tugas: (
-      <Card className="bg-card border-border text-foreground">
+      <Card className="bg-card border-border text-foreground hover-glow-card">
         <CardHeader className="pb-3 space-y-0">
           <div className="flex items-center justify-between mb-2">
             <CardTitle className="text-xs font-mono tracking-widest text-muted-foreground uppercase flex items-center gap-2">
@@ -316,7 +316,7 @@ export default function Dashboard() {
     ),
     calendar: <CalendarWidget t={t} />,
     news: (
-      <Card className="bg-card border-border text-foreground">
+      <Card className="bg-card border-border text-foreground hover-glow-card">
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <CardTitle className="text-xs font-mono tracking-widest text-muted-foreground uppercase flex items-center gap-2">

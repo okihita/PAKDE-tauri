@@ -35,7 +35,7 @@ export default function SalesHistory({
 
   return (
     <div className="space-y-4">
-      <Card className="bg-card border-border">
+      <Card className="bg-card border-border hover-glow-card">
         <CardHeader>
           <CardTitle className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
             <History className="h-4 w-4 text-emerald-400" />

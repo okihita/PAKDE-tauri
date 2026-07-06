@@ -22,7 +22,7 @@ export default function Equipment() {
   return (
     <div className="flex-1 overflow-auto p-6">
       <DevDocStripe content={readmeContent} />
-      <Card className="bg-card border-border">
+      <Card className="bg-card border-border hover-glow-card">
         <CardHeader>
           <CardTitle className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
             <Wrench className="h-3.5 w-3.5 text-amber-400" /> {t("sidebar.nav.equipment")}

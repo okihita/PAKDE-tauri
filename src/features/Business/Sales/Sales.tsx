@@ -204,7 +204,7 @@ export default function Sales() {
 
             {/* Cart & Checkout Panel */}
             <div className="space-y-6">
-              <Card className="bg-card border-border">
+              <Card className="bg-card border-border hover-glow-card">
                 <CardHeader className="pb-3 border-b border-border/55">
                   <CardTitle className="text-xs font-bold text-muted-foreground uppercase flex justify-between items-center">
                     <span className="flex items-center gap-1.5">

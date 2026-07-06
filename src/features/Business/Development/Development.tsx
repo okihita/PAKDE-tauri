@@ -89,7 +89,7 @@ export default function Development() {
       </div>
 
       {/* Stepper Workflow section */}
-      <Card className="bg-card border-border overflow-hidden">
+      <Card className="bg-card border-border overflow-hidden hover-glow-card">
         <CardHeader className="pb-4">
           <CardTitle className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
             <Activity className="h-3.5 w-3.5 text-emerald-400" />
@@ -246,7 +246,7 @@ export default function Development() {
       {/* AI Recommendation Result Page */}
       {analysisCompleted && (
         <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-300">
-          <Card className="bg-card border-emerald-500/20 bg-gradient-to-br from-emerald-500/5 via-card to-transparent overflow-hidden">
+          <Card className="bg-card border-emerald-500/20 bg-gradient-to-br from-emerald-500/5 via-card to-transparent overflow-hidden hover-glow-card">
             <CardHeader className="pb-3 flex flex-row items-center justify-between">
               <div>
                 <span className="text-xxxs font-mono font-bold text-emerald-400 uppercase tracking-widest bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded">

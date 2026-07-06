@@ -81,7 +81,7 @@ export default function Statistics({ coopProfile, ewsAlerts, currentUser }: Prop
             </CardContent>
           </Card>
 
-          <Card className="bg-card border-border text-foreground">
+          <Card className="bg-card border-border text-foreground hover-glow-card">
             <CardHeader className="pb-2">
               <CardTitle className="text-xs font-mono tracking-widest text-muted-foreground uppercase flex items-center gap-2">
                 <AlertTriangle className="h-3 w-3 text-amber-400" />
@@ -163,7 +163,7 @@ export default function Statistics({ coopProfile, ewsAlerts, currentUser }: Prop
             ))}
           </div>
 
-          <Card className="bg-card border-border text-foreground">
+          <Card className="bg-card border-border text-foreground hover-glow-card">
             <CardHeader className="pb-2">
               <CardTitle className="text-xs font-mono tracking-widest text-muted-foreground uppercase">
                 {t("dashboard.incomeExpense")}
