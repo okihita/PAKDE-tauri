@@ -124,6 +124,9 @@
     font-feature-settings:
       "rlig" 1,
       "calt" 1;
+    border: 2px solid #ef4444; /* Red Alert tactical window border */
+    min-height: 100vh;
+    box-sizing: border-box;
   }
 }
 
