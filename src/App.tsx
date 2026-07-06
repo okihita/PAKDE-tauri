@@ -29,6 +29,7 @@ import { getErrorMessage, type CooperativeProfile, type EwsAlert, type CountRow 
 type FontLevel = "small" | "normal" | "large" | "xlarge";
 const FONT_LEVELS: FontLevel[] = ["small", "normal", "large", "xlarge"];
 const FONT_LEVEL_DEFAULT: FontLevel = "normal";
+const TITLEBAR_TEXT = "PAKDE";
 
 function AppContent() {
   const [appState, setAppState] = useState<"splash" | "profile_select" | "main" | "db_error">("splash");
@@ -180,35 +181,72 @@ function AppContent() {
     setAppState("profile_select");
   };
 
-  if (appState === "splash") return <SplashScreen />;
-  if (appState === "db_error") return <DbErrorScreen message={dbErrorMessage} />;
+  const titleBar = (
+    <div
+      className="bg-red-700 flex items-center justify-center border-b border-red-800 relative z-50 select-none shrink-0"
+      style={{ height: "30px" }}
+      data-tauri-drag-region
+    >
+      <span className="text-xxs font-mono font-black text-white tracking-widest uppercase pointer-events-none">
+        {TITLEBAR_TEXT}
+      </span>
+    </div>
+  );
+
+  if (appState === "splash") {
+    return (
+      <div className="flex flex-col h-screen overflow-hidden">
+        {titleBar}
+        <div className="flex-1 overflow-hidden">
+          <SplashScreen />
+        </div>
+      </div>
+    );
+  }
+  if (appState === "db_error") {
+    return (
+      <div className="flex flex-col h-screen overflow-hidden">
+        {titleBar}
+        <div className="flex-1 overflow-hidden">
+          <DbErrorScreen message={dbErrorMessage} />
+        </div>
+      </div>
+    );
+  }
   if (appState === "profile_select") {
     return (
-      <ProfileSelect
-        onProfileSelect={(profile) => {
-          setCoopProfile(profile);
-          localStorage.setItem("pakde-active-profile-id", profile.id || "");
-          setAppState("main");
-        }}
-      />
+      <div className="flex flex-col h-screen overflow-hidden">
+        {titleBar}
+        <div className="flex-1 overflow-hidden">
+          <ProfileSelect
+            onProfileSelect={(profile) => {
+              setCoopProfile(profile);
+              localStorage.setItem("pakde-active-profile-id", profile.id || "");
+              setAppState("main");
+            }}
+          />
+        </div>
+      </div>
     );
   }
 
   return (
-    <div className="app-container flex min-h-screen text-foreground antialiased">
-      <Sidebar
-        activeTab={activeTab}
-        onTabChange={setActiveTab}
-        coopProfile={coopProfile}
-        ewsAlerts={ewsAlerts}
-        memberCount={memberCount}
-        currentUser={currentUser}
-        appTheme={appTheme}
-        onThemeToggle={() => setAppTheme((t) => (t === "dark" ? "light" : "dark"))}
-        onSwitchProfile={handleSwitchProfile}
-      />
+    <div className="flex flex-col h-screen overflow-hidden">
+      {titleBar}
+      <div className="app-container flex flex-1 text-foreground antialiased overflow-hidden">
+        <Sidebar
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+          coopProfile={coopProfile}
+          ewsAlerts={ewsAlerts}
+          memberCount={memberCount}
+          currentUser={currentUser}
+          appTheme={appTheme}
+          onThemeToggle={() => setAppTheme((t) => (t === "dark" ? "light" : "dark"))}
+          onSwitchProfile={handleSwitchProfile}
+        />
 
-      <main className="flex-1 p-6 overflow-y-auto max-h-screen overscroll-contain">
+        <main className="flex-1 p-6 overflow-y-auto max-h-full overscroll-contain">
         {activeTab === "home" && <Dashboard />}
         {activeTab === "statistics" && (
           <Statistics coopProfile={coopProfile} ewsAlerts={ewsAlerts} currentUser={currentUser} />
@@ -247,6 +285,7 @@ function AppContent() {
           />
         )}
       </main>
+      </div>
     </div>
   );
 }

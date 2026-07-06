@@ -142,7 +142,7 @@ export default function ProfileSelect({ onProfileSelect }: ProfileSelectProps) {
 
   return (
     <div
-      className="flex-1 flex flex-col justify-center items-center min-h-screen relative overflow-hidden p-6 bg-cover bg-center"
+      className="flex-1 flex flex-col justify-center items-center h-full w-full relative overflow-hidden p-6 bg-cover bg-center"
       style={{ backgroundImage: "url('/background.jpg')" }}
     >
       {/* Cinematic dark overlay with blur and vignette */}
