@@ -39,6 +39,10 @@ async function ensureStoreLayoutSchema(db: Awaited<ReturnType<typeof getDb>>) {
 
 // Lazily heal missing tables for the same reason (older DB created without the
 // floorplan feature's tables).
+// Schema heal runs once per session — subsequent getReadyDb calls skip the
+// PRAGMA queries and possible DDL entirely.
+let schemaHealed = false;
+
 async function ensureStoreLayoutTables(db: Awaited<ReturnType<typeof getDb>>) {
   await db.execute(`
     CREATE TABLE IF NOT EXISTS store_layouts (
@@ -84,12 +88,13 @@ export function useStoreLayout() {
   const [categories, setCategories] = useState<CategoryRow[]>([]);
   const [inventoryItems, setInventoryItems] = useState<InventoryItem[]>([]);
 
-  // Get the shared DB connection and heal any schema drift before we touch it.
-  // Older installs created store_layouts without cell_size, or inventory_items
-  // without zone_id/shelf_* — this fixes all of that lazily and idempotently.
+  // Get the shared DB connection and heal any schema drift on first access only.
   const getReadyDb = useCallback(async () => {
     const db = await getDb();
-    await ensureStoreLayoutTables(db);
+    if (!schemaHealed) {
+      await ensureStoreLayoutTables(db);
+      schemaHealed = true;
+    }
     return db;
   }, []);
 
@@ -308,12 +313,18 @@ export function useStoreLayout() {
           `UPDATE inventory_items SET zone_id = ?, shelf_row = ?, shelf_col = ? WHERE id = ?`,
           [zoneId, row, col, itemId],
         );
-        await loadInventory();
+        // Patch the item in the local state directly — avoids a full SELECT *
+        // roundtrip and prevents every shelf stock indicator from re-computing.
+        setInventoryItems((prev) =>
+          prev.map((i) =>
+            i.id === itemId ? { ...i, zone_id: zoneId, shelf_row: row, shelf_col: col } : i,
+          ),
+        );
       } catch (e) {
         console.error("Failed to assign item to shelf:", e);
       }
     },
-    [loadInventory, getReadyDb],
+    [getReadyDb],
   );
 
   const getItemAtShelf = useCallback(

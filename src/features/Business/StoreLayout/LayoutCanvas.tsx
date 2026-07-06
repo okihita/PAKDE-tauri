@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useState, useCallback, useMemo, useRef, useEffect } from "react";
 import { Stage, Layer, Rect, Line, Text, Group, Circle } from "react-konva";
 import type Konva from "konva";
 import type { LayoutZone, InventoryItem } from "@/types";
@@ -50,6 +50,14 @@ function hexToRGBA(hex: string, a: number): string {
   return `rgba(${r},${g},${b},${a})`;
 }
 
+// Pure helpers — no component closure, no stale deps
+function snap(v: number) {
+  return Math.round(v / CELL) * CELL;
+}
+function clampPos(v: number, size: number, max: number) {
+  return Math.max(0, Math.min(max - size, v));
+}
+
 export default function LayoutCanvas({
   zones,
   zonesSetter,
@@ -67,18 +75,35 @@ export default function LayoutCanvas({
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const [activeTool, setActiveTool] = useState<Tool>("zone");
   const [zoneColor, setZoneColor] = useState(ZONE_COLORS[0]);
-  // zone drawing: click-drag state
-  const [drawStart, setDrawStart] = useState<{ x: number; y: number } | null>(null);
-  const [drawCurrent, setDrawCurrent] = useState<{ x: number; y: number } | null>(null);
-  const [isDrawing, setIsDrawing] = useState(false);
 
-  const areaZones = zones.filter((z) => z.zone_type === "zone");
-  const shelfZones = zones.filter((z) => z.zone_type === "shelf");
+  // ── Drawing refs — avoid React setState on every mousemove pixel ──
+  const drawStartRef = useRef<{ x: number; y: number } | null>(null);
+  const drawCurrentRef = useRef<{ x: number; y: number } | null>(null);
+  const isDrawingRef = useRef(false);
+  const rafRef = useRef(0);
+  // Preview rect updated at most once per animation frame via RAF
+  const [previewRect, setPreviewRect] = useState<{ x: number; y: number; w: number; h: number } | null>(null);
 
-  const snap = (v: number) => Math.round(v / CELL) * CELL;
+  // Derived — memoized so zone filters don't re-create every render
+  const gridPxW = gridWidth * CELL;
+  const gridPxH = gridHeight * CELL;
+  const areaZones = useMemo(() => zones.filter((z) => z.zone_type === "zone"), [zones]);
+  const shelfZones = useMemo(() => zones.filter((z) => z.zone_type === "shelf"), [zones]);
 
-  const clampX = (v: number, w: number) => Math.max(0, Math.min(gridWidth * CELL - w, v));
-  const clampY = (v: number, h: number) => Math.max(0, Math.min(gridHeight * CELL - h, v));
+  // Grid lines — skip recomputation on unrelated state changes
+  const gridLines = useMemo(() => {
+    const lines: Array<{ points: number[]; key: string }> = [];
+    for (let x = 0; x <= gridWidth; x++)
+      lines.push({ points: [x * CELL, 0, x * CELL, gridPxH], key: `v-${x}` });
+    for (let y = 0; y <= gridHeight; y++)
+      lines.push({ points: [0, y * CELL, gridPxW, y * CELL], key: `h-${y}` });
+    return lines;
+  }, [gridWidth, gridHeight, gridPxW, gridPxH]);
+
+  // Cancel any in-flight RAF on unmount
+  useEffect(() => {
+    return () => cancelAnimationFrame(rafRef.current);
+  }, []);
 
   // Fit canvas
   useEffect(() => {
@@ -88,16 +113,14 @@ export default function LayoutCanvas({
       const ch = containerRef.current.clientHeight;
       stageRef.current.width(cw);
       stageRef.current.height(ch);
-      const gw = gridWidth * CELL;
-      const gh = gridHeight * CELL;
-      const s = Math.min(cw / gw, ch / gh, 1) * 0.85;
+      const s = Math.min(cw / gridPxW, ch / gridPxH, 1) * 0.85;
       setScale(s);
-      setOffset({ x: (cw - gw * s) / 2, y: (ch - gh * s) / 2 });
+      setOffset({ x: (cw - gridPxW * s) / 2, y: (ch - gridPxH * s) / 2 });
     };
     fit();
     window.addEventListener("resize", fit);
     return () => window.removeEventListener("resize", fit);
-  }, [gridWidth, gridHeight]);
+  }, [gridPxW, gridPxH]);
 
   // Zoom
   const handleWheel = useCallback(
@@ -121,13 +144,11 @@ export default function LayoutCanvas({
   // ── Unified mouseDown: pan or tool action ──
   const handleMouseDown = useCallback(
     (e: Konva.KonvaEventObject<MouseEvent>) => {
-      // Right/middle click → pan
       if (e.evt.button === 1 || e.evt.button === 2) {
         e.evt.preventDefault();
         stageRef.current?.draggable(true);
         return;
       }
-      // Left click on stage background → tool action
       if (e.target !== e.target.getStage()) return;
 
       const stage = stageRef.current;
@@ -139,100 +160,106 @@ export default function LayoutCanvas({
       const gy = snap((pos.y - offset.y) / scale);
 
       if (activeTool === "zone") {
-        setDrawStart({ x: gx, y: gy });
-        setDrawCurrent({ x: gx, y: gy });
-        setIsDrawing(true);
+        drawStartRef.current = { x: gx, y: gy };
+        drawCurrentRef.current = { x: gx, y: gy };
+        isDrawingRef.current = true;
+        setPreviewRect({ x: gx, y: gy, w: CELL, h: CELL });
       } else if (activeTool === "shelf") {
-        const cx = clampX(gx, 2 * CELL);
-        const cy = clampY(gy, 1 * CELL);
-        const newShelf: LayoutZone = {
-          id: generateLocalId(),
-          layout_id: "",
-          name: `Rak ${shelfZones.length + 1}`,
-          zone_type: "shelf",
-          x: cx,
-          y: cy,
-          width: 2,
-          height: 1,
-          rows: 4,
-          cols: 3,
-          color: "#4CAF50",
-        };
-        zonesSetter((prev) => [...prev, newShelf]);
+        const cx = clampPos(gx, 2 * CELL, gridPxW);
+        const cy = clampPos(gy, 1 * CELL, gridPxH);
+        zonesSetter((prev) => [
+          ...prev,
+          {
+            id: generateLocalId(),
+            layout_id: "",
+            name: `Rak ${shelfZones.length + 1}`,
+            zone_type: "shelf",
+            x: cx,
+            y: cy,
+            width: 2,
+            height: 1,
+            rows: 4,
+            cols: 3,
+            color: "#4CAF50",
+          },
+        ]);
       }
     },
-    [activeTool, offset, scale, gridWidth, gridHeight, shelfZones, zonesSetter],
+    [activeTool, offset, scale, gridPxW, gridPxH, shelfZones, zonesSetter],
   );
-  const handleMouseUp = useCallback(() => {
-    // Stop panning
-    stageRef.current?.draggable(false);
 
-    // Finish zone drawing
-    if (!isDrawing || activeTool !== "zone" || !drawStart || !drawCurrent) {
-      setIsDrawing(false);
-      setDrawStart(null);
-      setDrawCurrent(null);
+  const handleMouseUp = useCallback(() => {
+    stageRef.current?.draggable(false);
+    cancelAnimationFrame(rafRef.current);
+    rafRef.current = 0;
+
+    if (!isDrawingRef.current || activeTool !== "zone" || !drawStartRef.current || !drawCurrentRef.current) {
+      isDrawingRef.current = false;
+      drawStartRef.current = null;
+      drawCurrentRef.current = null;
+      setPreviewRect(null);
       return;
     }
-    const x1 = Math.min(drawStart.x, drawCurrent.x);
-    const y1 = Math.min(drawStart.y, drawCurrent.y);
-    const x2 = Math.max(drawStart.x, drawCurrent.x);
-    const y2 = Math.max(drawStart.y, drawCurrent.y);
-    const w = snap(x2) - snap(x1) || CELL;
-    const h = snap(y2) - snap(y1) || CELL;
-    const sx = clampX(snap(x1), w);
-    const sy = clampY(snap(y1), h);
-    const newZone: LayoutZone = {
-      id: generateLocalId(),
-      layout_id: "",
-      name: `Area ${areaZones.length + 1}`,
-      zone_type: "zone",
-      x: sx, y: sy,
-      width: w / CELL, height: h / CELL,
-      rows: 0, cols: 0,
-      color: zoneColor,
-    };
-    zonesSetter((prev) => [...prev, newZone]);
-    setIsDrawing(false);
-    setDrawStart(null);
-    setDrawCurrent(null);
-  }, [isDrawing, activeTool, drawStart, drawCurrent, areaZones, zoneColor, zonesSetter]);
 
-  // ── Zone drawing: mouse move while dragging ──
+    const s = drawStartRef.current;
+    const c = drawCurrentRef.current;
+    const x1 = Math.min(s.x, c.x);
+    const y1 = Math.min(s.y, c.y);
+    const x2 = Math.max(s.x, c.x);
+    const y2 = Math.max(s.y, c.y);
+    const w = snap(x2 - x1) || CELL;
+    const h = snap(y2 - y1) || CELL;
+
+    zonesSetter((prev) => [
+      ...prev,
+      {
+        id: generateLocalId(),
+        layout_id: "",
+        name: `Area ${areaZones.length + 1}`,
+        zone_type: "zone",
+        x: clampPos(snap(x1), w, gridPxW),
+        y: clampPos(snap(y1), h, gridPxH),
+        width: w / CELL,
+        height: h / CELL,
+        rows: 0,
+        cols: 0,
+        color: zoneColor,
+      },
+    ]);
+
+    isDrawingRef.current = false;
+    drawStartRef.current = null;
+    drawCurrentRef.current = null;
+    setPreviewRect(null);
+  }, [activeTool, gridPxW, gridPxH, areaZones, zoneColor, zonesSetter]);
+
+  // ── Mouse move during zone drawing — throttled to one React update per animation frame ──
   const handleStageMouseMove = useCallback(
     (_e: Konva.KonvaEventObject<MouseEvent>) => {
-      if (!isDrawing || activeTool !== "zone") return;
+      if (!isDrawingRef.current || activeTool !== "zone") return;
       const stage = stageRef.current;
       if (!stage) return;
       const pos = stage.getPointerPosition();
       if (!pos) return;
       const gx = snap((pos.x - offset.x) / scale);
       const gy = snap((pos.y - offset.y) / scale);
-      setDrawCurrent({ x: gx, y: gy });
+      drawCurrentRef.current = { x: gx, y: gy };
+
+      if (rafRef.current) return; // already have a pending frame
+      rafRef.current = requestAnimationFrame(() => {
+        rafRef.current = 0;
+        if (!isDrawingRef.current || !drawStartRef.current || !drawCurrentRef.current) return;
+        const ds = drawStartRef.current;
+        const dc = drawCurrentRef.current;
+        const x1 = Math.min(ds.x, dc.x);
+        const y1 = Math.min(ds.y, dc.y);
+        const w = Math.abs(dc.x - ds.x) || CELL;
+        const h = Math.abs(dc.y - ds.y) || CELL;
+        setPreviewRect({ x: snap(x1), y: snap(y1), w, h });
+      });
     },
-    [isDrawing, activeTool, offset, scale],
+    [activeTool, offset, scale],
   );
-
-  // Compute preview rect for zone drawing
-  let previewRect = null;
-  if (isDrawing && activeTool === "zone" && drawStart && drawCurrent) {
-    const x1 = Math.min(drawStart.x, drawCurrent.x);
-    const y1 = Math.min(drawStart.y, drawCurrent.y);
-    const x2 = Math.max(drawStart.x, drawCurrent.x);
-    const y2 = Math.max(drawStart.y, drawCurrent.y);
-    const w = (snap(x2) - snap(x1)) || CELL;
-    const h = (snap(y2) - snap(y1)) || CELL;
-    previewRect = { x: snap(x1), y: snap(y1), w, h };
-  }
-
-  // Grid lines
-  const gridLines: Array<{ points: number[]; key: string }> = [];
-  const gridW = gridWidth * CELL;
-  const gridH = gridHeight * CELL;
-  for (let x = 0; x <= gridWidth; x++)
-    gridLines.push({ points: [x * CELL, 0, x * CELL, gridH], key: `v-${x}` });
-  for (let y = 0; y <= gridHeight; y++)
-    gridLines.push({ points: [0, y * CELL, gridW, y * CELL], key: `h-${y}` });
 
   const cursorClass =
     activeTool === "zone"
@@ -320,7 +347,7 @@ export default function LayoutCanvas({
       >
         {/* ── Grid Layer ── */}
         <Layer listening={false}>
-          <Rect x={0} y={0} width={gridW} height={gridH} fill="#0f172a" stroke="#1e293b" strokeWidth={2} />
+          <Rect x={0} y={0} width={gridPxW} height={gridPxH} fill="#0f172a" stroke="#1e293b" strokeWidth={2} />
           {gridLines.map((l) => (
             <Line key={l.key} points={l.points} stroke="#1e293b" strokeWidth={0.5} listening={false} />
           ))}
@@ -361,8 +388,8 @@ export default function LayoutCanvas({
                 onDragEnd={(e) => {
                   if (activeTool !== "select") return;
                   const node = e.target;
-                  const nx = clampX(snap(node.x()), zw);
-                  const ny = clampY(snap(node.y()), zh);
+const nx = clampPos(snap(node.x()), zw, gridPxW);
+                   const ny = clampPos(snap(node.y()), zh, gridPxH);
                   node.x(nx);
                   node.y(ny);
                   onZoneUpdate({ ...zone, x: nx, y: ny });
@@ -449,8 +476,8 @@ export default function LayoutCanvas({
                 onDragEnd={(e) => {
                   if (activeTool !== "select") return;
                   const node = e.target;
-                  const nx = clampX(snap(node.x()), zw);
-                  const ny = clampY(snap(node.y()), zh);
+const nx = clampPos(snap(node.x()), zw, gridPxW);
+                   const ny = clampPos(snap(node.y()), zh, gridPxH);
                   node.x(nx);
                   node.y(ny);
                   onZoneUpdate({ ...zone, x: nx, y: ny });
