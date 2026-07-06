@@ -27,6 +27,7 @@ import {
   BookOpen,
   FileText,
   HeartHandshake,
+  LogOut,
 } from "lucide-react";
 import { getCurrentLevel } from "@/data/leveling";
 import type { CooperativeProfile, EwsAlert } from "@/types";
@@ -60,6 +61,7 @@ interface SidebarProps {
   currentUser: { name: string; role: string } | null;
   appTheme: "dark" | "light";
   onThemeToggle: () => void;
+  onSwitchProfile: () => void;
 }
 
 interface NavItemDef {
@@ -86,6 +88,7 @@ export default function Sidebar({
   currentUser,
   appTheme,
   onThemeToggle,
+  onSwitchProfile,
 }: SidebarProps) {
   const { t } = useTranslation();
   const criticalAlerts = ewsAlerts.filter((a) => a.level === "critical").length;
@@ -284,6 +287,13 @@ export default function Sidebar({
               ) : (
                 <Moon className="h-3.5 w-3.5 text-muted-foreground hover:text-blue-400 transition-colors" />
               )}
+            </button>
+            <button
+              onClick={onSwitchProfile}
+              className="p-1.5 rounded-lg hover:bg-sidebar-ring transition-colors shrink-0 text-muted-foreground hover:text-rose-400"
+              title={t("profileSelect.switchProfile")}
+            >
+              <LogOut className="h-3.5 w-3.5" />
             </button>
           </div>
         </div>

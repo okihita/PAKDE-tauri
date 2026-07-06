@@ -23,6 +23,7 @@ import Impact from "@/features/Community/Impact/Impact";
 import Participation from "@/features/Community/Participation/Participation";
 import Sync from "@/features/System/Sync/Sync";
 import Settings from "@/features/System/Settings/Settings";
+import ProfileSelect from "@/features/System/ProfileSelect/ProfileSelect";
 import { getErrorMessage, type CooperativeProfile, type EwsAlert, type CountRow } from "@/types";
 
 type FontLevel = "small" | "normal" | "large" | "xlarge";
@@ -30,7 +31,7 @@ const FONT_LEVELS: FontLevel[] = ["small", "normal", "large", "xlarge"];
 const FONT_LEVEL_DEFAULT: FontLevel = "normal";
 
 function AppContent() {
-  const [appState, setAppState] = useState<"splash" | "main" | "db_error">("splash");
+  const [appState, setAppState] = useState<"splash" | "profile_select" | "main" | "db_error">("splash");
   const [dbErrorMessage, setDbErrorMessage] = useState("");
   const [currentUser] = useState<{ id: string; name: string; role: string }>({
     id: "usr-001",
@@ -77,7 +78,20 @@ function AppContent() {
     (async () => {
       try {
         await initDb();
-        setAppState("main");
+        const db = await getDb();
+        const lastProfileId = localStorage.getItem("pakde-active-profile-id");
+        if (lastProfileId) {
+          const profile = await db.select<CooperativeProfile[]>(
+            "SELECT * FROM cooperatives WHERE id = ?",
+            [lastProfileId]
+          );
+          if (profile.length > 0) {
+            setCoopProfile(profile[0]);
+            setAppState("main");
+            return;
+          }
+        }
+        setAppState("profile_select");
       } catch (err: unknown) {
         console.error(err);
         setDbErrorMessage(getErrorMessage(err));
@@ -136,8 +150,20 @@ function AppContent() {
     (async () => {
       try {
         const db = await getDb();
-        const profile = await db.select<CooperativeProfile[]>("SELECT * FROM cooperatives LIMIT 1");
-        if (profile.length > 0) setCoopProfile(profile[0]);
+        const activeId = coopProfile?.id || localStorage.getItem("pakde-active-profile-id");
+        if (activeId) {
+          const profile = await db.select<CooperativeProfile[]>(
+            "SELECT * FROM cooperatives WHERE id = ?",
+            [activeId]
+          );
+          if (profile.length > 0) setCoopProfile(profile[0]);
+        } else {
+          const profile = await db.select<CooperativeProfile[]>("SELECT * FROM cooperatives LIMIT 1");
+          if (profile.length > 0) {
+            setCoopProfile(profile[0]);
+            localStorage.setItem("pakde-active-profile-id", profile[0].id || "");
+          }
+        }
         const alerts = await db.select<EwsAlert[]>("SELECT * FROM ews_alerts ORDER BY triggered_at DESC LIMIT 5");
         setEwsAlerts(alerts);
         const count = await db.select<CountRow[]>("SELECT COUNT(*) as count FROM members");
@@ -146,10 +172,27 @@ function AppContent() {
         console.error(e);
       }
     })();
-  }, [appState]);
+  }, [appState, coopProfile?.id]);
+
+  const handleSwitchProfile = () => {
+    setCoopProfile(null);
+    localStorage.removeItem("pakde-active-profile-id");
+    setAppState("profile_select");
+  };
 
   if (appState === "splash") return <SplashScreen />;
   if (appState === "db_error") return <DbErrorScreen message={dbErrorMessage} />;
+  if (appState === "profile_select") {
+    return (
+      <ProfileSelect
+        onProfileSelect={(profile) => {
+          setCoopProfile(profile);
+          localStorage.setItem("pakde-active-profile-id", profile.id || "");
+          setAppState("main");
+        }}
+      />
+    );
+  }
 
   return (
     <div className="app-container flex min-h-screen text-foreground antialiased">
@@ -162,6 +205,7 @@ function AppContent() {
         currentUser={currentUser}
         appTheme={appTheme}
         onThemeToggle={() => setAppTheme((t) => (t === "dark" ? "light" : "dark"))}
+        onSwitchProfile={handleSwitchProfile}
       />
 
       <main className="flex-1 p-6 overflow-y-auto max-h-screen overscroll-contain">

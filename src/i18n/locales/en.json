@@ -717,5 +717,33 @@
     "journalSaveSuccess": "Journal entry saved successfully!",
     "journalSaveFailed": "Failed to save transaction: {{error}}",
     "feasibilityCashFlowMismatch": "Error: Number of cash flow elements does not match projection years."
+  },
+  "profileSelect": {
+    "title": "Welcome to PAKDE",
+    "subtitle": "Select a cooperative profile to manage, or register a new cooperative command center.",
+    "createBtn": "Register Cooperative",
+    "status": "Status",
+    "active": "Active",
+    "health": "Health Score",
+    "units": "Business Units",
+    "dialogTitle": "Register New Cooperative",
+    "dialogDesc": "Input basic administrative details for the new cooperative unit.",
+    "fieldName": "Cooperative Name",
+    "fieldLegalId": "Legal ID Number",
+    "fieldProvince": "Province",
+    "fieldRegency": "Regency / City",
+    "fieldDistrict": "District (Kecamatan)",
+    "fieldVillage": "Village (Desa)",
+    "fieldAddress": "Street Address",
+    "fieldPostalCode": "Postal Code",
+    "fieldPhone": "Phone Number",
+    "fieldEmail": "Email Address",
+    "fieldChairman": "Chairman Name",
+    "fieldSecretary": "Secretary Name",
+    "fieldTreasurer": "Treasurer Name",
+    "fieldSupervisor": "Supervisor Name",
+    "validationError": "Name, Regency, and Province fields are required.",
+    "switchProfile": "Switch Profile",
+    "switchProfileConfirm": "Are you sure you want to exit the current cooperative profile?"
   }
 }

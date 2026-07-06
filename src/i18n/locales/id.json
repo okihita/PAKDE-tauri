@@ -716,6 +716,34 @@
     "journalZeroAmount": "Error: Jumlah transaksi tidak boleh Rp 0.",
     "journalSaveSuccess": "Transaksi Jurnal berhasil disimpan!",
     "journalSaveFailed": "Gagal menyimpan transaksi: {{error}}",
-    "feasibilityCashFlowMismatch": "Error: Jumlah elemen arus kas tidak sesuai dengan Tahun Proyeksi."
+    "feasibilityCashFlowMismatch": "Gagal: Jumlah elemen arus kas tidak sesuai dengan Tahun Proyeksi."
+  },
+  "profileSelect": {
+    "title": "Selamat Datang di PAKDE",
+    "subtitle": "Pilih profil koperasi yang ingin dikelola, atau daftarkan pusat komando koperasi baru.",
+    "createBtn": "Daftarkan Koperasi Baru",
+    "status": "Status",
+    "active": "Aktif",
+    "health": "Skor Kesehatan",
+    "units": "Unit Usaha",
+    "dialogTitle": "Daftarkan Koperasi Baru",
+    "dialogDesc": "Masukkan detail administratif dasar untuk unit koperasi baru.",
+    "fieldName": "Nama Koperasi",
+    "fieldLegalId": "Nomor Badan Hukum",
+    "fieldProvince": "Provinsi",
+    "fieldRegency": "Kabupaten / Kota",
+    "fieldDistrict": "Kecamatan",
+    "fieldVillage": "Desa",
+    "fieldAddress": "Alamat Jalan",
+    "fieldPostalCode": "Kode Pos",
+    "fieldPhone": "Nomor Telepon",
+    "fieldEmail": "Alamat Email",
+    "fieldChairman": "Nama Ketua",
+    "fieldSecretary": "Nama Sekretaris",
+    "fieldTreasurer": "Nama Bendahara",
+    "fieldSupervisor": "Nama Pengawas",
+    "validationError": "Kolom Nama, Kabupaten, dan Provinsi wajib diisi.",
+    "switchProfile": "Ganti Profil Koperasi",
+    "switchProfileConfirm": "Apakah Anda yakin ingin keluar dari profil koperasi saat ini?"
   }
 }
