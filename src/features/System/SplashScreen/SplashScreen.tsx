@@ -12,8 +12,7 @@ export default function SplashScreen() {
       style={{ backgroundImage: "url('/background.jpg')" }}
     >
       <DevDocStripe content={readmeContent} />
-      {/* Cinematic dark overlay with blur and vignette */}
-      <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-[2px] bg-gradient-to-b from-slate-950/50 via-slate-950/85 to-slate-950" />
+      <div className="absolute inset-0 bg-slate-950/35 backdrop-blur-[1px] bg-gradient-to-b from-slate-950/10 via-slate-950/45 to-slate-950/75" />
 
       <div className="relative z-10 flex flex-col items-center gap-5">
         <div className="relative">

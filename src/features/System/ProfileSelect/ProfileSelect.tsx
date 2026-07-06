@@ -145,8 +145,7 @@ export default function ProfileSelect({ onProfileSelect }: ProfileSelectProps) {
       className="flex-1 flex flex-col justify-center items-center min-h-screen relative overflow-hidden p-6 bg-cover bg-center"
       style={{ backgroundImage: "url('/background.jpg')" }}
     >
-      {/* Cinematic dark overlay with blur and vignette */}
-      <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-[2px] bg-gradient-to-b from-slate-950/50 via-slate-950/85 to-slate-950" />
+      <div className="absolute inset-0 bg-slate-950/35 backdrop-blur-[1px] bg-gradient-to-b from-slate-950/10 via-slate-950/45 to-slate-950/75" />
 
       <div className="relative z-10 w-full max-w-4xl space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-300">
         {/* Header section */}
