@@ -11,28 +11,9 @@ import { usePalette } from "@/hooks/usePalette";
 import { PALETTES } from "@/data/palettes";
 import { getDb } from "@/db";
 import type { CooperativeProfile } from "@/types";
+import { appDataDir, join } from "@tauri-apps/api/path";
+import { remove } from "@tauri-apps/plugin-fs";
 import { Moon, Sun, Globe, TextAa, Palette, PaintBucket, User, Buildings, ArrowsLeftRight, Warning } from "@phosphor-icons/react";
-
-const FACTORY_TABLES = [
-  "cooperatives",
-  "local_users",
-  "members",
-  "coa_accounts",
-  "journal_entries",
-  "journal_lines",
-  "financial_analyses",
-  "sensitivity_analyses",
-  "ews_alerts",
-  "ews_metrics",
-  "sync_history",
-  "sync_audit",
-  "categories",
-  "store_layouts",
-  "layout_zones",
-  "inventory_items",
-  "sales_transactions",
-  "sales_transaction_items",
-];
 
 interface Props {
   coopProfile: CooperativeProfile | null;
@@ -110,12 +91,9 @@ export default function Settings({
     }
     setResetting(true);
     try {
-      const db = await getDb();
-      await db.execute("PRAGMA foreign_keys = OFF");
-      for (const table of FACTORY_TABLES) {
-        await db.execute(`DROP TABLE IF EXISTS ${table}`);
-      }
-      await db.execute("PRAGMA foreign_keys = ON");
+      const dataDir = await appDataDir();
+      const dbPath = await join(dataDir, "kdkmp.db");
+      await remove(dbPath);
       localStorage.clear();
       window.location.reload();
     } catch (err) {
