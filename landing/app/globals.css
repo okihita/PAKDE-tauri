@@ -8,6 +8,10 @@
   box-sizing: border-box;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   margin: 0;
   background: #0a0a0a;
@@ -17,4 +21,11 @@ body {
     -apple-system,
     sans-serif;
   -webkit-font-smoothing: antialiased;
+}
+
+@layer utilities {
+  .text-xxs {
+    font-size: 0.675rem;
+    line-height: 1rem;
+  }
 }
