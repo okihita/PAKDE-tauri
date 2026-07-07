@@ -111,9 +111,11 @@ export default function Settings({
     setResetting(true);
     try {
       const db = await getDb();
+      await db.execute("PRAGMA foreign_keys = OFF");
       for (const table of FACTORY_TABLES) {
         await db.execute(`DROP TABLE IF EXISTS ${table}`);
       }
+      await db.execute("PRAGMA foreign_keys = ON");
       localStorage.clear();
       window.location.reload();
     } catch (err) {
