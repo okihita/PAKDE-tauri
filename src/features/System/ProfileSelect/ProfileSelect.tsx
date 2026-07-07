@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Card } from "@/components/ui/card";
-import { Buildings, Plus, MapPin, SpeakerLow, SpeakerX } from "@phosphor-icons/react";
+import { Buildings, Plus, MapPin, SpeakerLow, SpeakerX, MusicNotes } from "@phosphor-icons/react";
 import { getDb } from "@/db";
 import type { CooperativeProfile } from "@/types";
 import { sfx } from "./sfx";
+import { bgMusic } from "./music";
 import CreateProfileDialog from "./CreateProfileDialog";
 import { seedDemoCooperative, clearDemoCooperative, isDemoSeeded } from "@/db/init";
 
@@ -25,6 +26,7 @@ export default function ProfileSelect({ onProfileSelect }: ProfileSelectProps) {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [loading, setLoading] = useState(true);
   const [soundOn, setSoundOn] = useState(sfx.enabled);
+  const [musicOn, setMusicOn] = useState(bgMusic.enabled);
   const [demoSeeded, setDemoSeeded] = useState(false);
 
   const loadProfiles = async () => {
@@ -51,6 +53,7 @@ export default function ProfileSelect({ onProfileSelect }: ProfileSelectProps) {
 
   const handleUserInteraction = () => {
     sfx.resume();
+    bgMusic.resume();
   };
 
   const handleSoundToggle = (e: React.MouseEvent) => {
@@ -61,6 +64,13 @@ export default function ProfileSelect({ onProfileSelect }: ProfileSelectProps) {
     if (newState) {
       sfx.playBleep(800, 0.05);
     }
+  };
+
+  const handleMusicToggle = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    handleUserInteraction();
+    const newState = bgMusic.toggleMusic();
+    setMusicOn(newState);
   };
 
   const handleCardClick = (p: CooperativeProfile) => {
@@ -110,8 +120,15 @@ export default function ProfileSelect({ onProfileSelect }: ProfileSelectProps) {
       {/* Dark blur overlay */}
       <div className="absolute inset-0 bg-slate-950/40 backdrop-blur-[2px] bg-gradient-to-b from-slate-950/20 via-slate-950/50 to-slate-950/80 z-0" />
 
-      {/* Mute Button Toggle (Absolute top right for clean corporate design) */}
-      <div className="absolute top-4 right-4 z-20">
+      {/* Audio Controls (Absolute top right) */}
+      <div className="absolute top-4 right-4 z-20 flex gap-1.5">
+        <button
+          onClick={handleMusicToggle}
+          className="p-2 bg-slate-900/80 border border-slate-800 rounded-lg hover:border-slate-700 hover:text-slate-200 transition-colors shadow-md backdrop-blur-md"
+          title={musicOn ? "Music On" : "Music Off"}
+        >
+          <MusicNotes className={`h-4 w-4 ${musicOn ? "text-success" : "text-slate-500"}`} />
+        </button>
         <button
           onClick={handleSoundToggle}
           className="p-2 bg-slate-900/80 border border-slate-800 rounded-lg hover:border-slate-700 text-slate-400 hover:text-slate-200 transition-colors shadow-md backdrop-blur-md"
