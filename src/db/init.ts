@@ -212,6 +212,10 @@ export async function initDb(): Promise<void> {
   await ensureColumn("inventory_items", "shelf_row INTEGER", "shelf_row");
   await ensureColumn("inventory_items", "shelf_col INTEGER", "shelf_col");
 
+  // Cooperative metadata columns (UU 25/1992 compliance)
+  await ensureColumn("cooperatives", "founded_date TEXT", "founded_date");
+  await ensureColumn("cooperatives", "category TEXT", "category");
+
   await db.execute(`
     CREATE TABLE IF NOT EXISTS sales_transactions (
       id TEXT PRIMARY KEY,
@@ -300,6 +304,8 @@ const DEMO_COOP = {
     supervisor: "Drs. Suparman",
   }),
   status: "aktif",
+  founded_date: "2020-01-15",
+  category: "serba_usaha",
 };
 
 export type DemoLevel = "pemula" | "menengah" | "lanjutan";
@@ -324,9 +330,20 @@ export async function seedDemoCooperativeAtLevel(level: DemoLevel): Promise<void
   // 2. Insert cooperative row with tier-specific units
   const units = JSON.stringify(LEVEL_BUSINESS_UNITS[level]);
   await db.execute(
-    `INSERT INTO cooperatives (id, name, regency, province, level, business_units, officers, status)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-    [DEMO_COOP.id, DEMO_COOP.name, DEMO_COOP.regency, DEMO_COOP.province, DEMO_COOP.level, units, DEMO_COOP.officers, DEMO_COOP.status],
+    `INSERT INTO cooperatives (id, name, regency, province, level, business_units, officers, status, founded_date, category)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [
+      DEMO_COOP.id,
+      DEMO_COOP.name,
+      DEMO_COOP.regency,
+      DEMO_COOP.province,
+      DEMO_COOP.level,
+      units,
+      DEMO_COOP.officers,
+      DEMO_COOP.status,
+      DEMO_COOP.founded_date,
+      DEMO_COOP.category,
+    ],
   );
 
   // 3. Seed COA — always full set (no harm; unused accounts just sit idle)
@@ -367,18 +384,82 @@ async function seedDemoCategoriesAtLevel(db: Awaited<ReturnType<typeof getDb>>, 
 /** Seed inventory items scoped to the tier. */
 async function seedDemoInventoryAtLevel(db: Awaited<ReturnType<typeof getDb>>, level: DemoLevel): Promise<void> {
   const allItems = [
-    { id: "item_urea", name: "Pupuk Urea Bersubsidi", category_id: "unit_pupuk", stock_quantity: 120, unit: "sak", cost_price: 110000, selling_price: 150000 },
-    { id: "item_npk", name: "Pupuk NPK Phonska", category_id: "unit_pupuk", stock_quantity: 85, unit: "sak", cost_price: 130000, selling_price: 170000 },
-    { id: "item_benih", name: "Benih Padi Ciherang 5kg", category_id: "unit_pupuk", stock_quantity: 50, unit: "kantong", cost_price: 65000, selling_price: 85000 },
-    { id: "item_paracetamol", name: "Paracetamol 500mg", category_id: "unit_apotek", stock_quantity: 200, unit: "strip", cost_price: 2500, selling_price: 4500 },
-    { id: "item_amoxicillin", name: "Amoxicillin 500mg", category_id: "unit_apotek", stock_quantity: 150, unit: "strip", cost_price: 5000, selling_price: 9000 },
-    { id: "item_organik", name: "Pupuk Organik Granul", category_id: "unit_pupuk", stock_quantity: 150, unit: "sak", cost_price: 70000, selling_price: 90000 },
-    { id: "item_karung", name: "Karung Plastik 50kg", category_id: "unit_pemasaran", stock_quantity: 500, unit: "pcs", cost_price: 1800, selling_price: 3000 },
+    {
+      id: "item_urea",
+      name: "Pupuk Urea Bersubsidi",
+      category_id: "unit_pupuk",
+      stock_quantity: 120,
+      unit: "sak",
+      cost_price: 110000,
+      selling_price: 150000,
+    },
+    {
+      id: "item_npk",
+      name: "Pupuk NPK Phonska",
+      category_id: "unit_pupuk",
+      stock_quantity: 85,
+      unit: "sak",
+      cost_price: 130000,
+      selling_price: 170000,
+    },
+    {
+      id: "item_benih",
+      name: "Benih Padi Ciherang 5kg",
+      category_id: "unit_pupuk",
+      stock_quantity: 50,
+      unit: "kantong",
+      cost_price: 65000,
+      selling_price: 85000,
+    },
+    {
+      id: "item_paracetamol",
+      name: "Paracetamol 500mg",
+      category_id: "unit_apotek",
+      stock_quantity: 200,
+      unit: "strip",
+      cost_price: 2500,
+      selling_price: 4500,
+    },
+    {
+      id: "item_amoxicillin",
+      name: "Amoxicillin 500mg",
+      category_id: "unit_apotek",
+      stock_quantity: 150,
+      unit: "strip",
+      cost_price: 5000,
+      selling_price: 9000,
+    },
+    {
+      id: "item_organik",
+      name: "Pupuk Organik Granul",
+      category_id: "unit_pupuk",
+      stock_quantity: 150,
+      unit: "sak",
+      cost_price: 70000,
+      selling_price: 90000,
+    },
+    {
+      id: "item_karung",
+      name: "Karung Plastik 50kg",
+      category_id: "unit_pemasaran",
+      stock_quantity: 500,
+      unit: "pcs",
+      cost_price: 1800,
+      selling_price: 3000,
+    },
   ];
   const tiers: Record<DemoLevel, string[]> = {
     pemula: ["item_urea", "item_npk"],
     menengah: ["item_urea", "item_npk", "item_benih", "item_organik"],
-    lanjutan: ["item_urea", "item_npk", "item_benih", "item_paracetamol", "item_amoxicillin", "item_organik", "item_karung"],
+    lanjutan: [
+      "item_urea",
+      "item_npk",
+      "item_benih",
+      "item_paracetamol",
+      "item_amoxicillin",
+      "item_organik",
+      "item_karung",
+    ],
   };
   const tierIds = tiers[level];
   for (const item of allItems) {

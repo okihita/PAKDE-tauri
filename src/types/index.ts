@@ -72,6 +72,8 @@ export interface CooperativeProfile {
   level?: string;
   parent_id?: string;
   parent_name?: string;
+  founded_date?: string;
+  category?: string;
   created_at?: string;
   updated_at?: string;
 }

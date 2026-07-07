@@ -14,6 +14,13 @@ const PLACEHOLDER_NAME = "e.g. Koperasi Tani Makmur";
 const PLACEHOLDER_LEGAL_ID = "AHU-xxxxx";
 const PLACEHOLDER_REGENCY = "Mojokerto";
 const PLACEHOLDER_PROVINCE = "Jawa Timur";
+const LABEL_CATEGORY = "Kategori";
+const LABEL_FOUNDED_DATE = "Tanggal Berdiri";
+const CAT_SERBA_USAHA = "Serba Usaha";
+const CAT_KONSUMEN = "Konsumen";
+const CAT_PEMASARAN = "Pemasaran";
+const CAT_PRODUKSI = "Produsen";
+const CAT_JASA = "Jasa";
 
 interface CreateProfileDialogProps {
   open: boolean;
@@ -43,6 +50,8 @@ export default function CreateProfileDialog({ open, onOpenChange, onProfileCreat
     unitPupuk: true,
     unitSimpanPinjam: true,
     unitToko: false,
+    foundedDate: "",
+    category: "serba_usaha",
   });
 
   const handleCreateSubmit = async (e: React.FormEvent) => {
@@ -73,8 +82,8 @@ export default function CreateProfileDialog({ open, onOpenChange, onProfileCreat
       await db.execute(
         `INSERT INTO cooperatives (
           id, name, legal_id, address, village, district, regency, province,
-          postal_code, phone, email, business_units, officers, health_score, rag_status
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          postal_code, phone, email, business_units, officers, health_score, rag_status, founded_date, category
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           newId,
           formData.name.trim(),
@@ -89,8 +98,10 @@ export default function CreateProfileDialog({ open, onOpenChange, onProfileCreat
           formData.email.trim() || null,
           JSON.stringify(units),
           officersJson,
-          100.0, // default new health score
+          100.0,
           "green",
+          formData.foundedDate.trim() || null,
+          formData.category,
         ],
       );
 
@@ -324,6 +335,35 @@ export default function CreateProfileDialog({ open, onOpenChange, onProfileCreat
                   />
                   <span>{LABEL_TOKO}</span>
                 </label>
+              </div>
+            </div>
+
+            {/* Kategori & Tanggal Berdiri */}
+            <div className="grid grid-cols-2 gap-3.5 border-t border-slate-800/80 pt-3.5">
+              <div className="space-y-1">
+                <label className="text-success font-mono text-xxxs uppercase tracking-wider">{LABEL_CATEGORY}</label>
+                <select
+                  value={formData.category}
+                  onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                  className="w-full bg-slate-950 border border-slate-800 text-slate-100 text-xs h-8.5 rounded-md focus:border-success/50 focus:ring-1 focus:ring-brand/50 px-2"
+                >
+                  <option value="serba_usaha">{CAT_SERBA_USAHA}</option>
+                  <option value="konsumsi">{CAT_KONSUMEN}</option>
+                  <option value="pemasaran">{CAT_PEMASARAN}</option>
+                  <option value="produksi">{CAT_PRODUKSI}</option>
+                  <option value="jasa">{CAT_JASA}</option>
+                </select>
+              </div>
+              <div className="space-y-1">
+                <label className="text-success font-mono text-xxxs uppercase tracking-wider">
+                  {LABEL_FOUNDED_DATE}
+                </label>
+                <Input
+                  type="date"
+                  value={formData.foundedDate}
+                  onChange={(e) => setFormData({ ...formData, foundedDate: e.target.value })}
+                  className="bg-slate-950 border-slate-800 text-slate-100 text-xs h-8.5 focus:border-success/50 focus:ring-1 focus:ring-brand/50"
+                />
               </div>
             </div>
           </div>

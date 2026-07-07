@@ -75,7 +75,7 @@ const DEMO_TIERS: {
   },
 ];
 const DEMO_TITLE = "Coba Demo";
-const DEMO_DESC = "Koperasi Maju Bersama — 50 anggota · 3 unit usaha · 16 modul siap dijelajahi.";
+const DEMO_DESC = "Jelajahi koperasi virtual dengan data dan modul lengkap — pilih level di bawah.";
 const DEMO_ACTION = "Mulai Demo";
 const DEMO_BADGE = "Mode Eksplorasi";
 const REAL_BADGE = "Mulai dari 0";
@@ -348,7 +348,7 @@ export default function ProfileSelect({ onProfileSelect }: ProfileSelectProps) {
                     </div>
                   </div>
                   <p className="text-xxs text-amber-300/70 leading-relaxed mb-5">{DEMO_DESC}</p>
-                  <div className="rounded-lg bg-amber-500/10 border border-amber-500/25 px-4 py-2.5 text-xs font-bold text-amber-400 text-center group-hover:bg-amber-500/20 transition-colors">
+                  <div className="mt-auto rounded-lg bg-amber-500/10 border border-amber-500/25 px-4 py-2.5 text-xs font-bold text-amber-400 text-center group-hover:bg-amber-500/20 transition-colors">
                     {DEMO_ACTION}
                   </div>
                 </div>

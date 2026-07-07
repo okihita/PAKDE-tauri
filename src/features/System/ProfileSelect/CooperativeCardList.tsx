@@ -7,6 +7,22 @@ const TEXT_UNIT_PUPUK = "Sales";
 const TEXT_UNIT_SP = "Simpan Pinjam";
 const TEXT_UNIT_TOKO = "Toko Desa";
 
+const CATEGORY_LABELS: Record<string, string> = {
+  konsumsi: "Konsumen",
+  pemasaran: "Pemasaran",
+  produksi: "Produsen",
+  jasa: "Jasa",
+  serba_usaha: "Serba Usaha",
+};
+
+function getAge(foundedDate?: string): string | null {
+  if (!foundedDate) return null;
+  const founded = new Date(foundedDate);
+  if (isNaN(founded.getTime())) return null;
+  const years = new Date().getFullYear() - founded.getFullYear();
+  return years < 1 ? "< 1 tahun" : `${years} tahun`;
+}
+
 interface Props {
   profiles: CooperativeProfile[];
   onCardClick: (p: CooperativeProfile) => void;
@@ -52,9 +68,7 @@ export default function CooperativeCardList({ profiles, onCardClick, onCardHover
               </div>
 
               <div className="space-y-1">
-                <h3 className="text-xs font-bold text-foreground line-clamp-1 leading-tight tracking-wide">
-                  {p.name}
-                </h3>
+                <h3 className="text-xs font-bold text-foreground line-clamp-1 leading-tight tracking-wide">{p.name}</h3>
                 <p className="text-xxs text-slate-400 flex items-center gap-1">
                   <MapPin className="h-3.5 w-3.5 text-slate-500 shrink-0" />
                   <span className="truncate">
@@ -64,11 +78,26 @@ export default function CooperativeCardList({ profiles, onCardClick, onCardHover
               </div>
             </div>
 
+            {(p.category || p.founded_date) && (
+              <div className="flex items-center gap-2 pt-1">
+                {p.category && (
+                  <span className="text-xxxs font-mono font-bold px-1.5 py-0.5 rounded-xs bg-amber-950/50 border border-amber-800/30 text-amber-500 uppercase tracking-wider">
+                    {CATEGORY_LABELS[p.category] || p.category}
+                  </span>
+                )}
+                {getAge(p.founded_date) && (
+                  <span className="text-xxxs font-mono text-slate-500">{getAge(p.founded_date)}</span>
+                )}
+              </div>
+            )}
+
             <div className="space-y-3 pt-4 border-t border-slate-900 font-sans">
               <div className="space-y-1">
                 <div className="flex justify-between items-center text-xxxs font-mono text-slate-400">
                   <span className="uppercase">{t("profileSelect.health")}</span>
-                  <span className={`font-bold ${isHealthy ? "text-success" : isCritical ? "text-danger" : "text-warning"}`}>
+                  <span
+                    className={`font-bold ${isHealthy ? "text-success" : isCritical ? "text-danger" : "text-warning"}`}
+                  >
                     {p.health_score}%
                   </span>
                 </div>
