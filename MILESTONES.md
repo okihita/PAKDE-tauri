@@ -128,3 +128,4 @@ What if a cashier's device disconnects mid-transaction? Two-tier resilience:
 - Dark pattern detection — flag rapid-fire actions that suggest tampering
 - RAT (Annual Member Meeting) agenda builder with voting
 - Weather/crop data integration for agricultural cooperative forecasting
+- **Visual Post Builder** — lightweight Canva-style template editor for creating WhatsApp-ready share images (product promos, event announcements, meeting invites). Drag-and-drop text/photo elements, pre-built templates for common cooperative posts, export as square/portrait image optimized for WhatsApp sharing. Boosts community engagement via visually polished, easy-to-share content.
