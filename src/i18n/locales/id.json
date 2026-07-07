@@ -432,6 +432,13 @@
       "previewWarning": "Peringatan",
       "previewError": "Error",
       "previewInfo": "Info"
+    },
+    "reset": {
+      "title": "Reset Pabrik",
+      "description": "Hapus semua data koperasi, catatan anggota, transaksi, dan preferensi. Mesin gamifikasi dan sistem leveling tidak akan terpengaruh. Tindakan ini tidak dapat dibatalkan.",
+      "button": "Hapus Semua Data",
+      "confirm": "Klik lagi untuk konfirmasi — ini tidak dapat dibatalkan",
+      "reseting": "Menghapus..."
     }
   },
   "palette": {

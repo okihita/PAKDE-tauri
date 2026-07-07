@@ -432,6 +432,13 @@
       "previewWarning": "Warning",
       "previewError": "Error",
       "previewInfo": "Info"
+    },
+    "reset": {
+      "title": "Factory Reset",
+      "description": "Erase all cooperative data, member records, transactions, and preferences. The gamification engine and leveling system will not be affected. This action cannot be undone.",
+      "button": "Reset All Data",
+      "confirm": "Click again to confirm — this cannot be undone",
+      "reseting": "Resetting..."
     }
   },
   "palette": {

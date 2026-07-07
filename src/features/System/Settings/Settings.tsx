@@ -11,7 +11,28 @@ import { usePalette } from "@/hooks/usePalette";
 import { PALETTES } from "@/data/palettes";
 import { getDb } from "@/db";
 import type { CooperativeProfile } from "@/types";
-import { Moon, Sun, Globe, TextAa, Palette, PaintBucket, User, Buildings, ArrowsLeftRight } from "@phosphor-icons/react";
+import { Moon, Sun, Globe, TextAa, Palette, PaintBucket, User, Buildings, ArrowsLeftRight, Warning } from "@phosphor-icons/react";
+
+const FACTORY_TABLES = [
+  "cooperatives",
+  "local_users",
+  "members",
+  "coa_accounts",
+  "journal_entries",
+  "journal_lines",
+  "financial_analyses",
+  "sensitivity_analyses",
+  "ews_alerts",
+  "ews_metrics",
+  "sync_history",
+  "sync_audit",
+  "categories",
+  "store_layouts",
+  "layout_zones",
+  "inventory_items",
+  "sales_transactions",
+  "sales_transaction_items",
+];
 
 interface Props {
   coopProfile: CooperativeProfile | null;
@@ -79,6 +100,28 @@ export default function Settings({
   const toast = useToast();
   const { settings: iconSettings, setWeight } = useIconSettings();
   const [activePalette, setPalette] = usePalette();
+  const [resetConfirm, setResetConfirm] = useState(false);
+  const [resetting, setResetting] = useState(false);
+
+  const handleFactoryReset = async () => {
+    if (!resetConfirm) {
+      setResetConfirm(true);
+      return;
+    }
+    setResetting(true);
+    try {
+      const db = await getDb();
+      for (const table of FACTORY_TABLES) {
+        await db.execute(`DROP TABLE IF EXISTS ${table}`);
+      }
+      localStorage.clear();
+      window.location.reload();
+    } catch (err) {
+      toast.error(String(err));
+      setResetting(false);
+      setResetConfirm(false);
+    }
+  };
 
   if (!coopProfile) return <div className="text-muted-foreground text-xs">{t("common.loading")}</div>;
 
@@ -376,6 +419,36 @@ export default function Settings({
               </div>
             </div>
           )}
+        </CardContent>
+      </Card>
+
+      {/* ── Danger Zone ── */}
+      <Card className="bg-card border-destructive/20">
+        <CardHeader>
+          <CardTitle className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
+            <Warning className="h-3.5 w-3.5 text-danger" />
+            {t("settings.reset.title")}
+          </CardTitle>
+          <CardDescription className="text-xxs text-muted-foreground">
+            {t("settings.reset.description")}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Button
+            onClick={handleFactoryReset}
+            disabled={resetting}
+            className={`w-full font-bold text-xs h-9 ${
+              resetConfirm
+                ? "bg-danger hover:bg-danger/80 text-danger-foreground"
+                : "bg-muted hover:bg-muted/80 text-muted-foreground border border-border"
+            }`}
+          >
+            {resetting
+              ? t("settings.reset.reseting")
+              : resetConfirm
+                ? t("settings.reset.confirm")
+                : t("settings.reset.button")}
+          </Button>
         </CardContent>
       </Card>
     </div>
