@@ -284,110 +284,6 @@ async function seedDemoCoaAccounts(db: Awaited<ReturnType<typeof getDb>>): Promi
   }
 }
 
-async function seedDemoCategories(db: Awaited<ReturnType<typeof getDb>>): Promise<void> {
-  const existing = await db.select<Array<{ id: string }>>(
-    "SELECT id FROM categories WHERE cooperative_id = 'kdp-001' LIMIT 1",
-  );
-  if (existing.length > 0) return;
-
-  const categories = [
-    { id: "unit_apotek", name: "Unit Apotek", icon: "💊" },
-    { id: "unit_pupuk", name: "Unit Pupuk", icon: "🌱" },
-    { id: "unit_simpan_pinjam", name: "Unit Simpan Pinjam", icon: "💰" },
-    { id: "unit_penggilingan", name: "Penggilingan Padi", icon: "🌾" },
-    { id: "unit_pemasaran", name: "Pemasaran Hasil Tani", icon: "📦" },
-    { id: "operasional", name: "Operasional", icon: "⚙️" },
-    { id: "investasi", name: "Investasi", icon: "📈" },
-  ];
-  for (const cat of categories) {
-    await db.execute("INSERT INTO categories (id, cooperative_id, name, icon) VALUES (?, 'kdp-001', ?, ?)", [
-      cat.id,
-      cat.name,
-      cat.icon,
-    ]);
-  }
-}
-
-async function seedDemoInventoryItems(db: Awaited<ReturnType<typeof getDb>>): Promise<void> {
-  const existing = await db.select<Array<{ id: string }>>(
-    "SELECT id FROM inventory_items WHERE id LIKE 'item_%' LIMIT 1",
-  );
-  if (existing.length > 0) return;
-
-  const items = [
-    {
-      id: "item_urea",
-      name: "Pupuk Urea Bersubsidi",
-      category_id: "unit_pupuk",
-      stock_quantity: 120,
-      unit: "sak",
-      cost_price: 110000,
-      selling_price: 150000,
-    },
-    {
-      id: "item_npk",
-      name: "Pupuk NPK Phonska",
-      category_id: "unit_pupuk",
-      stock_quantity: 85,
-      unit: "sak",
-      cost_price: 130000,
-      selling_price: 170000,
-    },
-    {
-      id: "item_benih",
-      name: "Benih Padi Ciherang 5kg",
-      category_id: "unit_pupuk",
-      stock_quantity: 50,
-      unit: "kantong",
-      cost_price: 65000,
-      selling_price: 85000,
-    },
-    {
-      id: "item_paracetamol",
-      name: "Paracetamol 500mg",
-      category_id: "unit_apotek",
-      stock_quantity: 200,
-      unit: "strip",
-      cost_price: 2500,
-      selling_price: 4500,
-    },
-    {
-      id: "item_amoxicillin",
-      name: "Amoxicillin 500mg",
-      category_id: "unit_apotek",
-      stock_quantity: 150,
-      unit: "strip",
-      cost_price: 5000,
-      selling_price: 9000,
-    },
-    {
-      id: "item_organik",
-      name: "Pupuk Organik Granul",
-      category_id: "unit_pupuk",
-      stock_quantity: 150,
-      unit: "sak",
-      cost_price: 70000,
-      selling_price: 90000,
-    },
-    {
-      id: "item_karung",
-      name: "Karung Plastik 50kg",
-      category_id: "unit_pemasaran",
-      stock_quantity: 500,
-      unit: "pcs",
-      cost_price: 1800,
-      selling_price: 3000,
-    },
-  ];
-  for (const item of items) {
-    await db.execute(
-      `INSERT INTO inventory_items (id, name, category_id, stock_quantity, unit, cost_price, selling_price)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [item.id, item.name, item.category_id, item.stock_quantity, item.unit, item.cost_price, item.selling_price],
-    );
-  }
-}
-
 // ── Dev-only seed helpers ──────────────────────────────────────
 
 const DEMO_COOP = {
@@ -406,30 +302,97 @@ const DEMO_COOP = {
   status: "aktif",
 };
 
-export async function seedDemoCooperative(): Promise<void> {
+export type DemoLevel = "pemula" | "menengah" | "lanjutan";
+
+const LEVEL_BUSINESS_UNITS: Record<DemoLevel, string[]> = {
+  pemula: ["unit_pupuk"],
+  menengah: ["unit_pupuk", "unit_simpan_pinjam"],
+  lanjutan: ["unit_apotek", "unit_pupuk", "unit_pemasaran"],
+};
+
+/**
+ * Clear + seed the demo cooperative at the given complexity tier.
+ * All three tiers share cooperative id `kdp-001`; the difference is
+ * how much data (COA, categories, inventory) gets populated.
+ */
+export async function seedDemoCooperativeAtLevel(level: DemoLevel): Promise<void> {
   const db = await getDb();
 
-  const exists = await db.select<Array<{ id: string }>>("SELECT id FROM cooperatives WHERE id = ?", [DEMO_COOP.id]);
-  if (exists.length > 0) return;
+  // 1. Clear any existing demo data
+  await clearDemoCooperative();
 
+  // 2. Insert cooperative row with tier-specific units
+  const units = JSON.stringify(LEVEL_BUSINESS_UNITS[level]);
   await db.execute(
     `INSERT INTO cooperatives (id, name, regency, province, level, business_units, officers, status)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-    [
-      DEMO_COOP.id,
-      DEMO_COOP.name,
-      DEMO_COOP.regency,
-      DEMO_COOP.province,
-      DEMO_COOP.level,
-      DEMO_COOP.business_units,
-      DEMO_COOP.officers,
-      DEMO_COOP.status,
-    ],
+    [DEMO_COOP.id, DEMO_COOP.name, DEMO_COOP.regency, DEMO_COOP.province, DEMO_COOP.level, units, DEMO_COOP.officers, DEMO_COOP.status],
   );
 
+  // 3. Seed COA — always full set (no harm; unused accounts just sit idle)
   await seedDemoCoaAccounts(db);
-  await seedDemoCategories(db);
-  await seedDemoInventoryItems(db);
+
+  // 4. Seed categories — tier-specific
+  await seedDemoCategoriesAtLevel(db, level);
+
+  // 5. Seed inventory — tier-specific
+  await seedDemoInventoryAtLevel(db, level);
+}
+
+/** Seed categories scoped to the tier (subsets of the full list). */
+async function seedDemoCategoriesAtLevel(db: Awaited<ReturnType<typeof getDb>>, level: DemoLevel): Promise<void> {
+  const allCategories = [
+    { id: "unit_pupuk", name: "Unit Pupuk", icon: "🌱" },
+    { id: "unit_simpan_pinjam", name: "Unit Simpan Pinjam", icon: "💰" },
+    { id: "unit_apotek", name: "Unit Apotek", icon: "💊" },
+    { id: "unit_pemasaran", name: "Pemasaran Hasil Tani", icon: "📦" },
+  ];
+  const tiers: Record<DemoLevel, string[]> = {
+    pemula: ["unit_pupuk"],
+    menengah: ["unit_pupuk", "unit_simpan_pinjam"],
+    lanjutan: ["unit_pupuk", "unit_simpan_pinjam", "unit_apotek", "unit_pemasaran"],
+  };
+  const tierIds = tiers[level];
+  for (const cat of allCategories) {
+    if (!tierIds.includes(cat.id)) continue;
+    await db.execute("INSERT INTO categories (id, cooperative_id, name, icon) VALUES (?, ?, ?, ?)", [
+      cat.id,
+      DEMO_COOP.id,
+      cat.name,
+      cat.icon,
+    ]);
+  }
+}
+
+/** Seed inventory items scoped to the tier. */
+async function seedDemoInventoryAtLevel(db: Awaited<ReturnType<typeof getDb>>, level: DemoLevel): Promise<void> {
+  const allItems = [
+    { id: "item_urea", name: "Pupuk Urea Bersubsidi", category_id: "unit_pupuk", stock_quantity: 120, unit: "sak", cost_price: 110000, selling_price: 150000 },
+    { id: "item_npk", name: "Pupuk NPK Phonska", category_id: "unit_pupuk", stock_quantity: 85, unit: "sak", cost_price: 130000, selling_price: 170000 },
+    { id: "item_benih", name: "Benih Padi Ciherang 5kg", category_id: "unit_pupuk", stock_quantity: 50, unit: "kantong", cost_price: 65000, selling_price: 85000 },
+    { id: "item_paracetamol", name: "Paracetamol 500mg", category_id: "unit_apotek", stock_quantity: 200, unit: "strip", cost_price: 2500, selling_price: 4500 },
+    { id: "item_amoxicillin", name: "Amoxicillin 500mg", category_id: "unit_apotek", stock_quantity: 150, unit: "strip", cost_price: 5000, selling_price: 9000 },
+    { id: "item_organik", name: "Pupuk Organik Granul", category_id: "unit_pupuk", stock_quantity: 150, unit: "sak", cost_price: 70000, selling_price: 90000 },
+    { id: "item_karung", name: "Karung Plastik 50kg", category_id: "unit_pemasaran", stock_quantity: 500, unit: "pcs", cost_price: 1800, selling_price: 3000 },
+  ];
+  const tiers: Record<DemoLevel, string[]> = {
+    pemula: ["item_urea", "item_npk"],
+    menengah: ["item_urea", "item_npk", "item_benih", "item_organik"],
+    lanjutan: ["item_urea", "item_npk", "item_benih", "item_paracetamol", "item_amoxicillin", "item_organik", "item_karung"],
+  };
+  const tierIds = tiers[level];
+  for (const item of allItems) {
+    if (!tierIds.includes(item.id)) continue;
+    await db.execute(
+      `INSERT INTO inventory_items (id, name, category_id, stock_quantity, unit, cost_price, selling_price)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [item.id, item.name, item.category_id, item.stock_quantity, item.unit, item.cost_price, item.selling_price],
+    );
+  }
+}
+
+export async function seedDemoCooperative(): Promise<void> {
+  await seedDemoCooperativeAtLevel("lanjutan");
 }
 
 export async function clearDemoCooperative(): Promise<void> {

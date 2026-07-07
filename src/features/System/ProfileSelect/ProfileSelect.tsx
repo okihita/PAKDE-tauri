@@ -12,13 +12,15 @@ import {
   XCircle,
   ShieldCheck,
   GameController,
+  Trophy,
 } from "@phosphor-icons/react";
 import { getDb } from "@/db";
 import type { CooperativeProfile } from "@/types";
 import { sfx } from "./sfx";
 import { bgMusic } from "./music";
 import CreateProfileDialog from "./CreateProfileDialog";
-import { seedDemoCooperative, clearDemoCooperative, isDemoSeeded } from "@/db/init";
+import { seedDemoCooperativeAtLevel } from "@/db/init";
+import type { DemoLevel } from "@/db/init";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 
@@ -38,11 +40,44 @@ const REAL_LOGIN = "Sudah punya akun?";
 const LOGIN_LINK = "Masuk";
 const COOP_LIST_HEADING = "Koperasi Anda";
 const COOP_COUNT_SUFFIX = "koperasi";
+const DEMO_TIER_HEADING = "Pilih Level Demo";
+const DEMO_TIER_COUNT = "3 level";
+const DEMO_TIER_START = "Mulai";
+
+const DEMO_TIERS: { level: DemoLevel; title: string; desc: string; color: string; border: string; bg: string; text: string }[] = [
+  {
+    level: "pemula",
+    title: "Pemula",
+    desc: "10 anggota · 1 unit usaha · 8 modul — Cocok untuk koperasi kecil yang baru memulai.",
+    color: "emerald",
+    border: "border-emerald-800/50",
+    bg: "bg-emerald-950/30",
+    text: "text-emerald-400",
+  },
+  {
+    level: "menengah",
+    title: "Menengah",
+    desc: "30 anggota · 2 unit usaha · 12 modul — Untuk koperasi yang sedang berkembang.",
+    color: "amber",
+    border: "border-amber-800/50",
+    bg: "bg-amber-950/30",
+    text: "text-amber-400",
+  },
+  {
+    level: "lanjutan",
+    title: "Lanjutan",
+    desc: "50 anggota · 3 unit usaha · 16 modul — Koperasi lengkap dengan semua fitur.",
+    color: "brand",
+    border: "border-brand/40",
+    bg: "bg-brand/10",
+    text: "text-brand",
+  },
+];
 const DEMO_TITLE = "Coba Demo";
 const DEMO_DESC = "Koperasi Maju Bersama — 50 anggota · 3 unit usaha · 16 modul siap dijelajahi.";
 const DEMO_ACTION = "Mulai Demo";
-const DEMO_BADGE = "🎮 Mode Eksplorasi";
-const REAL_BADGE = "🏆 Mulai dari 0";
+const DEMO_BADGE = "Mode Eksplorasi";
+const REAL_BADGE = "Mulai dari 0";
 const OR_TEXT = "atau";
 
 const SLIDESHOW_IMAGES = [
@@ -70,9 +105,9 @@ export default function ProfileSelect({ onProfileSelect }: ProfileSelectProps) {
   const [loading, setLoading] = useState(true);
   const [soundOn, setSoundOn] = useState(sfx.enabled);
   const [musicOn, setMusicOn] = useState(bgMusic.enabled);
-  const [demoSeeded, setDemoSeeded] = useState(false);
   const [slideIndex, setSlideIndex] = useState(0);
   const [showCoopList, setShowCoopList] = useState(false);
+  const [showDemoTiers, setShowDemoTiers] = useState(false);
 
   // Slideshow loop
   useEffect(() => {
@@ -93,7 +128,6 @@ export default function ProfileSelect({ onProfileSelect }: ProfileSelectProps) {
       try {
         setLoading(true);
         await loadProfiles();
-        setDemoSeeded(await isDemoSeeded());
       } catch (e) {
         console.error(e);
       } finally {
@@ -140,27 +174,16 @@ export default function ProfileSelect({ onProfileSelect }: ProfileSelectProps) {
     sfx.playSoftThud(100, 0.15);
   };
 
-  const handleDemoToggle = async () => {
+  const handleDemoEnter = async (level: DemoLevel) => {
     try {
       const db = await getDb();
-      if (demoSeeded) {
-        await clearDemoCooperative();
-        setDevResult({ open: true, ok: true, message: "Demo account removed." });
-        await loadProfiles();
-        setDemoSeeded(false);
-      } else {
-        await seedDemoCooperative();
-        const rows = await db.select<CooperativeProfile[]>("SELECT * FROM cooperatives WHERE id = 'kdp-001'");
-        if (rows.length > 0) {
-          sfx.playChime();
-          setTimeout(() => {
-            onProfileSelect(rows[0]);
-          }, 280);
-          return;
-        }
-        setDevResult({ open: true, ok: true, message: "Demo account created." });
-        await loadProfiles();
-        setDemoSeeded(true);
+      await seedDemoCooperativeAtLevel(level);
+      const rows = await db.select<CooperativeProfile[]>("SELECT * FROM cooperatives WHERE id = 'kdp-001'");
+      if (rows.length > 0) {
+        sfx.playChime();
+        setTimeout(() => {
+          onProfileSelect(rows[0]);
+        }, 280);
       }
     } catch (e) {
       console.error("[Demo] Failed:", e);
@@ -230,8 +253,8 @@ export default function ProfileSelect({ onProfileSelect }: ProfileSelectProps) {
         </div>
       </div>
 
-      {/* Middle: Hero Two-Box + optional cooperative list */}
-      <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-6 w-full max-w-5xl mx-auto overflow-y-auto">
+      {/* Middle: Hero Two-Box + submenus */}
+      <div className="relative z-10 flex-1 flex flex-col items-center justify-start pt-[10vh] px-6 w-full max-w-5xl mx-auto overflow-y-auto">
         {loading ? (
           <div className="text-center py-12 text-xxs font-mono text-brand animate-pulse">{t("common.loading")}</div>
         ) : (
@@ -254,6 +277,7 @@ export default function ProfileSelect({ onProfileSelect }: ProfileSelectProps) {
                     if ((e.target as HTMLElement).closest("[data-login-link]")) return;
                     handleUserInteraction();
                     if (profiles.length > 0) {
+                      setShowDemoTiers(false);
                       setShowCoopList((prev) => !prev);
                     } else {
                       sfx.playChime();
@@ -261,7 +285,7 @@ export default function ProfileSelect({ onProfileSelect }: ProfileSelectProps) {
                     }
                   }}
                   onMouseEnter={handleRealHover}
-                  className="group relative w-full sm:w-72 rounded-2xl border-2 border-slate-700 bg-slate-900/80 backdrop-blur-md p-6 cursor-pointer hover:border-brand/60 hover:bg-slate-900/95 hover:scale-[1.03] hover:shadow-[0_0_40px_rgba(16,185,129,0.12)] transition-all duration-300 text-left focus:outline-none focus:ring-2 focus:ring-brand/50"
+                  className="group relative w-full sm:w-72 min-h-[260px] rounded-2xl border-2 border-slate-700 bg-slate-900/80 backdrop-blur-md p-6 cursor-pointer hover:border-brand/60 hover:bg-slate-900/95 hover:scale-[1.03] hover:shadow-[0_0_40px_rgba(16,185,129,0.12)] transition-all duration-300 text-left flex flex-col justify-between focus:outline-none focus:ring-2 focus:ring-brand/50"
                 >
                   <div className="flex items-center gap-3 mb-4">
                     <div className="w-10 h-10 rounded-xl bg-brand/10 border border-brand/30 flex items-center justify-center shrink-0 group-hover:bg-brand/20 transition-colors">
@@ -269,7 +293,7 @@ export default function ProfileSelect({ onProfileSelect }: ProfileSelectProps) {
                     </div>
                     <div>
                       <h3 className="text-sm font-bold text-white">{REAL_TITLE}</h3>
-                      <p className="text-xxxs text-slate-500 mt-0.5">{REAL_BADGE}</p>
+                      <p className="text-xxxs text-slate-500 mt-0.5 flex items-center gap-1"><Trophy className="h-3 w-3" />{REAL_BADGE}</p>
                     </div>
                   </div>
                   <p className="text-xxs text-slate-400 leading-relaxed mb-5">{REAL_DESC}</p>
@@ -292,6 +316,7 @@ export default function ProfileSelect({ onProfileSelect }: ProfileSelectProps) {
                       onClick={(e) => {
                         e.stopPropagation();
                         handleUserInteraction();
+                        setShowDemoTiers(false);
                         setShowCoopList((prev) => !prev);
                       }}
                     >
@@ -307,13 +332,14 @@ export default function ProfileSelect({ onProfileSelect }: ProfileSelectProps) {
                 <div
                   role="button"
                   tabIndex={0}
-                  onKeyDown={(e) => e.key === "Enter" && handleDemoToggle()}
+                  onKeyDown={(e) => e.key === "Enter" && (setShowCoopList(false), setShowDemoTiers((prev) => !prev))}
                   onClick={() => {
                     handleUserInteraction();
-                    handleDemoToggle();
+                    setShowCoopList(false);
+                    setShowDemoTiers((prev) => !prev);
                   }}
                   onMouseEnter={handleCardHover}
-                  className="group relative w-full sm:w-72 rounded-2xl border-2 border-amber-800/50 bg-amber-950/30 backdrop-blur-md p-6 cursor-pointer hover:border-amber-600/60 hover:bg-amber-950/50 hover:scale-[1.03] hover:shadow-[0_0_40px_rgba(245,158,11,0.12)] transition-all duration-300 text-left focus:outline-none focus:ring-2 focus:ring-amber-500/50"
+                  className="group relative w-full sm:w-72 min-h-[260px] rounded-2xl border-2 border-amber-800/50 bg-amber-950/30 backdrop-blur-md p-6 cursor-pointer hover:border-amber-600/60 hover:bg-amber-950/50 hover:scale-[1.03] hover:shadow-[0_0_40px_rgba(245,158,11,0.12)] transition-all duration-300 text-left flex flex-col justify-between focus:outline-none focus:ring-2 focus:ring-amber-500/50"
                 >
                   <div className="flex items-center gap-3 mb-4">
                     <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center shrink-0 group-hover:bg-amber-500/20 transition-colors">
@@ -321,7 +347,7 @@ export default function ProfileSelect({ onProfileSelect }: ProfileSelectProps) {
                     </div>
                     <div>
                       <h3 className="text-sm font-bold text-amber-200">{DEMO_TITLE}</h3>
-                      <p className="text-xxxs text-amber-600 mt-0.5">{DEMO_BADGE}</p>
+                      <p className="text-xxxs text-amber-600 mt-0.5 flex items-center gap-1"><GameController className="h-3 w-3" />{DEMO_BADGE}</p>
                     </div>
                   </div>
                   <p className="text-xxs text-amber-300/70 leading-relaxed mb-5">{DEMO_DESC}</p>
@@ -332,9 +358,43 @@ export default function ProfileSelect({ onProfileSelect }: ProfileSelectProps) {
               </div>
             </div>
 
+            {/* ── Submenu area (reserved space, prevents layout shift) ── */}
+            <div className="w-full max-w-3xl mx-auto min-h-[220px] mt-6">
+              {/* Demo tier cards */}
+              {showDemoTiers && (
+                <div className="animate-in fade-in slide-in-from-top-2 duration-300">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-xs font-bold text-amber-400 uppercase tracking-wider">{DEMO_TIER_HEADING}</h3>
+                  <span className="text-xxs text-amber-700">{DEMO_TIER_COUNT}</span>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  {DEMO_TIERS.map((tier) => (
+                    <div
+                      key={tier.level}
+                      role="button"
+                      tabIndex={0}
+                      onKeyDown={(e) => e.key === "Enter" && handleDemoEnter(tier.level)}
+                      onClick={() => {
+                        handleUserInteraction();
+                        handleDemoEnter(tier.level);
+                      }}
+                      onMouseEnter={handleCardHover}
+                      className={`group relative rounded-xl border-2 ${tier.border} ${tier.bg} backdrop-blur-md p-4 cursor-pointer hover:scale-[1.03] hover:shadow-[0_0_25px_rgba(245,158,11,0.10)] transition-all duration-200 text-left focus:outline-none focus:ring-2 focus:ring-amber-500/50`}
+                    >
+                      <h4 className={`text-sm font-bold ${tier.text}`}>{tier.title}</h4>
+                      <p className="mt-1.5 text-xxs leading-relaxed text-slate-500">{tier.desc}</p>
+                      <div className={`mt-3 rounded-md border ${tier.border} ${tier.bg} px-3 py-1.5 text-xxs font-bold ${tier.text} text-center group-hover:brightness-110 transition-all`}>
+                        {DEMO_TIER_START}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* ── Cooperative list (shown when "Masuk" clicked) ── */}
             {showCoopList && profiles.length > 0 && (
-              <div className="w-full mt-8 animate-in fade-in slide-in-from-top-2 duration-300">
+              <div className="animate-in fade-in slide-in-from-top-2 duration-300">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">{COOP_LIST_HEADING}</h3>
                   <span className="text-xxs text-slate-600">
@@ -438,6 +498,7 @@ export default function ProfileSelect({ onProfileSelect }: ProfileSelectProps) {
                 </div>
               </div>
             )}
+            </div>
           </>
         )}
       </div>

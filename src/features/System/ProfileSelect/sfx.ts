@@ -155,4 +155,13 @@ class RetroAudioEngine {
   }
 }
 
-export const sfx = new RetroAudioEngine();
+// HMR-safe singleton: reuse existing instance on hot reload
+const SFX_KEY = "__pakde_sfx__";
+const sfxWin = window as typeof window & { [SFX_KEY]?: RetroAudioEngine };
+if (!sfxWin[SFX_KEY]) {
+  sfxWin[SFX_KEY] = new RetroAudioEngine();
+} else {
+  const saved = localStorage.getItem("pakde-splash-sfx");
+  sfxWin[SFX_KEY].enabled = saved !== "false";
+}
+export const sfx = sfxWin[SFX_KEY]!;

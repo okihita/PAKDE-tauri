@@ -1,5 +1,6 @@
 // Background music controller for Profile Selection screen
 // Always plays; mute/unmute just fades volume between 0 and normal level.
+// Uses window to survive Vite HMR (avoids re-creating Audio on hot reload).
 class BgMusicController {
   private audio: HTMLAudioElement | null = null;
   public enabled = true;
@@ -22,7 +23,6 @@ class BgMusicController {
       this.audio = new Audio("/audio/bg.mp3");
       this.audio.loop = true;
       this.audio.volume = this.enabled ? this.NORMAL_VOLUME : this.MUTED_VOLUME;
-      // Attempt autoplay (works in Tauri WebView; silently fails if blocked)
       this.audio.play().catch(() => {});
     } catch {
       // Audio init may fail if user hasn't interacted yet
@@ -37,7 +37,6 @@ class BgMusicController {
     }
   }
 
-  /** Toggle between normal volume and muted. Track never stops playing. */
   toggleMusic(forceState?: boolean): boolean {
     this.enabled = forceState !== undefined ? forceState : !this.enabled;
     localStorage.setItem("pakde-bgmusic", this.enabled.toString());
@@ -45,7 +44,6 @@ class BgMusicController {
     if (!this.audio) this.initAudio();
     if (!this.audio) return this.enabled;
 
-    // Ensure it's playing (may have been stopped by browser policy)
     if (this.audio.paused) {
       this.audio.play().catch(() => {});
     }
@@ -54,7 +52,6 @@ class BgMusicController {
     return this.enabled;
   }
 
-  /** Clean up on hot reload / teardown. */
   destroy() {
     if (this.audio) {
       this.audio.pause();
@@ -65,4 +62,14 @@ class BgMusicController {
   }
 }
 
-export const bgMusic = new BgMusicController();
+// HMR-safe singleton: reuse existing instance on hot reload
+const KEY = "__pakde_bgmusic__";
+const win = window as typeof window & { [KEY]?: BgMusicController };
+if (!win[KEY]) {
+  win[KEY] = new BgMusicController();
+} else {
+  // Restore volume state (enabled flag may have changed via localStorage)
+  const saved = localStorage.getItem("pakde-bgmusic");
+  win[KEY].enabled = saved !== "false";
+}
+export const bgMusic = win[KEY]!;
