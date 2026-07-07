@@ -72,4 +72,5 @@ if (!win[KEY]) {
   const saved = localStorage.getItem("pakde-bgmusic");
   win[KEY].enabled = saved !== "false";
 }
-export const bgMusic = win[KEY]!;
+// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+export const bgMusic: BgMusicController = win[KEY]!;

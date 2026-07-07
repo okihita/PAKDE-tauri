@@ -26,7 +26,10 @@ class RetroAudioEngine {
       const ctx = this.ctx;
       if (!ctx) return;
       // Resume on first interaction so subsequent calls work immediately
-      if (ctx.state === "suspended") { ctx.resume().catch(() => {}); return; }
+      if (ctx.state === "suspended") {
+        ctx.resume().catch(() => {});
+        return;
+      }
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.type = type;
@@ -49,7 +52,10 @@ class RetroAudioEngine {
       this.init();
       const ctx = this.ctx;
       if (!ctx) return;
-      if (ctx.state === "suspended") { ctx.resume().catch(() => {}); return; }
+      if (ctx.state === "suspended") {
+        ctx.resume().catch(() => {});
+        return;
+      }
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.type = "triangle";
@@ -72,7 +78,10 @@ class RetroAudioEngine {
       this.init();
       const ctx = this.ctx;
       if (!ctx) return;
-      if (ctx.state === "suspended") { ctx.resume().catch(() => {}); return; }
+      if (ctx.state === "suspended") {
+        ctx.resume().catch(() => {});
+        return;
+      }
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.type = "square";
@@ -94,7 +103,10 @@ class RetroAudioEngine {
       this.init();
       const ctx = this.ctx;
       if (!ctx) return;
-      if (ctx.state === "suspended") { ctx.resume().catch(() => {}); return; }
+      if (ctx.state === "suspended") {
+        ctx.resume().catch(() => {});
+        return;
+      }
       const now = ctx.currentTime;
       // Soft, pleasant C-major arpeggio (C5 -> E5 -> G5 -> C6) using triangle wave for warmth
       const notes = [523.25, 659.25, 783.99, 1046.5];
@@ -123,7 +135,10 @@ class RetroAudioEngine {
       this.init();
       const ctx = this.ctx;
       if (!ctx) return;
-      if (ctx.state === "suspended") { ctx.resume().catch(() => {}); return; }
+      if (ctx.state === "suspended") {
+        ctx.resume().catch(() => {});
+        return;
+      }
       const now = ctx.currentTime;
       // Ultra-short soft click slide
       const osc = ctx.createOscillator();
@@ -164,4 +179,5 @@ if (!sfxWin[SFX_KEY]) {
   const saved = localStorage.getItem("pakde-splash-sfx");
   sfxWin[SFX_KEY].enabled = saved !== "false";
 }
+// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 export const sfx = sfxWin[SFX_KEY]!;
