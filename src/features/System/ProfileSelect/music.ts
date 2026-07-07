@@ -4,7 +4,7 @@
 class BgMusicController {
   private audio: HTMLAudioElement | null = null;
   public enabled = true;
-  private readonly NORMAL_VOLUME = 0.12;
+  private readonly NORMAL_VOLUME = 1.0;
   private readonly MUTED_VOLUME = 0;
 
   constructor() {
