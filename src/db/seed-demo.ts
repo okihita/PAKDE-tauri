@@ -2,8 +2,11 @@
 
 import { getDb } from "./index";
 
+/** Well-known UUID for the demo cooperative — referenced by both seed logic and UI. */
+export const DEMO_COOP_UUID = "00000000-0000-0000-0000-000000000001";
+
 const DEMO_COOP = {
-  id: "kdp-001",
+  id: DEMO_COOP_UUID,
   name: "Koperasi Maju Bersama",
   regency: "Mojokerto",
   province: "Jawa Timur",
@@ -119,7 +122,8 @@ export async function isDemoSeeded(): Promise<boolean> {
 
 async function seedDemoCoaAccounts(db: Awaited<ReturnType<typeof getDb>>): Promise<void> {
   const existing = await db.select<Array<{ code: string }>>(
-    "SELECT code FROM coa_accounts WHERE cooperative_id = 'kdp-001' LIMIT 1",
+    "SELECT code FROM coa_accounts WHERE cooperative_id = ? LIMIT 1",
+    [DEMO_COOP.id],
   );
   if (existing.length > 0) return;
 
@@ -151,8 +155,8 @@ async function seedDemoCoaAccounts(db: Awaited<ReturnType<typeof getDb>>): Promi
   for (const acc of accounts) {
     await db.execute(
       `INSERT INTO coa_accounts (code, cooperative_id, name, type, normal_balance, balance)
-       VALUES (?, 'kdp-001', ?, ?, ?, ?)`,
-      [acc.code, acc.name, acc.type, acc.normal_balance, acc.balance],
+       VALUES (?, ?, ?, ?, ?, ?)`,
+      [acc.code, DEMO_COOP.id, acc.name, acc.type, acc.normal_balance, acc.balance],
     );
   }
 }

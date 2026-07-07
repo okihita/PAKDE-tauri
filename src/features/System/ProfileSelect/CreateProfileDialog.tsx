@@ -65,7 +65,7 @@ export default function CreateProfileDialog({ open, onOpenChange, onProfileCreat
 
     try {
       const db = await getDb();
-      const newId = `kdp-${Date.now().toString().slice(-6)}`;
+      const newId = crypto.randomUUID();
 
       const units: string[] = [];
       if (formData.unitPupuk) units.push("unit_pupuk");

@@ -16,7 +16,7 @@ import { sfx } from "./sfx";
 import { bgMusic } from "./music";
 import CreateProfileDialog from "./CreateProfileDialog";
 import CooperativeCardList from "./CooperativeCardList";
-import { seedDemoCooperativeAtLevel, type DemoLevel } from "@/db/seed-demo";
+import { seedDemoCooperativeAtLevel, DEMO_COOP_UUID, type DemoLevel } from "@/db/seed-demo";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 
@@ -179,7 +179,7 @@ export default function ProfileSelect({ onProfileSelect }: ProfileSelectProps) {
     try {
       const db = await getDb();
       await seedDemoCooperativeAtLevel(level);
-      const rows = await db.select<CooperativeProfile[]>("SELECT * FROM cooperatives WHERE id = 'kdp-001'");
+      const rows = await db.select<CooperativeProfile[]>("SELECT * FROM cooperatives WHERE id = ?", [DEMO_COOP_UUID]);
       if (rows.length > 0) {
         sfx.playChime();
         setTimeout(() => {

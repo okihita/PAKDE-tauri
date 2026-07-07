@@ -4,6 +4,18 @@
 
 Every cooperative is a **tenant**. All data rows belong to exactly one cooperative. The `cooperative_id` column is **never optional** on any table that holds business data.
 
+## UUIDs for Primary Keys
+
+All entity IDs use UUIDs v4 (`crypto.randomUUID()`). This eliminates collision risk when syncing across devices.
+
+| Entity | ID Format | Example |
+|---|---|---|
+| Demo cooperative | Fixed UUID | `00000000-0000-0000-0000-000000000001` |
+| Real cooperatives | Random UUID | `a1b2c3d4-e5f6-7890-abcd-ef1234567890` |
+| Future: members, users, etc. | Random UUID | same pattern |
+
+The demo UUID is a **well-known constant** exported from `src/db/seed-demo.ts` as `DEMO_COOP_UUID`. All code that references the demo cooperative uses this constant — never a hardcoded string.
+
 ## Composite Primary Keys
 
 Tables that logically belong to a cooperative use `(id, cooperative_id)` as the primary key, **not** `id` alone. This allows two cooperatives to independently create objects with the same logical identifier.
