@@ -31,6 +31,41 @@ export async function initDb(): Promise<void> {
   // SQLite disables FK enforcement by default. Must enable per connection.
   await db.execute("PRAGMA foreign_keys = ON;");
 
+  // ── Schema versioning ───────────────────────────────────────
+  //
+  // `CREATE TABLE IF NOT EXISTS` is a no-op for a table already present
+  // on disk, so it can never add a column that was introduced after a
+  // database was first created (this is what triggered the
+  // "cooperatives has no column named is_demo" error). Rather than a
+  // per-column migration, we gate a full reset on a schema version:
+  // when the stored version is older than SCHEMA_VERSION we drop every
+  // user table and recreate it from the authoritative CREATE statements
+  // below. Deterministic, and no separate migration helpers to maintain.
+  //
+  // NOTE: this wipes all data on a version bump — acceptable for the
+  // current dev/demo stage. Bump SCHEMA_VERSION whenever the schema in
+  // this file changes incompatibly.
+  const SCHEMA_VERSION = 2;
+
+  await db.execute(`CREATE TABLE IF NOT EXISTS _schema_meta (key TEXT PRIMARY KEY, value TEXT);`);
+  const meta = await db.select<Array<{ value: string }>>(
+    "SELECT value FROM _schema_meta WHERE key = 'schema_version';",
+  );
+  const currentVersion = meta.length ? Number(meta[0].value) : 0;
+
+  if (currentVersion < SCHEMA_VERSION) {
+    const tables = await db.select<Array<{ name: string }>>(
+      "SELECT name FROM sqlite_master WHERE type = 'table' AND name != '_schema_meta';",
+    );
+    for (const t of tables) {
+      await db.execute(`DROP TABLE IF EXISTS "${t.name}";`);
+    }
+    await db.execute("INSERT OR REPLACE INTO _schema_meta (key, value) VALUES ('schema_version', ?);", [
+      String(SCHEMA_VERSION),
+    ]);
+    console.warn(`[initDb] Schema reset: ${currentVersion} → ${SCHEMA_VERSION} (all tables recreated).`);
+  }
+
   // ── 2. Core entity tables ────────────────────────────────────
 
   // cooperatives — the root entity. All other tables FK back to this.

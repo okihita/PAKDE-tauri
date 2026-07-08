@@ -515,9 +515,12 @@ export default function ProfileSelect({ onProfileSelect }: ProfileSelectProps) {
               seeding={seeding}
               onStart={async () => {
                 setSeeding(true);
-                await handleDemoEnter(tier.level);
-                setSeeding(false);
-                setSelectedTier(null);
+                try {
+                  await handleDemoEnter(tier.level);
+                } finally {
+                  setSeeding(false);
+                  setSelectedTier(null);
+                }
               }}
               onClose={() => setSelectedTier(null)}
             />
