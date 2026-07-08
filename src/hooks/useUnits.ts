@@ -1,3 +1,4 @@
+import { getActiveCoopId } from "@/db/active-coop";
 import { useState, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { getDb } from "@/db";
@@ -17,6 +18,7 @@ export interface UnitRevenueRow {
 export function useUnits() {
   const { t } = useTranslation();
   const toast = useToast();
+  const coopId = getActiveCoopId();
 
   const [activeUnitIds, setActiveUnitIds] = useState<string[]>([]);
   const [categoriesList, setCategoriesList] = useState<BusinessCategory[]>([]);
@@ -30,7 +32,7 @@ export function useUnits() {
 
       // 1. Get active cooperative profile business units array
       const coopRes = await db.select<Array<{ business_units: string }>>(
-        "SELECT business_units FROM cooperatives WHERE id = 'kdp-001' LIMIT 1",
+        `SELECT business_units FROM cooperatives WHERE id = ${coopId} LIMIT 1`,
       );
       let activeIds: string[] = [];
       if (coopRes.length > 0 && coopRes[0].business_units) {
@@ -91,7 +93,7 @@ export function useUnits() {
       }
 
       await db.execute(
-        "UPDATE cooperatives SET business_units = ?, updated_at = datetime('now') WHERE id = 'kdp-001'",
+        "UPDATE cooperatives SET business_units = ?, updated_at = datetime('now') WHERE id = ${coopId}",
         [JSON.stringify(nextActiveIds)],
       );
 
@@ -119,7 +121,7 @@ export function useUnits() {
       const newUnitId = `unit_${Date.now()}`;
 
       // Insert category
-      await db.execute("INSERT INTO categories (id, cooperative_id, name, icon) VALUES (?, 'kdp-001', ?, ?)", [
+      await db.execute(`INSERT INTO categories (id, cooperative_id, name, icon) VALUES (?, ${coopId}, ?, ?)`, [
         newUnitId,
         name.trim(),
         icon.trim(),
@@ -128,7 +130,7 @@ export function useUnits() {
       // Append to active business units
       const nextActiveIds = [...activeUnitIds, newUnitId];
       await db.execute(
-        "UPDATE cooperatives SET business_units = ?, updated_at = datetime('now') WHERE id = 'kdp-001'",
+        "UPDATE cooperatives SET business_units = ?, updated_at = datetime('now') WHERE id = ${coopId}",
         [JSON.stringify(nextActiveIds)],
       );
 
