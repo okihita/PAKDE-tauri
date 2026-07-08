@@ -51,6 +51,8 @@ const LBL_LOGOUT_CONFIRM = "Apakah Anda yakin ingin keluar dari profil koperasi 
 const LBL_CANCEL = "Batal";
 const LBL_LOGOUT = "Keluar";
 const LBL_QUIT = "Tutup Aplikasi";
+const LBL_QUIT_BTN = "QUIT";
+const LBL_QUIT_CONFIRM = "Apakah Anda yakin ingin menutup aplikasi?";
 
 function quitApp() {
   exit(0);
@@ -99,6 +101,7 @@ function AppContent() {
   const [ewsAlerts, _setEwsAlerts] = useState<EwsAlert[]>([]);
   const [memberCount, _setMemberCount] = useState(0);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [showQuitConfirm, setShowQuitConfirm] = useState(false);
 
   // DB init
   useEffect(() => {
@@ -134,9 +137,13 @@ function AppContent() {
     const handleKeyDown = (e: KeyboardEvent) => {
       // Escape: back/exit/logout
       if (e.key === "Escape") {
-        if (appState === "profile_select") {
+        if (appState === "profile_select" && !showQuitConfirm) {
           e.preventDefault();
-          quitApp();
+          setShowQuitConfirm(true);
+          return;
+        }
+        if (appState === "profile_select" && showQuitConfirm) {
+          setShowQuitConfirm(false);
           return;
         }
         if (appState === "main" && !showLogoutConfirm) {
@@ -179,7 +186,7 @@ function AppContent() {
 
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [appState, showLogoutConfirm]);
+  }, [appState, showLogoutConfirm, showQuitConfirm]);
 
   // Load dashboard data on mount
   useEffect(() => {
@@ -293,12 +300,45 @@ function AppContent() {
           />
           {/* Quit button */}
           <button
-            onClick={quitApp}
-            className="absolute top-4 left-4 z-20 p-2 bg-slate-900/80 border border-slate-800 rounded-lg hover:border-danger/40 hover:text-danger transition-colors shadow-md backdrop-blur-md text-slate-500"
+            onClick={() => setShowQuitConfirm(true)}
+            className="absolute bottom-6 right-6 z-20 px-3 py-1.5 bg-slate-900/80 border border-slate-800 rounded-lg hover:border-danger/40 hover:text-danger transition-colors shadow-md backdrop-blur-md text-xxs font-mono font-bold text-slate-500"
             title={LBL_QUIT}
           >
-            <XCircle className="h-4 w-4" />
+            {LBL_QUIT_BTN}
           </button>
+
+          {/* Quit confirmation dialog */}
+          <Dialog open={showQuitConfirm} onOpenChange={setShowQuitConfirm}>
+            <DialogContent className="bg-slate-900 border border-slate-800 max-w-sm shadow-2xl">
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2 text-sm font-bold text-slate-200">
+                  <XCircle className="h-5 w-5 text-danger shrink-0" />
+                  {LBL_QUIT}
+                </DialogTitle>
+              </DialogHeader>
+              <p className="text-xs text-slate-400 leading-relaxed py-2">{LBL_QUIT_CONFIRM}</p>
+              <DialogFooter className="flex gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => setShowQuitConfirm(false)}
+                  className="flex-1 border-slate-800 bg-slate-950 text-slate-300 hover:text-white text-xs h-8"
+                >
+                  <XCircle className="h-3.5 w-3.5 mr-1" />
+                  {LBL_CANCEL}
+                </Button>
+                <Button
+                  onClick={() => {
+                    setShowQuitConfirm(false);
+                    quitApp();
+                  }}
+                  className="flex-1 bg-danger hover:bg-danger/90 text-white font-bold text-xs h-8"
+                >
+                  <SignOut className="h-3.5 w-3.5 mr-1" />
+                  {LBL_QUIT}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
     );
