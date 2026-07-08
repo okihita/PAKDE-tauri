@@ -183,4 +183,58 @@ export default {
       };
     },
   },
+
+  // ── No deprecated Tailwind classes ──────────────────────────────
+  "no-deprecated-tailwind": {
+    meta: {
+      type: "suggestion",
+      docs: {
+        description: "Flag Tailwind classes that have been deprecated/renamed in newer versions.",
+      },
+    },
+    create(context) {
+      /** @type {{ old: RegExp; newName: string }[]} */
+      const DEPRECATED = [
+        { old: /\bflex-shrink-0\b/g, newName: "shrink-0" },
+        { old: /\bflex-shrink\b(?!-0)/g, newName: "shrink" },
+        { old: /\bflex-grow-0\b/g, newName: "grow-0" },
+        { old: /\bflex-grow\b(?!-0)/g, newName: "grow" },
+        { old: /\bbg-gradient-to-r\b/g, newName: "bg-linear-to-r" },
+        { old: /\bbg-gradient-to-l\b/g, newName: "bg-linear-to-l" },
+        { old: /\bbg-gradient-to-t\b/g, newName: "bg-linear-to-t" },
+        { old: /\bbg-gradient-to-b\b/g, newName: "bg-linear-to-b" },
+      ];
+
+      function check(text, node) {
+        if (typeof text !== "string") return;
+        for (const { old, newName } of DEPRECATED) {
+          const match = text.match(old);
+          if (match) {
+            context.report({
+              node,
+              message: `Deprecated class "${match[0]}" → use "${newName}" instead.`,
+            });
+            return; // one violation per node
+          }
+        }
+      }
+
+      return {
+        Literal(node) {
+          const parent = node.parent;
+          if (parent?.type === "JSXAttribute" && parent.name?.name === "className") {
+            check(node.value, node);
+          }
+        },
+        TemplateLiteral(node) {
+          const parent = node.parent;
+          if (parent?.type === "JSXAttribute" && parent.name?.name === "className") {
+            for (const quasis of node.quasis) {
+              check(quasis.value.raw, quasis);
+            }
+          }
+        },
+      };
+    },
+  },
 };

@@ -9,12 +9,12 @@ export default function SplashScreen() {
       className="flex h-screen flex-col items-center justify-center relative overflow-hidden bg-cover bg-center text-foreground text-center animate-in fade-in duration-500"
       style={{ backgroundImage: "url('/background.jpg')" }}
     >
-      <div className="absolute inset-0 bg-slate-950/35 backdrop-blur-[1px] bg-gradient-to-b from-slate-950/10 via-slate-950/45 to-slate-950/75" />
+      <div className="absolute inset-0 bg-slate-950/35 backdrop-blur-[1px] bg-linear-to-b from-slate-950/10 via-slate-950/45 to-slate-950/75" />
 
       <div className="relative z-10 flex flex-col items-center gap-5">
         <div className="relative">
           <div className="absolute inset-0 bg-success/20 blur-xl rounded-full" />
-          <div className="relative text-4xl font-black bg-gradient-to-r from-brand to-teal-400 bg-clip-text text-transparent px-6 py-2 border-[0.5px] border-success/30 rounded-2xl bg-success/20 shadow-[0_0_20px_hsl(var(--brand) / 0.15)]">
+          <div className="relative text-4xl font-black bg-linear-to-r from-brand to-teal-400 bg-clip-text text-transparent px-6 py-2 border-[0.5px] border-success/30 rounded-2xl bg-success/20 shadow-[0_0_20px_hsl(var(--brand) / 0.15)]">
             {t("splash.brand")}
           </div>
         </div>

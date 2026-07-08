@@ -46,6 +46,8 @@ export default tseslint.config(
       "local/no-hardcoded-labels": "error",
       // Scalable fonts (no px)
       "local/no-arbitrary-px-font-size": "error",
+      // Deprecated Tailwind classes
+      "local/no-deprecated-tailwind": "error",
       // TypeScript strictness
       "@typescript-eslint/no-explicit-any": "warn",
       "@typescript-eslint/consistent-type-imports": [

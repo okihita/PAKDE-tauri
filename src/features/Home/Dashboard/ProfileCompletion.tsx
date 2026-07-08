@@ -16,7 +16,7 @@ interface FieldDef {
 }
 
 const HEADING = "Lengkapi Profil Koperasi";
-const REWARD_MSG = "Badge \"Koperasi Lengkap\" terbuka!";
+const REWARD_MSG = 'Badge "Koperasi Lengkap" terbuka!';
 const BTN_SAVE = "Simpan";
 const POINTS_LABEL = "poin";
 
@@ -25,12 +25,32 @@ const FIELDS: FieldDef[] = [
   { key: "province", label: "Lokasi", pts: 10, check: (p) => !!p.province },
   { key: "legal_id", label: "Badan Hukum", pts: 5, check: (p) => !!p.legal_id },
   { key: "address", label: "Alamat & Kontak", pts: 5, check: (p) => !!(p.address || p.phone || p.email) },
-  { key: "officers", label: "Pengurus", pts: 10, check: (p) => {
-    try { const o = JSON.parse(p.officers); return !!(o?.chairman || o?.secretary); } catch { return false; }
-  }},
-  { key: "business_units", label: "Unit Usaha", pts: 15, check: (p) => {
-    try { const u = JSON.parse(p.business_units); return Array.isArray(u) && u.length > 0; } catch { return false; }
-  }},
+  {
+    key: "officers",
+    label: "Pengurus",
+    pts: 10,
+    check: (p) => {
+      try {
+        const o = JSON.parse(p.officers);
+        return !!(o?.chairman || o?.secretary);
+      } catch {
+        return false;
+      }
+    },
+  },
+  {
+    key: "business_units",
+    label: "Unit Usaha",
+    pts: 15,
+    check: (p) => {
+      try {
+        const u = JSON.parse(p.business_units);
+        return Array.isArray(u) && u.length > 0;
+      } catch {
+        return false;
+      }
+    },
+  },
   { key: "founded_date", label: "Tanggal Berdiri", pts: 5, check: (p) => !!p.founded_date },
 ];
 
@@ -63,11 +83,13 @@ export default function ProfileCompletion({ profile, onUpdate }: Props) {
   const handleSave = async (field: FieldDef) => {
     setSaving(true);
     try {
-      let value: string = editValue;
+      const value: string = editValue;
       const updated = { ...profile, [field.key]: value };
       await updateCooperative(profile.id || "", { [field.key]: value });
       onUpdate(updated);
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
     setSaving(false);
     setEditing(null);
   };
@@ -99,15 +121,13 @@ export default function ProfileCompletion({ profile, onUpdate }: Props) {
               >
                 <span className="flex items-center gap-1.5">
                   {done ? (
-                    <CheckCircle className="h-3 w-3 text-brand flex-shrink-0" weight="fill" />
+                    <CheckCircle className="h-3 w-3 text-brand shrink-0" weight="fill" />
                   ) : (
-                    <Circle className="h-3 w-3 text-slate-600 flex-shrink-0" />
+                    <Circle className="h-3 w-3 text-slate-600 shrink-0" />
                   )}
                   {f.label}
                 </span>
-                <span className="text-xxxs font-mono text-slate-600">
-                  {done ? `+${f.pts}pt` : `${f.pts}pt`}
-                </span>
+                <span className="text-xxxs font-mono text-slate-600">{done ? `+${f.pts}pt` : `${f.pts}pt`}</span>
               </div>
 
               {/* Inline edit */}

@@ -162,7 +162,7 @@ export default function ProfileSelect({ onProfileSelect }: ProfileSelectProps) {
       ))}
 
       {/* Dark blur overlay */}
-      <div className="absolute inset-0 bg-slate-950/40 backdrop-blur-[2px] bg-gradient-to-b from-slate-950/20 via-slate-950/50 to-slate-950/80 z-0" />
+      <div className="absolute inset-0 bg-slate-950/40 backdrop-blur-[2px] bg-linear-to-b from-slate-950/20 via-slate-950/50 to-slate-950/80 z-0" />
 
       {/* Audio Controls (Absolute top right) */}
       <div className="absolute top-4 right-4 z-20 flex gap-1.5">
@@ -185,7 +185,7 @@ export default function ProfileSelect({ onProfileSelect }: ProfileSelectProps) {
       {/* Top: Logotype Header */}
       <div className="relative z-10 flex justify-center pt-12 animate-in fade-in slide-in-from-bottom-3 duration-300">
         <div className="text-center p-6 rounded-2xl bg-slate-950/80 border border-slate-900 backdrop-blur-lg w-fit shadow-[0_10px_35px_rgba(0,0,0,0.6)]">
-          <h1 className="text-8xl font-black bg-gradient-to-r from-brand to-teal-400 bg-clip-text text-transparent tracking-tight font-sans leading-none">
+          <h1 className="text-8xl font-black bg-linear-to-r from-brand to-teal-400 bg-clip-text text-transparent tracking-tight font-sans leading-none">
             {LOGOTYPE}
           </h1>
         </div>
@@ -444,9 +444,9 @@ export default function ProfileSelect({ onProfileSelect }: ProfileSelectProps) {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-sm font-bold">
               {devResult.ok ? (
-                <CheckCircleIcon className="h-5 w-5 text-success flex-shrink-0" />
+                <CheckCircleIcon className="h-5 w-5 text-success shrink-0" />
               ) : (
-                <XCircleIcon className="h-5 w-5 text-danger flex-shrink-0" />
+                <XCircleIcon className="h-5 w-5 text-danger shrink-0" />
               )}
               <span className={devResult.ok ? "text-success" : "text-danger"}>
                 {devResult.ok ? "Success" : "Error"}

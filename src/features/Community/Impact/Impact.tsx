@@ -185,7 +185,7 @@ export default function Impact() {
           )}
 
           {auditCompleted && (
-            <div className="p-4 rounded-xl border border-success/15 bg-gradient-to-br from-success/5 via-card to-transparent flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="p-4 rounded-xl border border-success/15 bg-linear-to-br from-success/5 via-card to-transparent flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div className="space-y-1">
                 <span className="text-xxs font-mono font-bold text-success flex items-center gap-1.5">
                   <CheckCircleIcon className="h-3.5 w-3.5 text-success" />

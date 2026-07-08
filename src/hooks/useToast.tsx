@@ -74,9 +74,9 @@ export function ToastProvider({ children }: { children: ReactNode }) {
             }`}
           >
             {t.type === "success" ? (
-              <CheckCircleIcon className="h-4 w-4 flex-shrink-0" />
+              <CheckCircleIcon className="h-4 w-4 shrink-0" />
             ) : (
-              <XCircleIcon className="h-4 w-4 flex-shrink-0" />
+              <XCircleIcon className="h-4 w-4 shrink-0" />
             )}
             <span className="font-mono">{t.message}</span>
           </div>

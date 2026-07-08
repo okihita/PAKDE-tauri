@@ -51,7 +51,7 @@ export default function CampaignBriefingDialog({ tier, seeding, onStart, onClose
             <div className="grid grid-cols-2 gap-x-4 gap-y-1">
               {tier.features.map((f) => (
                 <p key={f} className="text-xxs text-slate-500 font-mono flex items-center gap-1">
-                  <CheckCircleIcon className="h-3 w-3 text-amber-500 flex-shrink-0" /> {f}
+                  <CheckCircleIcon className="h-3 w-3 text-amber-500 shrink-0" /> {f}
                 </p>
               ))}
             </div>

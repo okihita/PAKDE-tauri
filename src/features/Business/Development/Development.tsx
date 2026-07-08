@@ -242,7 +242,7 @@ export default function Development() {
       {/* AI Recommendation Result Page */}
       {analysisCompleted && (
         <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-300">
-          <Card className="bg-card border-success/20 bg-gradient-to-br from-success/5 via-card to-transparent overflow-hidden hover-glow-card">
+          <Card className="bg-card border-success/20 bg-linear-to-br from-success/5 via-card to-transparent overflow-hidden hover-glow-card">
             <CardHeader className="pb-3 flex flex-row items-center justify-between">
               <div>
                 <span className="text-xxxs font-mono font-bold text-success uppercase tracking-widest bg-success/10 border border-success/20 px-2 py-0.5 rounded">
@@ -250,9 +250,7 @@ export default function Development() {
                 </span>
                 <h3 className="text-sm font-bold text-foreground mt-2">{t("development.preview.title")}</h3>
               </div>
-              <span className="text-xxs font-mono font-black text-success">
-                {t("development.preview.suitability")}
-              </span>
+              <span className="text-xxs font-mono font-black text-success">{t("development.preview.suitability")}</span>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="p-4 rounded-xl bg-input/40 border border-border">

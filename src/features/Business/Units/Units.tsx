@@ -100,7 +100,7 @@ export default function Units({ onTabChange }: UnitsProps) {
             return (
               <Card
                 key={unit.id}
-                className="bg-card border-success/15 bg-gradient-to-br from-success/5 via-card to-transparent overflow-hidden"
+                className="bg-card border-success/15 bg-linear-to-br from-success/5 via-card to-transparent overflow-hidden"
               >
                 <CardHeader className="pb-3 flex flex-row items-center justify-between space-y-0">
                   <div className="flex items-center gap-3">

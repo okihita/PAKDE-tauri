@@ -90,9 +90,7 @@ function LevelCard({
                 >
                   {label}
                 </span>
-                {isCurrent && (
-                  <span className="text-xxxs font-mono text-brand font-bold">{t("leveling.active")}</span>
-                )}
+                {isCurrent && <span className="text-xxxs font-mono text-brand font-bold">{t("leveling.active")}</span>}
               </div>
               <p className="text-xxs text-muted-foreground mt-0.5 truncate">{desc}</p>
             </div>
@@ -192,7 +190,7 @@ export default function Leveling({ healthScore = 0 }: Props) {
           {/* Global XP bar */}
           <div className="h-2 bg-muted rounded-full overflow-hidden">
             <div
-              className="h-full bg-gradient-to-r from-brand to-warning rounded-full transition-all duration-500"
+              className="h-full bg-linear-to-r from-brand to-warning rounded-full transition-all duration-500"
               style={{ width: `${Math.min(100, healthScore)}%` }}
             />
           </div>
