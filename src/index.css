@@ -77,15 +77,15 @@
     --ring: 212.7 26.8% 83.9%;
     --radius: 0.75rem;
 
-    --brand: 160 84% 39%;
+    --brand: 75 76% 43%;
     --brand-foreground: 0 0% 0%;
-    --success: 158 64% 52%;
+    --success: 75 76% 51%;
     --success-foreground: 0 0% 0%;
-    --warning: 38 92% 50%;
+    --warning: 42 85% 48%;
     --warning-foreground: 0 0% 0%;
     --danger: 350 89% 60%;
     --danger-foreground: 210 40% 98%;
-    --info: 217 91% 60%;
+    --info: 197 91% 22%;
     --info-foreground: 210 40% 98%;
   }
 
@@ -112,11 +112,11 @@
     --input: 210 40% 96%;
     --ring: 222.2 84% 4.9%;
 
-    --brand: 160 84% 35%;
+    --brand: 75 76% 38%;
     --brand-foreground: 210 40% 98%;
-    --success: 158 64% 40%;
+    --success: 75 76% 35%;
     --success-foreground: 210 40% 98%;
-    --warning: 38 92% 45%;
+    --warning: 42 85% 43%;
     --warning-foreground: 0 0% 0%;
     --danger: 350 89% 50%;
     --danger-foreground: 210 40% 98%;
@@ -156,7 +156,9 @@
 /* ── Gamified Glow Effects ────────────────────────────────────────── */
 
 .hover-glow-card {
-  transition: border-color 0.25s ease-in-out, box-shadow 0.25s ease-in-out !important;
+  transition:
+    border-color 0.25s ease-in-out,
+    box-shadow 0.25s ease-in-out !important;
 }
 
 .hover-glow-card:hover {
