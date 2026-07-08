@@ -93,22 +93,25 @@ export default function ProfileSelect({ onProfileSelect }: ProfileSelectProps) {
     })();
   }, []);
 
-  // Escape: close any open sub-view
+  // Escape: close any open sub-view. Capture phase so this fires before App.tsx's quitter.
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.key !== "Escape") return;
       // JoinExistingCoop handles its own Escape — don't close it from here
       if (showJoinExisting) return;
       if (showCoopList) {
+        e.stopImmediatePropagation();
         setShowCoopList(false);
       } else if (showDemoTiers) {
+        e.stopImmediatePropagation();
         setShowDemoTiers(false);
       } else if (showCreateModal) {
+        e.stopImmediatePropagation();
         setShowCreateModal(false);
       }
     };
-    document.addEventListener("keydown", handler);
-    return () => document.removeEventListener("keydown", handler);
+    document.addEventListener("keydown", handler, { capture: true });
+    return () => document.removeEventListener("keydown", handler, { capture: true });
   }, [showJoinExisting, showCoopList, showDemoTiers, showCreateModal]);
 
   const handleUserInteraction = () => {

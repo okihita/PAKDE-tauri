@@ -107,11 +107,13 @@ export default function JoinExistingCoop({ onJoined, onBack }: JoinExistingCoopP
     setJoining(false);
   };
 
-  // Escape: if in registration code view → back to search; if in search → back to hero
+  // Escape: if in registration code view → back to search; if in search → back to hero.
+  // Must stopImmediatePropagation to prevent App.tsx's quitter from firing.
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.key !== "Escape") return;
       e.preventDefault();
+      e.stopImmediatePropagation();
       if (selected) {
         setSelected(null);
         setRegCode("");
@@ -120,8 +122,8 @@ export default function JoinExistingCoop({ onJoined, onBack }: JoinExistingCoopP
         onBack();
       }
     };
-    document.addEventListener("keydown", handler);
-    return () => document.removeEventListener("keydown", handler);
+    document.addEventListener("keydown", handler, { capture: true });
+    return () => document.removeEventListener("keydown", handler, { capture: true });
   }, [selected, onBack]);
 
   return (

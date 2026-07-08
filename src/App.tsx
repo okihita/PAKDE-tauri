@@ -7,6 +7,7 @@ import { getUsersByCooperativeId } from "@/features/System/ProfileSelect/userDb"
 import { isTabUnlocked } from "@/features/Sidebar/moduleUnlock";
 import { ToastProvider } from "@/hooks/useToast";
 import { getCurrentWindow } from "@tauri-apps/api/window";
+import { exit } from "@tauri-apps/plugin-process";
 import { IconProvider } from "@/components/IconContext";
 import { usePaletteInit } from "@/hooks/usePalette";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -49,6 +50,11 @@ const LBL_LOGOUT_TITLE = "Keluar dari Koperasi";
 const LBL_LOGOUT_CONFIRM = "Apakah Anda yakin ingin keluar dari profil koperasi saat ini?";
 const LBL_CANCEL = "Batal";
 const LBL_LOGOUT = "Keluar";
+const LBL_QUIT = "Tutup Aplikasi";
+
+function quitApp() {
+  exit(0);
+}
 
 function AppContent() {
   usePaletteInit();
@@ -128,6 +134,11 @@ function AppContent() {
     const handleKeyDown = (e: KeyboardEvent) => {
       // Escape: back/exit/logout
       if (e.key === "Escape") {
+        if (appState === "profile_select") {
+          e.preventDefault();
+          quitApp();
+          return;
+        }
         if (appState === "main" && !showLogoutConfirm) {
           e.preventDefault();
           setShowLogoutConfirm(true);
@@ -258,7 +269,7 @@ function AppContent() {
     return (
       <div className="flex flex-col h-screen overflow-hidden">
         {titleBar}
-        <div className="flex-1 overflow-hidden">
+        <div className="flex-1 overflow-hidden relative">
           <ProfileSelect
             onProfileSelect={async (profile) => {
               setCoopProfile(profile);
@@ -280,6 +291,14 @@ function AppContent() {
               }
             }}
           />
+          {/* Quit button */}
+          <button
+            onClick={quitApp}
+            className="absolute top-4 left-4 z-20 p-2 bg-slate-900/80 border border-slate-800 rounded-lg hover:border-danger/40 hover:text-danger transition-colors shadow-md backdrop-blur-md text-slate-500"
+            title={LBL_QUIT}
+          >
+            <XCircle className="h-4 w-4" />
+          </button>
         </div>
       </div>
     );
