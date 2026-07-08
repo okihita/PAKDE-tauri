@@ -36,6 +36,7 @@
     "brand": "PAKDE",
     "title": "PAKDE",
     "subtitle": "SQLite Local Node Initialization",
+    "status": ["Menyiapkan database lokal…", "Memuat pengaturan…", "Menyiapkan antarmuka…"],
     "version": "VER 0.5.0 • SAK EP COMPLIANT"
   },
   "dbError": {

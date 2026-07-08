@@ -23,53 +23,60 @@
 import { getDb } from "./index";
 import { initWilayah } from "./wilayah-init";
 
+// Guard so concurrent / strict-mode callers share a single initialization.
+// Running initDb twice at once (e.g. React StrictMode double-invokes mount
+// effects) opens two connections that concurrently DROP/CREATE tables, which
+// throws SQLITE_BUSY (code 5) "database is locked".
+let dbInitPromise: Promise<void> | null = null;
+
 export async function initDb(): Promise<void> {
-  const db = await getDb();
+  if (dbInitPromise) return dbInitPromise;
+  dbInitPromise = (async () => {
+    const db = await getDb();
 
-  // ── 1. Connection setup ──────────────────────────────────────
+    // ── 1. Connection setup ──────────────────────────────────────
 
-  // SQLite disables FK enforcement by default. Must enable per connection.
-  await db.execute("PRAGMA foreign_keys = ON;");
+    // SQLite disables FK enforcement by default. Must enable per connection.
+    await db.execute("PRAGMA foreign_keys = ON;");
 
-  // ── Schema versioning ───────────────────────────────────────
-  //
-  // `CREATE TABLE IF NOT EXISTS` is a no-op for a table already present
-  // on disk, so it can never add a column that was introduced after a
-  // database was first created (this is what triggered the
-  // "cooperatives has no column named is_demo" error). Rather than a
-  // per-column migration, we gate a full reset on a schema version:
-  // when the stored version is older than SCHEMA_VERSION we drop every
-  // user table and recreate it from the authoritative CREATE statements
-  // below. Deterministic, and no separate migration helpers to maintain.
-  //
-  // NOTE: this wipes all data on a version bump — acceptable for the
-  // current dev/demo stage. Bump SCHEMA_VERSION whenever the schema in
-  // this file changes incompatibly.
-  const SCHEMA_VERSION = 2;
+    // ── Schema versioning ───────────────────────────────────────
+    //
+    // `CREATE TABLE IF NOT EXISTS` is a no-op for a table already present
+    // on disk, so it can never add a column that was introduced after a
+    // database was first created (this is what triggered the
+    // "cooperatives has no column named is_demo" error). Rather than a
+    // per-column migration, we gate a full reset on a schema version:
+    // when the stored version is older than SCHEMA_VERSION we drop every
+    // user table and recreate it from the authoritative CREATE statements
+    // below. Deterministic, and no separate migration helpers to maintain.
+    //
+    // NOTE: this wipes all data on a version bump — acceptable for the
+    // current dev/demo stage. Bump SCHEMA_VERSION whenever the schema in
+    // this file changes incompatibly.
+    const SCHEMA_VERSION = 1;
 
-  await db.execute(`CREATE TABLE IF NOT EXISTS _schema_meta (key TEXT PRIMARY KEY, value TEXT);`);
-  const meta = await db.select<Array<{ value: string }>>(
-    "SELECT value FROM _schema_meta WHERE key = 'schema_version';",
-  );
-  const currentVersion = meta.length ? Number(meta[0].value) : 0;
-
-  if (currentVersion < SCHEMA_VERSION) {
-    const tables = await db.select<Array<{ name: string }>>(
-      "SELECT name FROM sqlite_master WHERE type = 'table' AND name != '_schema_meta';",
+    await db.execute(`CREATE TABLE IF NOT EXISTS _schema_meta (key TEXT PRIMARY KEY, value TEXT);`);
+    const meta = await db.select<Array<{ value: string }>>(
+      "SELECT value FROM _schema_meta WHERE key = 'schema_version';",
     );
-    for (const t of tables) {
-      await db.execute(`DROP TABLE IF EXISTS "${t.name}";`);
+    const currentVersion = meta.length ? Number(meta[0].value) : 0;
+
+    if (currentVersion < SCHEMA_VERSION) {
+      const tables = await db.select<Array<{ name: string }>>(
+        "SELECT name FROM sqlite_master WHERE type = 'table' AND name != '_schema_meta';",
+      );
+      for (const t of tables) {
+        await db.execute(`DROP TABLE IF EXISTS "${t.name}";`);
+      }
+      await db.execute("INSERT OR REPLACE INTO _schema_meta (key, value) VALUES ('schema_version', ?);", [
+        String(SCHEMA_VERSION),
+      ]);
     }
-    await db.execute("INSERT OR REPLACE INTO _schema_meta (key, value) VALUES ('schema_version', ?);", [
-      String(SCHEMA_VERSION),
-    ]);
-    console.warn(`[initDb] Schema reset: ${currentVersion} → ${SCHEMA_VERSION} (all tables recreated).`);
-  }
 
-  // ── 2. Core entity tables ────────────────────────────────────
+    // ── 2. Core entity tables ────────────────────────────────────
 
-  // cooperatives — the root entity. All other tables FK back to this.
-  await db.execute(`
+    // cooperatives — the root entity. All other tables FK back to this.
+    await db.execute(`
     CREATE TABLE IF NOT EXISTS cooperatives (
       id TEXT PRIMARY KEY, name TEXT NOT NULL, legal_id TEXT, status TEXT DEFAULT 'aktif',
       address TEXT, village TEXT, district TEXT, regency TEXT NOT NULL, province TEXT NOT NULL,
@@ -82,8 +89,8 @@ export async function initDb(): Promise<void> {
     );
   `);
 
-  // local_users — each cooperative has one or more local operator accounts.
-  await db.execute(`
+    // local_users — each cooperative has one or more local operator accounts.
+    await db.execute(`
     CREATE TABLE IF NOT EXISTS local_users (
       id TEXT PRIMARY KEY, cooperative_id TEXT NOT NULL, name TEXT NOT NULL,
       role TEXT NOT NULL CHECK(role IN ('admin','operator','pengawas')),
@@ -94,8 +101,8 @@ export async function initDb(): Promise<void> {
     );
   `);
 
-  // members — individual cooperative members (anggota) with savings & loan tracking.
-  await db.execute(`
+    // members — individual cooperative members (anggota) with savings & loan tracking.
+    await db.execute(`
     CREATE TABLE IF NOT EXISTS members (
       id TEXT PRIMARY KEY, cooperative_id TEXT NOT NULL, nik TEXT UNIQUE NOT NULL,
       name TEXT NOT NULL, place_of_birth TEXT, date_of_birth TEXT,
@@ -110,10 +117,10 @@ export async function initDb(): Promise<void> {
     );
   `);
 
-  // ── 3. Finance & accounting ──────────────────────────────────
+    // ── 3. Finance & accounting ──────────────────────────────────
 
-  // coa_accounts — chart of accounts (COA). Multi-tenant via composite PK (code, cooperative_id).
-  await db.execute(`
+    // coa_accounts — chart of accounts (COA). Multi-tenant via composite PK (code, cooperative_id).
+    await db.execute(`
     CREATE TABLE IF NOT EXISTS coa_accounts (
       code TEXT NOT NULL, cooperative_id TEXT NOT NULL, name TEXT NOT NULL,
       type TEXT NOT NULL CHECK(type IN ('aset','kewajiban','ekuitas','pendapatan','beban')),
@@ -125,8 +132,8 @@ export async function initDb(): Promise<void> {
     );
   `);
 
-  // journal_entries — header of each accounting journal (the "why").
-  await db.execute(`
+    // journal_entries — header of each accounting journal (the "why").
+    await db.execute(`
     CREATE TABLE IF NOT EXISTS journal_entries (
       id TEXT PRIMARY KEY, cooperative_id TEXT NOT NULL, number TEXT NOT NULL,
       date TEXT NOT NULL, description TEXT NOT NULL, reference TEXT,
@@ -137,8 +144,8 @@ export async function initDb(): Promise<void> {
     );
   `);
 
-  // journal_lines — individual debit/credit lines within a journal entry.
-  await db.execute(`
+    // journal_lines — individual debit/credit lines within a journal entry.
+    await db.execute(`
     CREATE TABLE IF NOT EXISTS journal_lines (
       id TEXT PRIMARY KEY, journal_entry_id TEXT NOT NULL, cooperative_id TEXT NOT NULL DEFAULT 'kdp-001',
       account_code TEXT NOT NULL, description TEXT, debit REAL DEFAULT 0, credit REAL DEFAULT 0,
@@ -147,8 +154,8 @@ export async function initDb(): Promise<void> {
     );
   `);
 
-  // financial_analyses — feasibility study results (NPV, IRR, BCR) per business unit.
-  await db.execute(`
+    // financial_analyses — feasibility study results (NPV, IRR, BCR) per business unit.
+    await db.execute(`
     CREATE TABLE IF NOT EXISTS financial_analyses (
       id TEXT PRIMARY KEY, cooperative_id TEXT NOT NULL, unit TEXT NOT NULL,
       projection_years INTEGER NOT NULL, initial_investment REAL NOT NULL,
@@ -159,8 +166,8 @@ export async function initDb(): Promise<void> {
     );
   `);
 
-  // sensitivity_analyses — what-if scenarios attached to a financial analysis.
-  await db.execute(`
+    // sensitivity_analyses — what-if scenarios attached to a financial analysis.
+    await db.execute(`
     CREATE TABLE IF NOT EXISTS sensitivity_analyses (
       id TEXT PRIMARY KEY, financial_analysis_id TEXT NOT NULL,
       scenario_name TEXT NOT NULL, variables TEXT NOT NULL,
@@ -169,10 +176,10 @@ export async function initDb(): Promise<void> {
     );
   `);
 
-  // ── 4. Early-warning system (EWS) ────────────────────────────
+    // ── 4. Early-warning system (EWS) ────────────────────────────
 
-  // ews_alerts — triggered warnings (info / warning / critical) for cooperative health.
-  await db.execute(`
+    // ews_alerts — triggered warnings (info / warning / critical) for cooperative health.
+    await db.execute(`
     CREATE TABLE IF NOT EXISTS ews_alerts (
       id TEXT PRIMARY KEY, cooperative_id TEXT NOT NULL,
       level TEXT NOT NULL CHECK(level IN ('info','warning','critical')),
@@ -184,8 +191,8 @@ export async function initDb(): Promise<void> {
     );
   `);
 
-  // ews_metrics — raw metric snapshots that drive the alerting rules.
-  await db.execute(`
+    // ews_metrics — raw metric snapshots that drive the alerting rules.
+    await db.execute(`
     CREATE TABLE IF NOT EXISTS ews_metrics (
       id TEXT PRIMARY KEY, cooperative_id TEXT NOT NULL,
       indicator TEXT NOT NULL, value REAL NOT NULL,
@@ -194,10 +201,10 @@ export async function initDb(): Promise<void> {
     );
   `);
 
-  // ── 5. Sync / audit trail ────────────────────────────────────
+    // ── 5. Sync / audit trail ────────────────────────────────────
 
-  // sync_history — log of every upload/download attempt for offline-to-cloud sync.
-  await db.execute(`
+    // sync_history — log of every upload/download attempt for offline-to-cloud sync.
+    await db.execute(`
     CREATE TABLE IF NOT EXISTS sync_history (
       id TEXT PRIMARY KEY, cooperative_id TEXT NOT NULL,
       direction TEXT NOT NULL CHECK(direction IN ('upload','download')),
@@ -208,8 +215,8 @@ export async function initDb(): Promise<void> {
     );
   `);
 
-  // sync_audit — record of every row-level create/update/delete for conflict resolution.
-  await db.execute(`
+    // sync_audit — record of every row-level create/update/delete for conflict resolution.
+    await db.execute(`
     CREATE TABLE IF NOT EXISTS sync_audit (
       id TEXT PRIMARY KEY, entity_type TEXT NOT NULL, entity_id TEXT NOT NULL,
       operation TEXT NOT NULL CHECK(operation IN ('create','update','delete')),
@@ -218,10 +225,10 @@ export async function initDb(): Promise<void> {
     );
   `);
 
-  // ── 6. Store / inventory ─────────────────────────────────────
+    // ── 6. Store / inventory ─────────────────────────────────────
 
-  // categories — product categories (unit pupuk, unit apotek, etc.). Multi-tenant.
-  await db.execute(`
+    // categories — product categories (unit pupuk, unit apotek, etc.). Multi-tenant.
+    await db.execute(`
     CREATE TABLE IF NOT EXISTS categories (
       id TEXT NOT NULL, cooperative_id TEXT NOT NULL,
       name TEXT NOT NULL, icon TEXT,
@@ -230,8 +237,8 @@ export async function initDb(): Promise<void> {
     );
   `);
 
-  // store_layouts — floor-plan for the cooperative's shop (grid-based).
-  await db.execute(`
+    // store_layouts — floor-plan for the cooperative's shop (grid-based).
+    await db.execute(`
     CREATE TABLE IF NOT EXISTS store_layouts (
       id TEXT PRIMARY KEY,
       cooperative_id TEXT NOT NULL DEFAULT 'kdp-001',
@@ -246,8 +253,8 @@ export async function initDb(): Promise<void> {
     );
   `);
 
-  // layout_zones — named rectangular areas on the shop floor (shelves, counters, etc.).
-  await db.execute(`
+    // layout_zones — named rectangular areas on the shop floor (shelves, counters, etc.).
+    await db.execute(`
     CREATE TABLE IF NOT EXISTS layout_zones (
       id TEXT PRIMARY KEY,
       layout_id TEXT NOT NULL,
@@ -265,8 +272,8 @@ export async function initDb(): Promise<void> {
     );
   `);
 
-  // inventory_items — products stocked in the shop, linked to a zone for placement.
-  await db.execute(`
+    // inventory_items — products stocked in the shop, linked to a zone for placement.
+    await db.execute(`
     CREATE TABLE IF NOT EXISTS inventory_items (
       id TEXT NOT NULL,
       cooperative_id TEXT NOT NULL DEFAULT 'kdp-001',
@@ -288,10 +295,10 @@ export async function initDb(): Promise<void> {
     );
   `);
 
-  // ── 7. Sales ─────────────────────────────────────────────────
+    // ── 7. Sales ─────────────────────────────────────────────────
 
-  // sales_transactions — header of each sale (cash or credit).
-  await db.execute(`
+    // sales_transactions — header of each sale (cash or credit).
+    await db.execute(`
     CREATE TABLE IF NOT EXISTS sales_transactions (
       id TEXT PRIMARY KEY,
       cooperative_id TEXT NOT NULL DEFAULT 'kdp-001',
@@ -307,8 +314,8 @@ export async function initDb(): Promise<void> {
     );
   `);
 
-  // sales_transaction_items — line items within a sale.
-  await db.execute(`
+    // sales_transaction_items — line items within a sale.
+    await db.execute(`
     CREATE TABLE IF NOT EXISTS sales_transaction_items (
       id TEXT PRIMARY KEY,
       transaction_id TEXT NOT NULL,
@@ -322,32 +329,41 @@ export async function initDb(): Promise<void> {
     );
   `);
 
-  // ── 8. Post-schema data migrations ──────────────────────────
+    // ── 8. Post-schema data migrations ──────────────────────────
 
-  // Backfill: any cooperative that has zero local_users gets a default
-  // admin account (username "Slamet Riyadi", PIN "123456").  This
-  // covers coops created before the onboarding flow required an admin
-  // user to be created alongside the cooperative row.
-  await (async () => {
-    const coops = await db.select<Array<{ id: string }>>("SELECT id FROM cooperatives");
-    for (const coop of coops) {
-      const users = await db.select<Array<{ id: string }>>("SELECT id FROM local_users WHERE cooperative_id = ?", [
-        coop.id,
-      ]);
-      if (users.length === 0) {
-        const userId = `usr-${crypto.randomUUID().slice(0, 8)}`;
-        // SHA-256 hash of "123456" — default PIN for migrated coops
-        const defaultPinHash = "8d969ee56701d853af7b830aef854b3c7b288d60c9329ee3073a56657a8c462a";
-        await db.execute(
-          `INSERT INTO local_users (id, cooperative_id, name, role, pin_hash)
+    // Backfill: any cooperative that has zero local_users gets a default
+    // admin account (username "Slamet Riyadi", PIN "123456").  This
+    // covers coops created before the onboarding flow required an admin
+    // user to be created alongside the cooperative row.
+    await (async () => {
+      const coops = await db.select<Array<{ id: string }>>("SELECT id FROM cooperatives");
+      for (const coop of coops) {
+        const users = await db.select<Array<{ id: string }>>("SELECT id FROM local_users WHERE cooperative_id = ?", [
+          coop.id,
+        ]);
+        if (users.length === 0) {
+          const userId = `usr-${crypto.randomUUID().slice(0, 8)}`;
+          // SHA-256 hash of "123456" — default PIN for migrated coops
+          const defaultPinHash = "8d969ee56701d853af7b830aef854b3c7b288d60c9329ee3073a56657a8c462a";
+          await db.execute(
+            `INSERT INTO local_users (id, cooperative_id, name, role, pin_hash)
            VALUES (?, ?, ?, ?, ?)`,
-          [userId, coop.id, "Slamet Riyadi", "admin", defaultPinHash],
-        );
-        console.warn(`[initDb] Migrated coop ${coop.id}: created default admin user (PIN: 123456)`);
+            [userId, coop.id, "Slamet Riyadi", "admin", defaultPinHash],
+          );
+        }
       }
-    }
+    })();
+
+    // Load the Indonesian administrative regions lookup (provinces, regencies, districts, villages).
+    await initWilayah();
   })();
 
-  // Load the Indonesian administrative regions lookup (provinces, regencies, districts, villages).
-  await initWilayah();
+  // If initialization failed, clear the cached promise so a later call can retry.
+  try {
+    await dbInitPromise;
+  } catch (err) {
+    dbInitPromise = null;
+    throw err;
+  }
+  return dbInitPromise;
 }

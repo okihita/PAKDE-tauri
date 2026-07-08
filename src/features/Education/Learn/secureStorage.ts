@@ -42,7 +42,6 @@ export async function loadProgress(): Promise<string[]> {
   try {
     const parsed = JSON.parse(saved);
     if (!parsed.data || !parsed.signature) {
-      console.warn("Invalid storage format. Resetting progress.");
       return ["mod1-0", "mod1-1", "mod1-2"];
     }
 

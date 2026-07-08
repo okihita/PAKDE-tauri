@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { cn } from "@/lib/utils";
 import "@/i18n"; // initialize i18next before render
-import { initDb } from "@/db";
 import { listCooperatives, getCooperativeById } from "@/features/System/ProfileSelect/cooperativeDb";
 import { getUsersByCooperativeId } from "@/features/System/ProfileSelect/userDb";
 import { isTabUnlocked } from "@/features/Sidebar/moduleUnlock";
@@ -13,7 +12,6 @@ import { usePaletteInit } from "@/hooks/usePalette";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { SignOut, XCircle } from "@phosphor-icons/react";
-import SplashScreen from "@/features/System/SplashScreen/SplashScreen";
 import DbErrorScreen from "@/features/System/DbErrorScreen/DbErrorScreen";
 import Sidebar from "@/features/Sidebar";
 import Dashboard from "@/features/Home/Dashboard/Dashboard";
@@ -39,7 +37,7 @@ import ProfileSelect from "@/features/System/ProfileSelect/ProfileSelect";
 import CreateUserProfile from "@/features/System/ProfileSelect/CreateUserProfile";
 import UserSignIn from "@/features/System/ProfileSelect/UserSignIn";
 import ProfileCompletion from "@/features/Home/Dashboard/ProfileCompletion";
-import { getErrorMessage, type CooperativeProfile, type EwsAlert, type LocalUser } from "@/types";
+import { type CooperativeProfile, type EwsAlert, type LocalUser } from "@/types";
 import { isDemoCooperative } from "@/db/seed-demo";
 
 type FontLevel = "small" | "normal" | "large" | "xlarge";
@@ -60,9 +58,9 @@ function quitApp() {
 
 function AppContent() {
   usePaletteInit();
-  const [appState, setAppState] = useState<
-    "splash" | "profile_select" | "user_signin" | "user_create" | "main" | "db_error"
-  >("splash");
+  const [appState, setAppState] = useState<"profile_select" | "user_signin" | "user_create" | "main" | "db_error">(
+    "profile_select",
+  );
   const [dbErrorMessage, setDbErrorMessage] = useState("");
   const [currentUser, setCurrentUser] = useState<LocalUser | null>(null);
 
@@ -102,20 +100,6 @@ function AppContent() {
   const [memberCount, _setMemberCount] = useState(0);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [showQuitConfirm, setShowQuitConfirm] = useState(false);
-
-  // DB init
-  useEffect(() => {
-    (async () => {
-      try {
-        await initDb();
-        setAppState("profile_select");
-      } catch (err: unknown) {
-        console.error(err);
-        setDbErrorMessage(getErrorMessage(err));
-        setAppState("db_error");
-      }
-    })();
-  }, []);
 
   // Sync font-size setting to <html> and persist
   useEffect(() => {
@@ -252,16 +236,6 @@ function AppContent() {
     </div>
   );
 
-  if (appState === "splash") {
-    return (
-      <div className="flex flex-col h-screen overflow-hidden">
-        {titleBar}
-        <div className="flex-1 overflow-hidden">
-          <SplashScreen />
-        </div>
-      </div>
-    );
-  }
   if (appState === "db_error") {
     return (
       <div className="flex flex-col h-screen overflow-hidden">
@@ -278,6 +252,10 @@ function AppContent() {
         {titleBar}
         <div className="flex-1 overflow-hidden relative">
           <ProfileSelect
+            onDbError={(msg) => {
+              setDbErrorMessage(msg);
+              setAppState("db_error");
+            }}
             onProfileSelect={async (profile) => {
               setCoopProfile(profile);
               localStorage.setItem("pakde-active-profile-id", profile.id || "");

@@ -14,16 +14,13 @@ async function ensureWilayahInAppData(): Promise<void> {
   try {
     const resourcePath = await resolveResource("resources/wilayah.sqlite");
     await copyFile(resourcePath, targetPath);
-    console.warn("[wilayah] Copied prebuilt DB to app data");
   } catch {
     // In dev mode, resolveResource gives a URL. Use a direct path fallback.
-    console.warn("[wilayah] Could not resolve resource — trying direct path");
     // The file is at src-tauri/resources/wilayah.sqlite relative to project root
     // In dev, cwd is project root; in prod, file is in bundle resources
     const devPath = "src-tauri/resources/wilayah.sqlite";
     try {
       await copyFile(devPath, targetPath);
-      console.warn("[wilayah] Copied from dev path");
     } catch {
       console.error("[wilayah] Failed to locate wilayah.sqlite. The region picker will not work.");
     }
