@@ -61,6 +61,7 @@ export default function RegionPicker({ onChange }: Props) {
         placeholder={L_SEARCH}
       />
       <ComboboxField
+        key={`reg-${regency?.kode ?? "none"}`}
         label={L_KABKOTA}
         onSearch={(q) => (province ? searchRegencies(province.kode, q) : Promise.resolve([]))}
         selected={regency}
