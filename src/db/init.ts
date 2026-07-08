@@ -218,7 +218,6 @@ export async function initDb(): Promise<void> {
   await ensureColumn("inventory_items", "shelf_col INTEGER", "shelf_col");
   await ensureColumn("inventory_items", "cooperative_id TEXT NOT NULL DEFAULT 'kdp-001'", "cooperative_id");
   await ensureColumn("journal_lines", "cooperative_id TEXT NOT NULL DEFAULT 'kdp-001'", "cooperative_id");
-  await ensureColumn("sales_transaction_items", "cooperative_id TEXT NOT NULL DEFAULT 'kdp-001'", "cooperative_id");
 
   // Cooperative metadata columns (UU 25/1992 compliance)
   await ensureColumn("cooperatives", "founded_date TEXT", "founded_date");
@@ -253,4 +252,6 @@ export async function initDb(): Promise<void> {
       FOREIGN KEY (item_id, cooperative_id) REFERENCES inventory_items(id, cooperative_id)
     );
   `);
+
+  await ensureColumn("sales_transaction_items", "cooperative_id TEXT NOT NULL DEFAULT 'kdp-001'", "cooperative_id");
 }
