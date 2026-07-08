@@ -11,8 +11,8 @@ import {
   TrophyIcon,
   Camera,
 } from "@phosphor-icons/react";
-import { getDb } from "@/db";
 import type { CooperativeProfile } from "@/types";
+import { listCooperatives, getCooperativeById } from "./cooperativeDb";
 import { sfx } from "./sfx";
 import { bgMusic } from "./music";
 import CreateProfileDialog from "./CreateProfileDialog";
@@ -29,11 +29,11 @@ const LOGOTYPE = "PAKDE";
 const FOOTER_COPYRIGHT = "© 2026 PAKDE. pakde.vercel.app";
 
 const SLIDESHOW_IMAGES = [
-  "/Gemini_Generated_Image_4tfb4o4tfb4o4tfb.png",
-  "/Gemini_Generated_Image_htw32rhtw32rhtw3.png",
-  "/Gemini_Generated_Image_pxcvqwpxcvqwpxcv.png",
-  "/Gemini_Generated_Image_rllm0erllm0erllm.png",
-  "/Gemini_Generated_Image_tik8trtik8trtik8.png",
+  "/slideshow-1.png",
+  "/slideshow-2.png",
+  "/slideshow-3.png",
+  "/slideshow-4.png",
+  "/slideshow-5.png",
 ];
 const SLIDE_INTERVAL_MS = 5000;
 
@@ -68,8 +68,7 @@ export default function ProfileSelect({ onProfileSelect }: ProfileSelectProps) {
   }, []);
 
   const loadProfiles = async () => {
-    const db = await getDb();
-    const list = await db.select<CooperativeProfile[]>("SELECT * FROM cooperatives ORDER BY created_at DESC");
+    const list = await listCooperatives();
     setProfiles(list);
   };
 
@@ -126,13 +125,12 @@ export default function ProfileSelect({ onProfileSelect }: ProfileSelectProps) {
 
   const handleDemoEnter = async (level: DemoLevel) => {
     try {
-      const db = await getDb();
       await seedDemoCooperativeAtLevel(level);
-      const rows = await db.select<CooperativeProfile[]>("SELECT * FROM cooperatives WHERE id = ?", [DEMO_COOP_UUID]);
-      if (rows.length > 0) {
+      const coop = await getCooperativeById(DEMO_COOP_UUID);
+      if (coop) {
         sfx.playChime();
         setTimeout(() => {
-          onProfileSelect(rows[0]);
+          onProfileSelect(coop);
         }, 280);
       }
     } catch (e) {

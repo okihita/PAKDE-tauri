@@ -4,8 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { PlusIcon } from "@phosphor-icons/react";
-import { getDb } from "@/db";
 import type { CooperativeProfile } from "@/types";
+import { createCooperative } from "./cooperativeDb";
 
 // Module-level constants to satisfy eslint no-hardcoded-labels rule
 const LABEL_SP = "💰 Simpan Pinjam";
@@ -64,54 +64,28 @@ export default function CreateProfileDialog({ open, onOpenChange, onProfileCreat
     }
 
     try {
-      const db = await getDb();
-      const newId = crypto.randomUUID();
-
-      const units: string[] = [];
-      if (formData.unitPupuk) units.push("unit_pupuk");
-      if (formData.unitSimpanPinjam) units.push("unit_simpan_pinjam");
-      if (formData.unitToko) units.push("unit_toko_desa");
-
-      const officersJson = JSON.stringify({
-        chairman: formData.chairman.trim(),
-        secretary: formData.secretary.trim(),
-        treasurer: formData.treasurer.trim(),
-        supervisor: formData.supervisor.trim(),
+      const inserted = await createCooperative({
+        name: formData.name,
+        legalId: formData.legalId,
+        address: formData.address,
+        village: formData.village,
+        district: formData.district,
+        regency: formData.regency,
+        province: formData.province,
+        postalCode: formData.postalCode,
+        phone: formData.phone,
+        email: formData.email,
+        chairman: formData.chairman,
+        secretary: formData.secretary,
+        treasurer: formData.treasurer,
+        supervisor: formData.supervisor,
+        unitPupuk: formData.unitPupuk,
+        unitSimpanPinjam: formData.unitSimpanPinjam,
+        unitToko: formData.unitToko,
+        foundedDate: formData.foundedDate,
+        category: formData.category,
       });
-
-      await db.execute(
-        `INSERT INTO cooperatives (
-          id, name, legal_id, address, village, district, regency, province,
-          postal_code, phone, email, business_units, officers, health_score, rag_status, founded_date, category
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [
-          newId,
-          formData.name.trim(),
-          formData.legalId.trim() || null,
-          formData.address.trim() || null,
-          formData.village.trim() || null,
-          formData.district.trim() || null,
-          formData.regency.trim(),
-          formData.province.trim(),
-          formData.postalCode.trim() || null,
-          formData.phone.trim() || null,
-          formData.email.trim() || null,
-          JSON.stringify(units),
-          officersJson,
-          100.0,
-          "green",
-          formData.foundedDate.trim() || null,
-          formData.category,
-        ],
-      );
-
-      const inserted = await db.select<CooperativeProfile[]>("SELECT * FROM cooperatives WHERE id = ?", [newId]);
-
-      if (inserted.length > 0) {
-        onProfileCreated(inserted[0]);
-      } else {
-        setFormError("Failed to verify profile insertion.");
-      }
+      onProfileCreated(inserted);
     } catch (err: unknown) {
       console.error(err);
       setFormError(err instanceof Error ? err.message : String(err));

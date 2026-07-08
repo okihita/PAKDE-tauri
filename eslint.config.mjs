@@ -75,6 +75,26 @@ export default tseslint.config(
     },
   },
 
+  // No raw DB access in UI files (.tsx only — .ts helpers are allowed)
+  {
+    files: ["src/**/*.tsx"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          paths: [
+            {
+              name: "@/db",
+              importNames: ["getDb"],
+              message: "Use a feature-local db helper instead of calling getDb() directly in .tsx files.",
+            },
+          ],
+        },
+      ],
+    },
+  },
+  },
+
   // ── Prettier (must be last to override formatting rules) ────────
   prettierConfig,
 );

@@ -142,3 +142,49 @@ db.select("SELECT * FROM coa_accounts");
 ```
 
 The `activeCoopId` comes from `localStorage.getItem("pakde-active-profile-id")`.
+
+## Database Access — Colocation Principle
+
+Database queries live **inside the feature module** that owns them, not in a global `db/` helpers folder.
+
+### Why colocation?
+
+- Feature modules are self-contained — no cross-feature imports for DB access
+- When a feature is removed, its queries are removed with it
+- The `db/` folder at root stays focused on schema (`init.ts`, `seed-demo.ts`)
+
+### Current feature helpers
+
+| Feature | Helper file | Exports |
+|---|---|---|
+| ProfileSelect | `cooperativeDb.ts` | `createCooperative(data)` |
+| Settings | `settingsDb.ts` | `updateCooperative(id, data)` |
+
+### ESLint enforcement
+
+`.tsx` files are forbidden from importing `getDb` directly:
+
+```json
+{
+  "no-restricted-imports": [
+    "error",
+    {
+      "paths": [
+        {
+          "name": "@/db",
+          "importNames": ["getDb"],
+          "message": "Use a feature-local db helper instead of raw getDb() in .tsx files."
+        }
+      ]
+    }
+  ]
+}
+```
+
+### Pattern for new features
+
+```
+src/features/YourFeature/
+├── YourFeature.tsx        # UI only — imports data from ./yourFeatureDb
+└── yourFeatureDb.ts       # DB queries — imports getDb, exports type-safe functions
+```

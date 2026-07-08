@@ -9,8 +9,8 @@ import { useToast } from "@/hooks/useToast";
 import { useIconSettings } from "@/components/IconContext";
 import { usePalette } from "@/hooks/usePalette";
 import { PALETTES } from "@/data/palettes";
-import { getDb } from "@/db";
 import type { CooperativeProfile } from "@/types";
+import { updateCooperative } from "./settingsDb";
 import { appDataDir, join } from "@tauri-apps/api/path";
 import { remove } from "@tauri-apps/plugin-fs";
 import { MoonIcon, SunIcon, GlobeIcon, TextAaIcon, PaletteIcon, PaintBucketIcon, UserIcon, BuildingsIcon, ArrowsLeftRightIcon, WarningIcon } from "@phosphor-icons/react";
@@ -112,24 +112,20 @@ export default function Settings({
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const db = await getDb();
-      await db.execute(
-        `UPDATE cooperatives SET name=?, legal_id=?, address=?, village=?, district=?, regency=?, province=?, postal_code=?, phone=?, email=?, business_units=?, officers=?, updated_at=datetime('now') WHERE id='kdp-001'`,
-        [
-          coopProfile.name,
-          coopProfile.legal_id,
-          coopProfile.address,
-          coopProfile.village,
-          coopProfile.district,
-          coopProfile.regency,
-          coopProfile.province,
-          coopProfile.postal_code,
-          coopProfile.phone,
-          coopProfile.email,
-          coopProfile.business_units,
-          coopProfile.officers,
-        ],
-      );
+      await updateCooperative(coopProfile?.id || "", {
+        name: coopProfile?.name,
+        legal_id: coopProfile?.legal_id,
+        address: coopProfile?.address,
+        village: coopProfile?.village,
+        district: coopProfile?.district,
+        regency: coopProfile?.regency,
+        province: coopProfile?.province,
+        postal_code: coopProfile?.postal_code,
+        phone: coopProfile?.phone,
+        email: coopProfile?.email,
+        business_units: coopProfile?.business_units,
+        officers: coopProfile?.officers,
+      });
       toast.success(t("toast.profileSaveSuccess"));
     } catch (err) {
       toast.error(t("toast.profileSaveFailed", { error: String(err) }));
