@@ -30,7 +30,8 @@
     "active": true,
     "targets": "all",
     "createUpdaterArtifacts": true,
-    "icon": ["icons/icon.png", "icons/icon.ico"]
+    "icon": ["icons/icon.png", "icons/icon.ico"],
+    "resources": ["resources/wilayah.sqlite"]
   },
   "plugins": {
     "updater": {

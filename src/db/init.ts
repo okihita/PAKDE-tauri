@@ -1,4 +1,5 @@
 import { getDb } from "./index";
+import { initWilayah } from "./wilayah-init";
 
 export async function initDb(): Promise<void> {
   const db = await getDb();
@@ -254,4 +255,6 @@ export async function initDb(): Promise<void> {
   `);
 
   await ensureColumn("sales_transaction_items", "cooperative_id TEXT NOT NULL DEFAULT 'kdp-001'", "cooperative_id");
+
+  await initWilayah();
 }

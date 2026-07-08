@@ -93,7 +93,6 @@ export default tseslint.config(
       ],
     },
   },
-  },
 
   // ── Prettier (must be last to override formatting rules) ────────
   prettierConfig,
