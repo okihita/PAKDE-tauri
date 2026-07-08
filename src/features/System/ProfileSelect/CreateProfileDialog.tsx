@@ -18,7 +18,7 @@ const REWARD_TITLE = "Mulai dengan 5 Poin";
 const REWARD_DESC = "Lengkapi profil untuk buka badge & modul!";
 const CONFIRM_HEADING = "siap diluncurkan!";
 
-const EMBLEM_LABEL = EMBLEM_LABEL;
+const EMBLEM_LABEL = "Emblem Koperasi";
 const EMBLEMS = [
   "/emblems/Gemini_Generated_Image_4z0p1y4z0p1y4z0p.png",
   "/emblems/Gemini_Generated_Image_9q6ekf9q6ekf9q6e.png",
@@ -135,7 +135,7 @@ export default function CreateProfileDialog({ open, onOpenChange, onProfileCreat
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="bg-slate-900 border border-brand/25 text-foreground max-w-lg max-h-[85vh] overflow-y-auto shadow-2xl">
+      <DialogContent className="bg-slate-900 border-0 text-foreground max-w-lg max-h-[85vh] overflow-y-auto shadow-2xl">
         {step === "fill" ? (
           <>
             {/* Step 1 Header */}
@@ -186,7 +186,7 @@ export default function CreateProfileDialog({ open, onOpenChange, onProfileCreat
 
               {/* Emblem picker */}
               <div className="rounded-xl border border-slate-800 bg-slate-950/50 p-3">
-                <p className="text-success text-xxxs uppercase tracking-wider mb-2">Emblem Koperasi</p>
+                <p className="text-success text-xxxs uppercase tracking-wider mb-2">{EMBLEM_LABEL}</p>
                 <div className="flex gap-2">
                   {EMBLEMS.map((src) => (
                     <button
