@@ -9,9 +9,8 @@
 //   1.  Open the singleton SQLite connection and enable foreign keys.
 //   2.  Define `ensureColumn` — a forward-compatible migration helper
 //       used throughout the file.
-//   3.  Create the anchor table `cooperatives` and immediately add the
-//       `is_demo` column via ensureColumn (must exist before anything
-//       references cooperatives).
+//   3.  Create the anchor table `cooperatives` (with all current columns,
+//       including `is_demo`).
 //   4.  Create all child / related tables in dependency order (parents
 //       before children so FK constraints are happy).
 //   5.  Run column-level migrations for tables that were created in an
@@ -60,14 +59,10 @@ export async function initDb(): Promise<void> {
       postal_code TEXT, phone TEXT, email TEXT, level TEXT DEFAULT 'desa',
       parent_id TEXT, parent_name TEXT, business_units TEXT, officers TEXT,
       logo_path TEXT, rag_status TEXT DEFAULT 'green', health_score REAL DEFAULT 100,
+      is_demo INTEGER DEFAULT 0,
       created_at TEXT DEFAULT (datetime('now')), updated_at TEXT DEFAULT (datetime('now'))
     );
   `);
-
-  // is_demo flag: 0 = real cooperative created by a user, 1 = seeded demo.
-  // Must run immediately after the table creation so all downstream code
-  // (down to the auto-admin migration a few hundred lines below) sees the column.
-  await ensureColumn("cooperatives", "is_demo INTEGER NOT NULL DEFAULT 0", "is_demo");
 
   // local_users — each cooperative has one or more local operator accounts.
   await db.execute(`
