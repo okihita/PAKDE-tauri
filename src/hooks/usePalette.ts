@@ -27,7 +27,8 @@ interface PaletteStore {
 
 export const usePaletteStore = create<PaletteStore>((set) => {
   const initialId = loadPaletteId();
-  const initialPalette = getPalette(initialId) || getPalette(DEFAULT_PALETTE_ID)!;
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  const initialPalette = getPalette(initialId) || getPalette(DEFAULT_PALETTE_ID) || getPalette("emerald")!;
 
   return {
     activeId: initialId,

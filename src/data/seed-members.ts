@@ -1,5 +1,6 @@
 // Generates mock Indonesian cooperative members for testing.
 import { getDb } from "@/db";
+import { DEMO_COOP_UUID } from "@/db/seed-demo";
 
 const FIRST_NAMES_MALE = [
   "Sutrisno",
@@ -198,9 +199,10 @@ export async function seedMockMembers(): Promise<number> {
       `INSERT INTO members (id, cooperative_id, nik, name, place_of_birth, date_of_birth, gender,
         occupation, education, rt, rw, hamlet, status, savings_pokok, savings_wajib,
         savings_sukarela, loan_total, loan_outstanding, loan_status)
-       VALUES (?, 'kdp-001', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         m.id,
+        DEMO_COOP_UUID,
         m.nik,
         m.name,
         m.place_of_birth,

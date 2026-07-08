@@ -76,7 +76,7 @@ export function useUnits() {
     } catch (e) {
       console.error("Failed to load units data:", e);
     }
-  }, []);
+  }, [coopId]);
 
   // Toggle activation status
   const toggleUnitStatus = async (unitId: string, currentActive: boolean) => {

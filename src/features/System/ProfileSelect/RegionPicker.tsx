@@ -193,7 +193,11 @@ function ComboboxField({
     } else if (e.key === "Enter") {
       e.preventDefault();
       onSelect(results[highlightIdx]);
-      setQuery(renderOption ? renderOption(results[highlightIdx] as any) : results[highlightIdx].nama);
+      setQuery(
+        renderOption
+          ? renderOption(results[highlightIdx] as WilayahRow & { district_nama?: string; regency_nama?: string })
+          : results[highlightIdx].nama,
+      );
       setOpen(false);
     }
   };

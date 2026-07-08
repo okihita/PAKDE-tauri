@@ -70,7 +70,7 @@ function AppContent() {
     | "settings"
   >("home");
   const [financeTier, setFinanceTier] = useState<"simplified" | "standard" | "advanced">(() => {
-    return (localStorage.getItem("pakde-finance-tier") as any) || "simplified";
+    return (localStorage.getItem("pakde-finance-tier") as "simplified" | "standard" | "advanced") || "simplified";
   });
   const [appTheme, setAppTheme] = useState<"dark" | "light">(() => {
     return (localStorage.getItem("pakde-theme") as "dark" | "light") || "dark";
