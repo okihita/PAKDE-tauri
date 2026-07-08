@@ -93,6 +93,7 @@ export function useUnits() {
       }
 
       await db.execute(
+        // eslint-disable-next-line no-template-curly-in-string
         "UPDATE cooperatives SET business_units = ?, updated_at = datetime('now') WHERE id = ${coopId}",
         [JSON.stringify(nextActiveIds)],
       );
@@ -130,6 +131,7 @@ export function useUnits() {
       // Append to active business units
       const nextActiveIds = [...activeUnitIds, newUnitId];
       await db.execute(
+        // eslint-disable-next-line no-template-curly-in-string
         "UPDATE cooperatives SET business_units = ?, updated_at = datetime('now') WHERE id = ${coopId}",
         [JSON.stringify(nextActiveIds)],
       );

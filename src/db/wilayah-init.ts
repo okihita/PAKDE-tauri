@@ -1,7 +1,6 @@
 import Database from "@tauri-apps/plugin-sql";
-import { resolveResource } from "@tauri-apps/api/path";
+import { resolveResource, appDataDir, join } from "@tauri-apps/api/path";
 import { copyFile, exists } from "@tauri-apps/plugin-fs";
-import { appDataDir, join } from "@tauri-apps/api/path";
 
 let _wilayahDb: Database | null = null;
 let _loadPromise: Promise<Database> | null = null;

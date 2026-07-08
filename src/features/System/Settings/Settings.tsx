@@ -12,10 +12,20 @@ import { PALETTES } from "@/data/palettes";
 import type { CooperativeProfile } from "@/types";
 import { updateCooperative, deleteCooperative } from "./settingsDb";
 import { DEMO_COOP_UUID } from "@/db/seed-demo";
-import { seedDemoCooperativeAtLevel } from "@/db/seed-demo";
 import { appDataDir, join } from "@tauri-apps/api/path";
 import { remove } from "@tauri-apps/plugin-fs";
-import { MoonIcon, SunIcon, GlobeIcon, TextAaIcon, PaletteIcon, PaintBucketIcon, UserIcon, BuildingsIcon, ArrowsLeftRightIcon, WarningIcon } from "@phosphor-icons/react";
+import {
+  MoonIcon,
+  SunIcon,
+  GlobeIcon,
+  TextAaIcon,
+  PaletteIcon,
+  PaintBucketIcon,
+  UserIcon,
+  BuildingsIcon,
+  ArrowsLeftRightIcon,
+  WarningIcon,
+} from "@phosphor-icons/react";
 
 interface Props {
   coopProfile: CooperativeProfile | null;
@@ -171,14 +181,14 @@ export default function Settings({
   const bannerBase =
     "flex flex-col items-center justify-center gap-1.5 p-4 rounded-xl border-2 cursor-pointer transition-all text-center";
   const bannerActive = "border-success/50 bg-success/10";
-const L_RESET_DEMO = "Reset Demo";
-const L_DELETE_COOP = "Hapus Koperasi";
-const L_RESET_DESC = "Kembalikan demo ke data awal. Semua perubahan akan hilang.";
-const L_DELETE_DESC = "Hapus koperasi ini beserta seluruh data secara permanen.";
-const L_CONFIRM_RESET = "Klik lagi untuk reset";
-const L_CONFIRM_DELETE = "Klik lagi untuk hapus";
-const L_PROCESSING = "Memproses...";
-const L_DEMO_RESET_OK = "Demo account reset successfully.";
+  const L_RESET_DEMO = "Reset Demo";
+  const L_DELETE_COOP = "Hapus Koperasi";
+  const L_RESET_DESC = "Kembalikan demo ke data awal. Semua perubahan akan hilang.";
+  const L_DELETE_DESC = "Hapus koperasi ini beserta seluruh data secara permanen.";
+  const L_CONFIRM_RESET = "Klik lagi untuk reset";
+  const L_CONFIRM_DELETE = "Klik lagi untuk hapus";
+  const L_PROCESSING = "Memproses...";
+  const L_DEMO_RESET_OK = "Demo account reset successfully.";
   const bannerInactive = "border-border bg-muted/40 hover:border-muted-foreground/30 hover:bg-muted/70";
 
   const PROFILE_FIELDS = [
@@ -322,10 +332,18 @@ const L_DEMO_RESET_OK = "Demo account reset successfully.";
                 </div>
                 {/* Live preview strip */}
                 <div className="flex items-center gap-1.5 text-xxxs font-mono">
-                  <span className="px-1.5 py-0.5 rounded bg-success/20 text-success">{t("settings.preferences.previewSuccess")}</span>
-                  <span className="px-1.5 py-0.5 rounded bg-warning/20 text-warning">{t("settings.preferences.previewWarning")}</span>
-                  <span className="px-1.5 py-0.5 rounded bg-danger/20 text-danger">{t("settings.preferences.previewError")}</span>
-                  <span className="px-1.5 py-0.5 rounded bg-info/20 text-info">{t("settings.preferences.previewInfo")}</span>
+                  <span className="px-1.5 py-0.5 rounded bg-success/20 text-success">
+                    {t("settings.preferences.previewSuccess")}
+                  </span>
+                  <span className="px-1.5 py-0.5 rounded bg-warning/20 text-warning">
+                    {t("settings.preferences.previewWarning")}
+                  </span>
+                  <span className="px-1.5 py-0.5 rounded bg-danger/20 text-danger">
+                    {t("settings.preferences.previewError")}
+                  </span>
+                  <span className="px-1.5 py-0.5 rounded bg-info/20 text-info">
+                    {t("settings.preferences.previewInfo")}
+                  </span>
                 </div>
               </div>
             </div>
@@ -374,9 +392,7 @@ const L_DEMO_RESET_OK = "Demo account reset successfully.";
                 {isDemo ? L_RESET_DEMO : L_DELETE_COOP}
               </CardTitle>
               <CardDescription className="text-xxs text-muted-foreground">
-                {isDemo
-                  ? L_RESET_DESC
-                  : L_DELETE_DESC}
+                {isDemo ? L_RESET_DESC : L_DELETE_DESC}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -389,8 +405,12 @@ const L_DEMO_RESET_OK = "Demo account reset successfully.";
                 {deleting
                   ? L_PROCESSING
                   : isDemo
-                    ? (deleteConfirm ? L_CONFIRM_RESET : L_RESET_DEMO)
-                    : (deleteConfirm ? L_CONFIRM_DELETE : L_DELETE_COOP)}
+                    ? deleteConfirm
+                      ? L_CONFIRM_RESET
+                      : L_RESET_DEMO
+                    : deleteConfirm
+                      ? L_CONFIRM_DELETE
+                      : L_DELETE_COOP}
               </Button>
             </CardContent>
           </Card>
@@ -448,9 +468,7 @@ const L_DEMO_RESET_OK = "Demo account reset successfully.";
             {u.isUpdateChecking ? t("settings.updater.checking") : t("settings.updater.checkButton")}
           </Button>
           {u.updateStatusText && (
-            <span className="text-success text-xs font-mono font-semibold block text-center">
-              {u.updateStatusText}
-            </span>
+            <span className="text-success text-xs font-mono font-semibold block text-center">{u.updateStatusText}</span>
           )}
           {u.downloadContentLength > 0 && (
             <div className="space-y-2 font-mono text-xxs">

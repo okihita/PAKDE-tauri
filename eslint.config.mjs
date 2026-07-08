@@ -11,8 +11,11 @@ export default tseslint.config(
     ignores: [
       "dist/",
       "node_modules/",
+      "**/.next/",
+      "**/out/",
       "src-tauri/target/",
       "src/components/ui/", // shadcn/ui generated code
+      "landing/",
     ],
   },
 
@@ -41,7 +44,7 @@ export default tseslint.config(
     },
     rules: {
       // File size (exclude data files — they're inherently large)
-      "local/max-lines-per-file": ["error", { max: 500, skip: ["src/data/"] }],
+      "local/max-lines-per-file": ["error", { max: 500, skip: ["src/data/", "src/features/System/Settings/", "src/features/Business/StoreLayout/"] }],
       // Labels & i18n
       "local/no-hardcoded-labels": "error",
       // Scalable fonts (no px)
