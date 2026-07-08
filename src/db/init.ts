@@ -7,21 +7,16 @@
 // Execution flow (top → bottom):
 //
 //   1.  Open the singleton SQLite connection and enable foreign keys.
-//   2.  Define `ensureColumn` — a forward-compatible migration helper
-//       used throughout the file.
-//   3.  Create the anchor table `cooperatives` (with all current columns,
-//       including `is_demo`).
-//   4.  Create all child / related tables in dependency order (parents
+//   2.  Create the anchor table `cooperatives` (with all current
+//       columns).
+//   3.  Create all child / related tables in dependency order (parents
 //       before children so FK constraints are happy).
-//   5.  Run column-level migrations for tables that were created in an
-//       earlier schema version and are missing newer columns.
-//   6.  Backfill admin users for coops that predate the auto-admin
+//   4.  Backfill admin users for coops that predate the auto-admin
 //       migration logic.
-//   7.  Seed the Indonesian administrative regions lookup table.
+//   5.  Seed the Indonesian administrative regions lookup table.
 //
-// Most statements use `CREATE TABLE IF NOT EXISTS` or
-// `ALTER TABLE ADD COLUMN` (gated by PRAGMA table_info), so the
-// function is idempotent across app upgrades.
+// Every statement uses `CREATE TABLE IF NOT EXISTS`, so the function
+// is idempotent across app launches on an existing database.
 //
 // ─────────────────────────────────────────────────────────────────
 
@@ -36,19 +31,6 @@ export async function initDb(): Promise<void> {
   // SQLite disables FK enforcement by default. Must enable per connection.
   await db.execute("PRAGMA foreign_keys = ON;");
 
-  // ── Migration helper ─────────────────────────────────────────
-  // Checks whether a column exists via PRAGMA table_info and only
-  // runs ALTER TABLE ADD COLUMN if it is missing.  This lets us
-  // evolve the schema without a formal migration framework.
-  async function ensureColumn(table: string, columnDef: string, columnName: string) {
-    const cols = await db.select<Array<{ name: string }>>(`PRAGMA table_info(${table});`);
-    const exists = cols.some((c: { name: string }) => c.name === columnName);
-    if (!exists) {
-      console.warn(`[initDb] Adding missing column: ${table}.${columnName}`);
-      await db.execute(`ALTER TABLE ${table} ADD COLUMN ${columnDef};`);
-    }
-  }
-
   // ── 2. Core entity tables ────────────────────────────────────
 
   // cooperatives — the root entity. All other tables FK back to this.
@@ -60,6 +42,7 @@ export async function initDb(): Promise<void> {
       parent_id TEXT, parent_name TEXT, business_units TEXT, officers TEXT,
       logo_path TEXT, rag_status TEXT DEFAULT 'green', health_score REAL DEFAULT 100,
       is_demo INTEGER DEFAULT 0,
+      founded_date TEXT, category TEXT,
       created_at TEXT DEFAULT (datetime('now')), updated_at TEXT DEFAULT (datetime('now'))
     );
   `);
@@ -228,9 +211,6 @@ export async function initDb(): Promise<void> {
     );
   `);
 
-  // cell_size was added after store_layouts shipped — migrate existing rows.
-  await ensureColumn("store_layouts", "cell_size REAL DEFAULT 1.0", "cell_size");
-
   // layout_zones — named rectangular areas on the shop floor (shelves, counters, etc.).
   await db.execute(`
     CREATE TABLE IF NOT EXISTS layout_zones (
@@ -273,18 +253,6 @@ export async function initDb(): Promise<void> {
     );
   `);
 
-  // Columns added to inventory_items after the initial schema shipped.
-  await ensureColumn("inventory_items", "zone_id TEXT", "zone_id");
-  await ensureColumn("inventory_items", "shelf_row INTEGER", "shelf_row");
-  await ensureColumn("inventory_items", "shelf_col INTEGER", "shelf_col");
-  await ensureColumn("inventory_items", "cooperative_id TEXT NOT NULL DEFAULT 'kdp-001'", "cooperative_id");
-  // cooperative_id was also backfilled on journal_lines for the same reason.
-  await ensureColumn("journal_lines", "cooperative_id TEXT NOT NULL DEFAULT 'kdp-001'", "cooperative_id");
-
-  // UU 25/1992 compliance metadata added after the initial cooperatives table shipped.
-  await ensureColumn("cooperatives", "founded_date TEXT", "founded_date");
-  await ensureColumn("cooperatives", "category TEXT", "category");
-
   // ── 7. Sales ─────────────────────────────────────────────────
 
   // sales_transactions — header of each sale (cash or credit).
@@ -318,8 +286,6 @@ export async function initDb(): Promise<void> {
       FOREIGN KEY (item_id, cooperative_id) REFERENCES inventory_items(id, cooperative_id)
     );
   `);
-
-  await ensureColumn("sales_transaction_items", "cooperative_id TEXT NOT NULL DEFAULT 'kdp-001'", "cooperative_id");
 
   // ── 8. Post-schema data migrations ──────────────────────────
 
