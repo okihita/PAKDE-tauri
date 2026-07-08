@@ -1,16 +1,46 @@
 import Database from "@tauri-apps/plugin-sql";
+import { resolveResource } from "@tauri-apps/api/path";
+import { copyFile, exists } from "@tauri-apps/plugin-fs";
+import { appDataDir, join } from "@tauri-apps/api/path";
 
 let _wilayahDb: Database | null = null;
 let _loadPromise: Promise<Database> | null = null;
+
+async function ensureWilayahInAppData(): Promise<void> {
+  const appData = await appDataDir();
+  const targetPath = await join(appData, "wilayah.sqlite");
+  const alreadyExists = await exists(targetPath);
+  if (alreadyExists) return;
+
+  try {
+    const resourcePath = await resolveResource("resources/wilayah.sqlite");
+    await copyFile(resourcePath, targetPath);
+    console.warn("[wilayah] Copied prebuilt DB to app data");
+  } catch {
+    // In dev mode, resolveResource gives a URL. Use a direct path fallback.
+    console.warn("[wilayah] Could not resolve resource — trying direct path");
+    // The file is at src-tauri/resources/wilayah.sqlite relative to project root
+    // In dev, cwd is project root; in prod, file is in bundle resources
+    const devPath = "src-tauri/resources/wilayah.sqlite";
+    try {
+      await copyFile(devPath, targetPath);
+      console.warn("[wilayah] Copied from dev path");
+    } catch {
+      console.error("[wilayah] Failed to locate wilayah.sqlite. The region picker will not work.");
+    }
+  }
+}
 
 /** Load the prebuilt wilayah reference database (lazy, cached). */
 export async function getWilayahDb(): Promise<Database> {
   if (_wilayahDb) return _wilayahDb;
   if (!_loadPromise) {
-    _loadPromise = Database.load("sqlite:wilayah.sqlite").then((db) => {
+    _loadPromise = (async () => {
+      await ensureWilayahInAppData();
+      const db = await Database.load("sqlite:wilayah.sqlite");
       _wilayahDb = db;
       return db;
-    });
+    })();
   }
   return _loadPromise;
 }

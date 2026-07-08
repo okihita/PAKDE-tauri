@@ -6,14 +6,13 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 import { PlusIcon } from "@phosphor-icons/react";
 import type { CooperativeProfile } from "@/types";
 import { createCooperative } from "./cooperativeDb";
+import RegionPicker from "./RegionPicker";
 
 // Module-level constants to satisfy eslint no-hardcoded-labels rule
 const LABEL_SP = "💰 Simpan Pinjam";
 const LABEL_TOKO = "🏪 Toko Desa";
 const PLACEHOLDER_NAME = "e.g. Koperasi Tani Makmur";
 const PLACEHOLDER_LEGAL_ID = "AHU-xxxxx";
-const PLACEHOLDER_REGENCY = "Mojokerto";
-const PLACEHOLDER_PROVINCE = "Jawa Timur";
 const LABEL_CATEGORY = "Kategori";
 const LABEL_FOUNDED_DATE = "Tanggal Berdiri";
 const CAT_SERBA_USAHA = "Serba Usaha";
@@ -135,52 +134,19 @@ export default function CreateProfileDialog({ open, onOpenChange, onProfileCreat
             </div>
 
             {/* Location details */}
-            <div className="grid grid-cols-2 gap-3.5">
-              <div className="space-y-1">
-                <label className="text-success font-mono text-xxxs uppercase tracking-wider">
-                  {t("profileSelect.fieldRegency")} *
-                </label>
-                <Input
-                  value={formData.regency}
-                  onChange={(e) => setFormData({ ...formData, regency: e.target.value })}
-                  placeholder={PLACEHOLDER_REGENCY}
-                  className="bg-slate-950 border-slate-800 text-slate-100 text-xs h-8.5 focus:border-success/50 focus:ring-1 focus:ring-brand/50 placeholder:text-slate-500"
-                />
-              </div>
-              <div className="space-y-1">
-                <label className="text-success font-mono text-xxxs uppercase tracking-wider">
-                  {t("profileSelect.fieldProvince")} *
-                </label>
-                <Input
-                  value={formData.province}
-                  onChange={(e) => setFormData({ ...formData, province: e.target.value })}
-                  placeholder={PLACEHOLDER_PROVINCE}
-                  className="bg-slate-950 border-slate-800 text-slate-100 text-xs h-8.5 focus:border-success/50 focus:ring-1 focus:ring-brand/50 placeholder:text-slate-500"
-                />
-              </div>
-            </div>
+            <RegionPicker
+              onChange={(region) => {
+                setFormData({
+                  ...formData,
+                  province: region.province_name,
+                  regency: region.regency_name,
+                  district: region.district_name,
+                  village: region.village_name,
+                });
+              }}
+            />
 
             <div className="grid grid-cols-3 gap-3.5">
-              <div className="space-y-1">
-                <label className="text-success font-mono text-xxxs uppercase tracking-wider">
-                  {t("profileSelect.fieldDistrict")}
-                </label>
-                <Input
-                  value={formData.district}
-                  onChange={(e) => setFormData({ ...formData, district: e.target.value })}
-                  className="bg-slate-950 border-slate-800 text-slate-100 text-xs h-8.5 focus:border-success/50 focus:ring-1 focus:ring-brand/50"
-                />
-              </div>
-              <div className="space-y-1">
-                <label className="text-success font-mono text-xxxs uppercase tracking-wider">
-                  {t("profileSelect.fieldVillage")}
-                </label>
-                <Input
-                  value={formData.village}
-                  onChange={(e) => setFormData({ ...formData, village: e.target.value })}
-                  className="bg-slate-950 border-slate-800 text-slate-100 text-xs h-8.5 focus:border-success/50 focus:ring-1 focus:ring-brand/50"
-                />
-              </div>
               <div className="space-y-1">
                 <label className="text-success font-mono text-xxxs uppercase tracking-wider">
                   {t("profileSelect.fieldPostalCode")}
