@@ -27,8 +27,10 @@ import {
   FileTextIcon,
   SignOut,
   MapPinIcon,
+  LockSimple,
 } from "@phosphor-icons/react";
 import { getCurrentLevel } from "@/data/leveling";
+import { isTabUnlocked, getUnlockRequirementLabel } from "@/features/Sidebar/moduleUnlock";
 import type { CooperativeProfile, EwsAlert } from "@/types";
 
 interface SidebarProps {
@@ -185,6 +187,22 @@ export default function Sidebar({
   function renderNavItem(item: NavItemDef, isChild = false) {
     const Icon = item.icon;
     const isActive = activeTab === item.id;
+    const unlocked = isTabUnlocked(item.id, healthScore);
+    const unlockLabel = getUnlockRequirementLabel(item.id);
+
+    if (!unlocked) {
+      return (
+        <div
+          key={item.id}
+          title={unlockLabel || undefined}
+          className={`flex items-center gap-3 rounded-lg transition-all text-xs font-semibold border-[0.5px] opacity-40 cursor-not-allowed text-muted-foreground border-transparent ${isChild ? "px-4 ml-3 py-2" : "px-4 py-3"}`}
+        >
+          <LockSimple className="h-4 w-4 shrink-0" />
+          <span>{item.label}</span>
+        </div>
+      );
+    }
+
     return (
       <div
         key={item.id}

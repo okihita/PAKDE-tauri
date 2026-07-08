@@ -61,13 +61,22 @@ export async function seedDemoCooperativeAtLevel(level: DemoLevel): Promise<void
     ],
   );
 
-  // 3. Seed COA — always full set (no harm; unused accounts just sit idle)
+  // 3. Seed demo admin user (PIN: 123456)
+  const demoUserId = "usr-demo-001";
+  const defaultPinHash = "8d969ee56701d853af7b830aef854b3c7b288d60c9329ee3073a56657a8c462a"; // SHA-256 of "123456"
+  await db.execute(
+    `INSERT INTO local_users (id, cooperative_id, name, role, pin_hash)
+     VALUES (?, ?, ?, ?, ?)`,
+    [demoUserId, DEMO_COOP.id, "Slamet Riyadi", "admin", defaultPinHash],
+  );
+
+  // 4. Seed COA — always full set (no harm; unused accounts just sit idle)
   await seedDemoCoaAccounts(db);
 
-  // 4. Seed categories — tier-specific
+  // 5. Seed categories — tier-specific
   await seedDemoCategoriesAtLevel(db, level);
 
-  // 5. Seed inventory — tier-specific
+  // 6. Seed inventory — tier-specific
   await seedDemoInventoryAtLevel(db, level);
 }
 

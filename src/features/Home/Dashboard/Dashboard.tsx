@@ -11,6 +11,7 @@ import { SortableContext, useSortable, arrayMove, rectSortingStrategy } from "@d
 import { CSS } from "@dnd-kit/utilities";
 import CalendarWidget from "./DashboardCalendar";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { getInitialTasksForCoop } from "./dashboardTasks";
 import "./Dashboard.css";
 
 interface Todo {
@@ -28,22 +29,6 @@ const SOURCE_BADGE: Record<NewsItem["source"], string> = {
 };
 
 // ── Helpers ───────────────────────────────────────────────────────
-
-const WEEKLY_DEFAULTS: Todo[] = [
-  { id: "weekly-1", text: "Lakukan pencatatan transaksi minimal 5 kali", done: false },
-  { id: "weekly-2", text: "Tambahkan 3 anggota baru ke database", done: false },
-  { id: "weekly-3", text: "Perbarui profil koperasi di Pengaturan", done: false },
-  { id: "weekly-4", text: "Lakukan sinkronisasi data dengan kabupaten", done: false },
-  { id: "weekly-5", text: "Cek laporan keuangan di modul Akuntansi", done: false },
-  { id: "weekly-6", text: "Tinjau alert EWS dan ambil tindakan", done: false },
-  { id: "weekly-7", text: "Evaluasi kelayakan finansial koperasi", done: false },
-];
-
-const MAIN_DEFAULTS: Todo[] = [
-  { id: "main-1", text: "Laporan SHU bulan ini harus disetor sebelum tanggal 10", done: false },
-  { id: "main-2", text: "Rapat Anggota Tahunan: persiapkan agenda", done: false },
-  { id: "main-3", text: "Cek outstanding pinjaman anggota aktif", done: false },
-];
 
 function useTodoList(key: string, defaults: Todo[] = []) {
   const [items, setItems] = useState<Todo[]>(() => {
@@ -169,12 +154,16 @@ function SortableCard({ id, children, className }: { id: string; children: React
 
 // ── Main ──────────────────────────────────────────────────────────
 
-export default function Dashboard() {
+export default function Dashboard({ healthScore = 0 }: { healthScore?: number }) {
   const { t } = useTranslation();
   const { items: cardOrder, onDragEnd } = useCardOrder();
+
+  // Compute level-aware task defaults
+  const taskDefaults = getInitialTasksForCoop(healthScore, []);
+
   const daily = useTodoList("pakde-todos-daily");
-  const weekly = useTodoList("pakde-todos-weekly", WEEKLY_DEFAULTS);
-  const main = useTodoList("pakde-todos-main", MAIN_DEFAULTS);
+  const weekly = useTodoList("pakde-todos-weekly", taskDefaults.weeklyQuests);
+  const main = useTodoList("pakde-todos-main", taskDefaults.mainQuests);
   const { readIds, markRead, markAllRead } = useNewsRead();
   const [tab, setTab] = useState<"daily" | "weekly">("daily");
   const [newTask, setNewTask] = useState("");

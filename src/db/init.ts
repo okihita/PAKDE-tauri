@@ -256,5 +256,26 @@ export async function initDb(): Promise<void> {
 
   await ensureColumn("sales_transaction_items", "cooperative_id TEXT NOT NULL DEFAULT 'kdp-001'", "cooperative_id");
 
+  // ── Migration: auto-create admin user for coops without any users ──
+  await (async () => {
+    const coops = await db.select<Array<{ id: string }>>("SELECT id FROM cooperatives");
+    for (const coop of coops) {
+      const users = await db.select<Array<{ id: string }>>("SELECT id FROM local_users WHERE cooperative_id = ?", [
+        coop.id,
+      ]);
+      if (users.length === 0) {
+        const userId = `usr-${crypto.randomUUID().slice(0, 8)}`;
+        // SHA-256 hash of "123456" — default PIN for migrated coops
+        const defaultPinHash = "8d969ee56701d853af7b830aef854b3c7b288d60c9329ee3073a56657a8c462a";
+        await db.execute(
+          `INSERT INTO local_users (id, cooperative_id, name, role, pin_hash)
+           VALUES (?, ?, ?, ?, ?)`,
+          [userId, coop.id, "Slamet Riyadi", "admin", defaultPinHash],
+        );
+        console.warn(`[initDb] Migrated coop ${coop.id}: created default admin user (PIN: 123456)`);
+      }
+    }
+  })();
+
   await initWilayah();
 }

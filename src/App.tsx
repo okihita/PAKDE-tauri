@@ -1,8 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { cn } from "@/lib/utils";
 import "@/i18n"; // initialize i18next before render
 import { initDb } from "@/db";
 import { listCooperatives, getCooperativeById } from "@/features/System/ProfileSelect/cooperativeDb";
+import { getUsersByCooperativeId } from "@/features/System/ProfileSelect/userDb";
+import { isTabUnlocked } from "@/features/Sidebar/moduleUnlock";
 import { ToastProvider } from "@/hooks/useToast";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { IconProvider } from "@/components/IconContext";
@@ -30,8 +32,11 @@ import Participation from "@/features/Community/Participation/Participation";
 import Sync from "@/features/System/Sync/Sync";
 import Settings from "@/features/System/Settings/Settings";
 import ProfileSelect from "@/features/System/ProfileSelect/ProfileSelect";
+import CreateUserProfile from "@/features/System/ProfileSelect/CreateUserProfile";
+import UserSignIn from "@/features/System/ProfileSelect/UserSignIn";
 import ProfileCompletion from "@/features/Home/Dashboard/ProfileCompletion";
-import { getErrorMessage, type CooperativeProfile, type EwsAlert } from "@/types";
+import { getErrorMessage, type CooperativeProfile, type EwsAlert, type LocalUser } from "@/types";
+import { DEMO_COOP_UUID } from "@/db/seed-demo";
 
 type FontLevel = "small" | "normal" | "large" | "xlarge";
 const FONT_LEVELS: FontLevel[] = ["small", "normal", "large", "xlarge"];
@@ -40,13 +45,11 @@ const TITLEBAR_TEXT = "PAKDE";
 
 function AppContent() {
   usePaletteInit();
-  const [appState, setAppState] = useState<"splash" | "profile_select" | "main" | "db_error">("splash");
+  const [appState, setAppState] = useState<
+    "splash" | "profile_select" | "user_signin" | "user_create" | "main" | "db_error"
+  >("splash");
   const [dbErrorMessage, setDbErrorMessage] = useState("");
-  const [currentUser] = useState<{ id: string; name: string; role: string }>({
-    id: "usr-001",
-    name: "Slamet Riyadi",
-    role: "Ketua Koperasi",
-  });
+  const [currentUser, setCurrentUser] = useState<LocalUser | null>(null);
 
   const [activeTab, setActiveTab] = useState<
     | "home"
@@ -163,6 +166,19 @@ function AppContent() {
     })();
   }, [appState, coopProfile?.id]);
 
+  // Module gating guard: wrap setActiveTab to redirect locked tabs
+  const guardedSetActiveTab = useCallback(
+    (tab: typeof activeTab) => {
+      const score = coopProfile?.health_score ?? 0;
+      if (!isTabUnlocked(tab, score)) {
+        setActiveTab("home");
+      } else {
+        setActiveTab(tab);
+      }
+    },
+    [coopProfile?.health_score],
+  );
+
   const handleSwitchProfile = () => {
     setCoopProfile(null);
     localStorage.removeItem("pakde-active-profile-id");
@@ -218,11 +234,62 @@ function AppContent() {
         {titleBar}
         <div className="flex-1 overflow-hidden">
           <ProfileSelect
-            onProfileSelect={(profile) => {
+            onProfileSelect={async (profile) => {
               setCoopProfile(profile);
               localStorage.setItem("pakde-active-profile-id", profile.id || "");
+              // Demo coop — auto-login with seeded user, skip PIN
+              if (profile.id === DEMO_COOP_UUID) {
+                const users = await getUsersByCooperativeId(profile.id || "");
+                if (users.length > 0) {
+                  setCurrentUser(users[0]);
+                  setAppState("main");
+                  return;
+                }
+              }
+              const users = await getUsersByCooperativeId(profile.id || "");
+              if (users.length === 0) {
+                setAppState("user_create");
+              } else {
+                setAppState("user_signin");
+              }
+            }}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  if (appState === "user_create" && coopProfile) {
+    return (
+      <div className="flex flex-col h-screen overflow-hidden">
+        {titleBar}
+        <div className="flex-1 overflow-hidden">
+          <CreateUserProfile
+            cooperativeId={coopProfile.id || ""}
+            cooperativeName={coopProfile.name}
+            onComplete={(user) => {
+              setCurrentUser(user);
               setAppState("main");
             }}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  if (appState === "user_signin" && coopProfile) {
+    return (
+      <div className="flex flex-col h-screen overflow-hidden">
+        {titleBar}
+        <div className="flex-1 overflow-hidden">
+          <UserSignIn
+            cooperativeId={coopProfile.id || ""}
+            cooperativeName={coopProfile.name}
+            onSuccess={(user) => {
+              setCurrentUser(user);
+              setAppState("main");
+            }}
+            onBack={() => setAppState("profile_select")}
           />
         </div>
       </div>
@@ -235,7 +302,7 @@ function AppContent() {
       <div className="app-container flex flex-1 text-foreground antialiased overflow-hidden">
         <Sidebar
           activeTab={activeTab}
-          onTabChange={setActiveTab}
+          onTabChange={guardedSetActiveTab}
           coopProfile={coopProfile}
           ewsAlerts={ewsAlerts}
           memberCount={memberCount}
@@ -258,7 +325,7 @@ function AppContent() {
                   <ProfileCompletion profile={coopProfile} onUpdate={(p) => setCoopProfile(p)} />
                 </div>
               )}
-              <Dashboard />
+              <Dashboard healthScore={coopProfile?.health_score ?? 0} />
             </>
           )}
           {activeTab === "statistics" && (
@@ -296,7 +363,7 @@ function AppContent() {
               setFontSizeSetting={setFontSizeSetting}
               appTheme={appTheme}
               setAppTheme={setAppTheme}
-              currentUser={currentUser}
+              currentUser={currentUser ? { id: currentUser.id, name: currentUser.name, role: currentUser.role } : null}
               onSwitchProfile={handleSwitchProfile}
             />
           )}

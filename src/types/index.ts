@@ -1,5 +1,18 @@
 // ── Domain models ────────────────────────────────────────────────
 
+export interface LocalUser {
+  id: string;
+  cooperative_id: string;
+  name: string;
+  role: "admin" | "operator" | "pengawas";
+  pin_hash: string;
+  recovery_question?: string;
+  recovery_answer_hash?: string;
+  failed_attempts?: number;
+  locked_until?: string;
+  created_at?: string;
+}
+
 export interface Member {
   id?: string;
   nik: string;
