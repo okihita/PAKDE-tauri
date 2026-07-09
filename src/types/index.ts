@@ -81,6 +81,7 @@ export interface CooperativeProfile {
   logo_path?: string;
   rag_status: string;
   health_score: number;
+  xp: number;
   status?: string;
   level?: string;
   parent_id?: string;

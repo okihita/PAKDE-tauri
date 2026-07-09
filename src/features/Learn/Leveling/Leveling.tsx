@@ -19,7 +19,7 @@ import {
 } from "@phosphor-icons/react";
 
 interface Props {
-  healthScore?: number;
+  xp?: number;
 }
 
 const ASPECT_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -48,21 +48,21 @@ function LevelCard({
   level,
   lang,
   t,
-  healthScore,
+  xp,
 }: {
   level: LevelDef;
   lang: string;
   t: (key: string, opts?: Record<string, unknown>) => string;
-  healthScore: number;
+  xp: number;
 }) {
   const [open, setOpen] = useState(false);
   const Icon = TrophyIcon;
   const isId = lang.startsWith("id");
   const label = isId ? level.labelId : level.labelEn;
   const desc = isId ? level.descId : level.descEn;
-  const { xp, maxXp, percent } = getLevelProgress(level, healthScore);
-  const isUnlocked = healthScore >= level.minScore;
-  const currentLevel = getCurrentLevel(healthScore);
+  const { xp: earned, maxXp, percent } = getLevelProgress(level, xp);
+  const isUnlocked = xp >= level.minXp;
+  const currentLevel = getCurrentLevel(xp);
   const isCurrent = currentLevel.id === level.id;
 
   return (
@@ -99,7 +99,9 @@ function LevelCard({
             {/* XP progress */}
             <div className="hidden sm:block w-24">
               <div className="flex justify-between text-xxxs font-mono mb-0.5">
-                <span className="text-muted-foreground">{isId ? `XP ${xp}/${maxXp}` : `XP ${xp}/${maxXp}`}</span>
+                <span className="text-muted-foreground">
+                  {isId ? `XP ${earned}/${maxXp}` : `XP ${earned}/${maxXp}`}
+                </span>
                 <span className={level.textClass}>{percent}%</span>
               </div>
               <div className="h-1.5 bg-muted rounded-full overflow-hidden">
@@ -151,10 +153,10 @@ function LevelCard({
   );
 }
 
-export default function Leveling({ healthScore = 0 }: Props) {
+export default function Leveling({ xp = 0 }: Props) {
   const { t, i18n } = useTranslation();
   const isId = i18n.language.startsWith("id");
-  const currentLevel = getCurrentLevel(healthScore);
+  const currentLevel = getCurrentLevel(xp);
 
   return (
     <div className="flex-1 overflow-auto p-6 space-y-6">
@@ -184,14 +186,14 @@ export default function Leveling({ healthScore = 0 }: Props) {
               </span>
             </div>
             <span className="text-xxs font-mono text-muted-foreground">
-              {isId ? `Skor Kesehatan: ${healthScore} / 100` : `Health Score: ${healthScore} / 100`}
+              {isId ? `XP: ${xp} / 100` : `XP: ${xp} / 100`}
             </span>
           </div>
           {/* Global XP bar */}
           <div className="h-2 bg-muted rounded-full overflow-hidden">
             <div
               className="h-full bg-linear-to-r from-brand to-warning rounded-full transition-all duration-500"
-              style={{ width: `${Math.min(100, healthScore)}%` }}
+              style={{ width: `${Math.min(100, xp)}%` }}
             />
           </div>
           <div className="flex justify-between mt-1 text-xxxs font-mono text-muted-foreground">
@@ -207,8 +209,7 @@ export default function Leveling({ healthScore = 0 }: Props) {
           const Icon = level.id === "teladan" ? TrophyIcon : StarIcon;
           const label = isId ? level.labelId : level.labelEn;
           const isActive = currentLevel.id === level.id;
-          const isComplete =
-            healthScore >= level.maxScore && level.maxScore >= 100 ? healthScore >= 100 : healthScore >= level.maxScore;
+          const isComplete = xp >= level.maxXp && level.maxXp >= 100 ? xp >= 100 : xp >= level.maxXp;
           return (
             <div
               key={level.id}
@@ -239,7 +240,7 @@ export default function Leveling({ healthScore = 0 }: Props) {
       {/* Level cards */}
       <div className="space-y-3">
         {LEVELS.map((level: LevelDef) => (
-          <LevelCard key={level.id} level={level} lang={i18n.language} t={t} healthScore={healthScore} />
+          <LevelCard key={level.id} level={level} lang={i18n.language} t={t} xp={xp} />
         ))}
       </div>
     </div>

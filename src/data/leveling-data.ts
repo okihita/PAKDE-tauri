@@ -12,8 +12,8 @@ export const LEVELS: LevelDef[] = [
     color: "#6b7280",
     bgClass: "bg-gray-500/10",
     textClass: "text-gray-400",
-    minScore: 0,
-    maxScore: 9,
+    minXp: 0,
+    maxXp: 9,
     aspects: [
       {
         aspectId: "membership",
@@ -83,8 +83,8 @@ export const LEVELS: LevelDef[] = [
     color: "#6366f1",
     bgClass: "bg-indigo-500/10",
     textClass: "text-indigo-400",
-    minScore: 10,
-    maxScore: 19,
+    minXp: 10,
+    maxXp: 19,
     aspects: [
       {
         aspectId: "membership",
@@ -154,8 +154,8 @@ export const LEVELS: LevelDef[] = [
     color: "#3b82f6",
     bgClass: "bg-info/10",
     textClass: "text-info",
-    minScore: 20,
-    maxScore: 29,
+    minXp: 20,
+    maxXp: 29,
     aspects: [
       {
         aspectId: "membership",
@@ -231,8 +231,8 @@ export const LEVELS: LevelDef[] = [
     color: "#06b6d4",
     bgClass: "bg-cyan-500/10",
     textClass: "text-cyan-400",
-    minScore: 30,
-    maxScore: 39,
+    minXp: 30,
+    maxXp: 39,
     aspects: [
       {
         aspectId: "membership",
@@ -305,8 +305,8 @@ export const LEVELS: LevelDef[] = [
     color: "#10b981",
     bgClass: "bg-success/10",
     textClass: "text-success",
-    minScore: 40,
-    maxScore: 49,
+    minXp: 40,
+    maxXp: 49,
     aspects: [
       {
         aspectId: "membership",
@@ -382,8 +382,8 @@ export const LEVELS: LevelDef[] = [
     color: "#14b8a6",
     bgClass: "bg-teal-500/10",
     textClass: "text-teal-400",
-    minScore: 50,
-    maxScore: 59,
+    minXp: 50,
+    maxXp: 59,
     aspects: [
       {
         aspectId: "membership",
@@ -457,8 +457,8 @@ export const LEVELS: LevelDef[] = [
     color: "#a855f7",
     bgClass: "bg-purple-500/10",
     textClass: "text-purple-400",
-    minScore: 60,
-    maxScore: 69,
+    minXp: 60,
+    maxXp: 69,
     aspects: [
       {
         aspectId: "membership",
@@ -532,8 +532,8 @@ export const LEVELS: LevelDef[] = [
     color: "#ec4899",
     bgClass: "bg-pink-500/10",
     textClass: "text-pink-400",
-    minScore: 70,
-    maxScore: 79,
+    minXp: 70,
+    maxXp: 79,
     aspects: [
       {
         aspectId: "membership",
@@ -610,8 +610,8 @@ export const LEVELS: LevelDef[] = [
     color: "#f97316",
     bgClass: "bg-orange-500/10",
     textClass: "text-orange-400",
-    minScore: 80,
-    maxScore: 89,
+    minXp: 80,
+    maxXp: 89,
     aspects: [
       {
         aspectId: "membership",
@@ -687,8 +687,8 @@ export const LEVELS: LevelDef[] = [
     color: "#f59e0b",
     bgClass: "bg-warning/10",
     textClass: "text-warning",
-    minScore: 90,
-    maxScore: 100,
+    minXp: 90,
+    maxXp: 100,
     aspects: [
       {
         aspectId: "membership",

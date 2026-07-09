@@ -458,10 +458,18 @@
   },
   "ranking": {
     "title": "Peringkat Koperasi",
+    "beaconTitle": "Lihat peringkat",
+    "beaconLocked": "Peringkat terbuka pada Health Score 60",
     "scope": {
       "kabupaten": "Kabupaten/Kota",
       "provinsi": "Provinsi",
       "nasional": "Nasional"
+    },
+    "metric": {
+      "health": "Kesehatan Terbaik",
+      "growth": "Pertumbuhan Tercepat",
+      "membership": "Keanggotaan",
+      "impact": "Dampak Komunitas"
     },
     "table": {
       "coop": "Koperasi",
@@ -470,7 +478,21 @@
     },
     "summary": {
       "from": "dari {{total}} koperasi"
-    }
+    },
+    "status": {
+      "live": "Live",
+      "stale": "Kadaluarsa",
+      "offline": "Offline",
+      "loading": "Memuat"
+    },
+    "lastUpdated": "disinkronkan {{time}}",
+    "refresh": "Segarkan",
+    "submit": "Kirim Statistik Koperasi",
+    "submitting": "Mengirim",
+    "staleHint": "Menampilkan data sinkronisasi terakhir",
+    "offlineEmptyTitle": "Peringkat membutuhkan node federasi",
+    "offlineEmptyDesc": "Papan peringkat hanya tersedia saat tersinkron ke cloud PAKDE. Hubungkan ke internet dan sinkron untuk berkompetisi dengan koperasi lain.",
+    "goSync": "Buka Sinkronisasi"
   },
   "event": {
     "empty": {

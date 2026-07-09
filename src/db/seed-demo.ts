@@ -33,6 +33,15 @@ export async function seedDemoCooperativeAtLevel(level: DemoLevel): Promise<void
   const db = await getDb();
   const tier = DEMO_TIERS.find((t) => t.level === level) ?? DEMO_TIERS[0];
 
+  // Progression (xp) + operational EWS health, mapped onto the demo tier so a
+  // "pemula" coop genuinely starts low and "lanjutan" sits near the top.
+  const TIER_PROGRESSION: Record<DemoLevel, { xp: number; health: number; rag: string }> = {
+    pemula: { xp: 12, health: 18, rag: "Merah" },
+    menengah: { xp: 45, health: 55, rag: "Kuning" },
+    lanjutan: { xp: 82, health: 88, rag: "Hijau" },
+  };
+  const prog = TIER_PROGRESSION[tier.level];
+
   // 1. Clear any existing demo data
   await clearDemoCooperative();
 
@@ -41,8 +50,8 @@ export async function seedDemoCooperativeAtLevel(level: DemoLevel): Promise<void
   const units = JSON.stringify(tier.units);
   const foundedDate = computeFoundedDate(tier);
   await db.execute(
-    `INSERT INTO cooperatives (id, name, regency, province, village, level, business_units, officers, status, founded_date, category, is_demo)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)`,
+    `INSERT INTO cooperatives (id, name, regency, province, village, level, business_units, officers, status, founded_date, category, xp, health_score, rag_status, is_demo)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)`,
     [
       DEMO_COOP.id,
       tier.coopName,
@@ -55,6 +64,9 @@ export async function seedDemoCooperativeAtLevel(level: DemoLevel): Promise<void
       DEMO_COOP.status,
       foundedDate,
       DEMO_COOP.category,
+      prog.xp,
+      prog.health,
+      prog.rag,
     ],
   );
 

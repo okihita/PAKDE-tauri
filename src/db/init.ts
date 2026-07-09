@@ -53,7 +53,7 @@ export async function initDb(): Promise<void> {
     // NOTE: this wipes all data on a version bump — acceptable for the
     // current dev/demo stage. Bump SCHEMA_VERSION whenever the schema in
     // this file changes incompatibly.
-    const SCHEMA_VERSION = 1;
+    const SCHEMA_VERSION = 2;
 
     await db.execute(`CREATE TABLE IF NOT EXISTS _schema_meta (key TEXT PRIMARY KEY, value TEXT);`);
     const meta = await db.select<Array<{ value: string }>>(
@@ -83,6 +83,7 @@ export async function initDb(): Promise<void> {
       postal_code TEXT, phone TEXT, email TEXT, level TEXT DEFAULT 'desa',
       parent_id TEXT, parent_name TEXT, business_units TEXT, officers TEXT,
       logo_path TEXT, rag_status TEXT DEFAULT 'green', health_score REAL DEFAULT 100,
+      xp INTEGER NOT NULL DEFAULT 0,
       is_demo INTEGER DEFAULT 0,
       founded_date TEXT, category TEXT,
       created_at TEXT DEFAULT (datetime('now')), updated_at TEXT DEFAULT (datetime('now'))

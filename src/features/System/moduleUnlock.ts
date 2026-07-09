@@ -25,12 +25,12 @@ export const TABS_LEVEL_REQUIREMENTS: Record<string, number> = {
 };
 
 /**
- * Check whether a tab is unlocked at a given health score.
+ * Check whether a tab is unlocked at a given progression xp.
  */
-export function isTabUnlocked(tab: string, healthScore: number): boolean {
+export function isTabUnlocked(tab: string, score: number): boolean {
   const requiredScore = TABS_LEVEL_REQUIREMENTS[tab];
   if (requiredScore === undefined) return true;
-  return healthScore >= requiredScore;
+  return score >= requiredScore;
 }
 
 /**

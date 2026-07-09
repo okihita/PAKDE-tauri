@@ -1,129 +1,33 @@
 import "./Ranking.css";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { formatDistanceToNow } from "date-fns";
+import {
+  TrophyIcon,
+  MedalIcon,
+  TrendUpIcon,
+  TrendDownIcon,
+  MinusIcon,
+  StarIcon,
+  ArrowsClockwise,
+  CloudArrowUp,
+  WifiSlash,
+  CircleNotch,
+} from "@phosphor-icons/react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { TrophyIcon, MedalIcon, TrendUpIcon, TrendDownIcon, MinusIcon, StarIcon } from "@phosphor-icons/react";
-import type { CooperativeProfile } from "@/types";
+import { Button } from "@/components/ui/button";
+import type { RankedCoop, RankingMetric, RankingScope } from "./rankingService";
+import type { RankingState } from "./useRanking";
 
 interface Props {
-  coopProfile: CooperativeProfile | null;
+  ranking: RankingState;
+  onGoSync: () => void;
 }
 
-interface MockRankedCoop {
-  rank: number;
-  name: string;
-  village: string;
-  healthScore: number;
-  ragStatus: string;
-  trend: "up" | "down" | "stable";
-  isOurs: boolean;
-}
-
-const OUR_NAME = "Koperasi Maju Makmur";
-const OUR_VILLAGE = "Desa Makmur Jaya";
-
-function generateMockLeaderboard(
-  ourRank: number,
-  ourHealth: number,
-  ourRag: string,
-  extraCoops: Omit<MockRankedCoop, "isOurs" | "trend">[],
-): MockRankedCoop[] {
-  const list: MockRankedCoop[] = [];
-
-  for (const c of extraCoops) {
-    if (c.rank === ourRank) {
-      list.push({ ...c, isOurs: true, trend: "up" });
-    } else {
-      list.push({ ...c, isOurs: false, trend: Math.random() > 0.5 ? "up" : Math.random() > 0.5 ? "down" : "stable" });
-    }
-  }
-
-  list.sort((a, b) => a.rank - b.rank);
-
-  // Insert ours at correct position if not already there
-  if (!list.some((c) => c.isOurs)) {
-    list.push({
-      rank: ourRank,
-      name: OUR_NAME,
-      village: OUR_VILLAGE,
-      healthScore: ourHealth,
-      ragStatus: ourRag,
-      trend: "up",
-      isOurs: true,
-    });
-    list.sort((a, b) => a.rank - b.rank);
-  }
-
-  return list;
-}
-
-// ── Mock data ──────────────────────────────────────────────────────
-
-const KABUPATEN_MOCK: Omit<MockRankedCoop, "isOurs" | "trend">[] = [
-  { rank: 1, name: "KSU Guyub Rukun", village: "Desa Sooko", healthScore: 94, ragStatus: "Hijau" },
-  { rank: 2, name: "KUD Sumber Makmur", village: "Desa Gondang", healthScore: 91, ragStatus: "Hijau" },
-  { rank: 3, name: "Koperasi Tani Jaya", village: "Desa Kemlagi", healthScore: 88, ragStatus: "Hijau" },
-  { rank: 4, name: "KSP Mitra Usaha", village: "Desa Gedeg", healthScore: 85, ragStatus: "Hijau" },
-  { rank: 5, name: "KUD Tani Subur", village: "Desa Dawarblandong", healthScore: 82, ragStatus: "Hijau" },
-  { rank: 6, name: "KSU Bina Sejahtera", village: "Desa Jetis", healthScore: 79, ragStatus: "Hijau" },
-  { rank: 7, name: "Koperasi Serba Usaha Mapan", village: "Desa Puri", healthScore: 76, ragStatus: "Kuning" },
-  { rank: 8, name: "KSP Surya Mandiri", village: "Desa Trowulan", healthScore: 72, ragStatus: "Kuning" },
-  { rank: 9, name: "KUD Harapan Tani", village: "Desa Bangsal", healthScore: 70, ragStatus: "Kuning" },
-  { rank: 10, name: "KSU Sejahtera Abadi", village: "Desa Mojoanyar", healthScore: 68, ragStatus: "Kuning" },
-  { rank: 11, name: "Koperasi Wanita Kartini", village: "Desa Pungging", healthScore: 65, ragStatus: "Kuning" },
-  { rank: 12, name: "KSP Gotong Royong", village: "Desa Ngoro", healthScore: 63, ragStatus: "Kuning" },
-  { rank: 13, name: "KUD Mekar Tani", village: "Desa Kutorejo", healthScore: 60, ragStatus: "Kuning" },
-  { rank: 14, name: "KSU Mutiara Desa", village: "Desa Dlanggu", healthScore: 57, ragStatus: "Merah" },
-  { rank: 15, name: "Koperasi Simpan Pinjam Rukun", village: "Desa Pacet", healthScore: 54, ragStatus: "Merah" },
-  { rank: 16, name: "KUD Lestari Makmur", village: "Desa Trawas", healthScore: 51, ragStatus: "Merah" },
-  { rank: 17, name: "KSP Barokah", village: "Desa Jatirejo", healthScore: 48, ragStatus: "Merah" },
-  { rank: 18, name: "KSU Sido Makmur", village: "Desa Gondang", healthScore: 45, ragStatus: "Merah" },
-  { rank: 19, name: "KUD Karya Tani", village: "Desa Kemlagi", healthScore: 42, ragStatus: "Merah" },
-  { rank: 20, name: "KSP Sumber Rejeki", village: "Desa Mojoanyar", healthScore: 39, ragStatus: "Merah" },
-];
-
-const PROVINSI_MOCK: Omit<MockRankedCoop, "isOurs" | "trend">[] = [
-  { rank: 1, name: "KUD Sumber Makmur", village: "Kab. Mojokerto", healthScore: 97, ragStatus: "Hijau" },
-  { rank: 2, name: "KSU Guyub Rukun", village: "Kab. Mojokerto", healthScore: 95, ragStatus: "Hijau" },
-  { rank: 3, name: "KSP Bhakti Utama", village: "Kab. Malang", healthScore: 93, ragStatus: "Hijau" },
-  { rank: 4, name: "KUD Subur Tani", village: "Kab. Jombang", healthScore: 90, ragStatus: "Hijau" },
-  { rank: 5, name: "Koperasi Tani Jaya", village: "Kab. Mojokerto", healthScore: 88, ragStatus: "Hijau" },
-  { rank: 6, name: "KSP Mitra Usaha", village: "Kab. Mojokerto", healthScore: 85, ragStatus: "Hijau" },
-  { rank: 7, name: "KUD Mulyo Rejo", village: "Kab. Kediri", healthScore: 83, ragStatus: "Hijau" },
-  { rank: 8, name: "KSP Surya Cemerlang", village: "Kab. Sidoarjo", healthScore: 81, ragStatus: "Hijau" },
-  { rank: 9, name: "KSU Taman Sari", village: "Kota Surabaya", healthScore: 78, ragStatus: "Kuning" },
-  { rank: 10, name: "KUD Makmur Sentosa", village: "Kab. Gresik", healthScore: 76, ragStatus: "Kuning" },
-  { rank: 11, name: "Koperasi Serba Usaha Mapan", village: "Kab. Mojokerto", healthScore: 74, ragStatus: "Kuning" },
-  { rank: 12, name: "KSP Restu Bumi", village: "Kab. Pasuruan", healthScore: 72, ragStatus: "Kuning" },
-  { rank: 13, name: "KSU Bina Sejahtera", village: "Kab. Mojokerto", healthScore: 70, ragStatus: "Kuning" },
-  { rank: 14, name: "KUD Tani Subur", village: "Kab. Mojokerto", healthScore: 68, ragStatus: "Kuning" },
-];
-
-const NASIONAL_MOCK: Omit<MockRankedCoop, "isOurs" | "trend">[] = [
-  { rank: 1, name: "KSP Bhakti Utama", village: "Jawa Timur", healthScore: 99, ragStatus: "Hijau" },
-  { rank: 2, name: "KUD Sumber Makmur", village: "Jawa Timur", healthScore: 97, ragStatus: "Hijau" },
-  { rank: 3, name: "Koperasi Serba Usaha Mandiri", village: "Jawa Barat", healthScore: 96, ragStatus: "Hijau" },
-  { rank: 4, name: "KUD Subur Tani", village: "Jawa Timur", healthScore: 94, ragStatus: "Hijau" },
-  { rank: 5, name: "KSU Guyub Rukun", village: "Jawa Timur", healthScore: 93, ragStatus: "Hijau" },
-  { rank: 6, name: "KSP Makmur Sentosa", village: "Jawa Tengah", healthScore: 91, ragStatus: "Hijau" },
-  { rank: 7, name: "KUD Mulyo Rejo", village: "Jawa Timur", healthScore: 89, ragStatus: "Hijau" },
-  { rank: 8, name: "Koperasi Tani Jaya", village: "Jawa Timur", healthScore: 87, ragStatus: "Hijau" },
-  { rank: 9, name: "KSU Taman Sari", village: "Jawa Timur", healthScore: 85, ragStatus: "Hijau" },
-  { rank: 10, name: "KSP Mitra Usaha", village: "Jawa Timur", healthScore: 84, ragStatus: "Hijau" },
-  { rank: 11, name: "KUD Sedyo Mukti", village: "DI Yogyakarta", healthScore: 82, ragStatus: "Hijau" },
-  { rank: 12, name: "KSU Bina Sejahtera", village: "Jawa Timur", healthScore: 80, ragStatus: "Kuning" },
-  { rank: 13, name: "KSP Surya Cemerlang", village: "Jawa Timur", healthScore: 78, ragStatus: "Kuning" },
-  { rank: 14, name: "KUD Makmur Sentosa", village: "Jawa Timur", healthScore: 76, ragStatus: "Kuning" },
-  { rank: 15, name: "Koperasi Serba Usaha Mapan", village: "Jawa Timur", healthScore: 74, ragStatus: "Kuning" },
-  { rank: 16, name: "KUD Sumber Rejeki", village: "Bali", healthScore: 73, ragStatus: "Kuning" },
-  { rank: 17, name: "KSP Karya Bersama", village: "Sumatera Utara", healthScore: 71, ragStatus: "Kuning" },
-  { rank: 18, name: "KSU Harapan Jaya", village: "Sulawesi Selatan", healthScore: 69, ragStatus: "Kuning" },
-  { rank: 19, name: "KUD Restu Bumi", village: "Jawa Timur", healthScore: 67, ragStatus: "Kuning" },
-  { rank: 20, name: "KSP Tani Subur", village: "Jawa Timur", healthScore: 65, ragStatus: "Kuning" },
-];
-
-// ── Helpers ────────────────────────────────────────────────────────
+const SCOPES: RankingScope[] = ["kabupaten", "provinsi", "nasional"];
+const METRICS: RankingMetric[] = ["health", "growth", "membership", "impact"];
 
 function ragColor(status: string): string {
   const s = status.toLowerCase();
@@ -145,28 +49,54 @@ function rankMedal(rank: number) {
   return <span className="text-xxs font-mono text-muted-foreground w-4 text-center">{rank}</span>;
 }
 
-// ── Main ──────────────────────────────────────────────────────────
-
-export default function Ranking({ coopProfile }: Props) {
+export default function Ranking({ ranking, onGoSync }: Props) {
   const { t } = useTranslation();
-  const healthScore = coopProfile?.health_score ?? 65;
-  const ragStatus = coopProfile?.rag_status ?? "Kuning";
+  const { status, lastUpdated, boards, ourRanks, isSubmitting, refresh, submitStats } = ranking;
 
-  const kabupaten = generateMockLeaderboard(10, healthScore, ragStatus, KABUPATEN_MOCK);
-  const provinsi = generateMockLeaderboard(12, healthScore, ragStatus, PROVINSI_MOCK);
-  const nasional = generateMockLeaderboard(18, healthScore, ragStatus, NASIONAL_MOCK);
+  const [metric, setMetric] = useState<RankingMetric>("health");
+  const [scope, setScope] = useState<RankingScope>("kabupaten");
 
-  const ourKab = kabupaten.find((c) => c.isOurs) ?? kabupaten[0];
-  const ourProv = provinsi.find((c) => c.isOurs) ?? provinsi[0];
-  const ourNas = nasional.find((c) => c.isOurs) ?? nasional[0];
+  const hasCache = Object.keys(boards).length > 0;
 
-  const levels = [
-    { key: "kabupaten", label: t("ranking.scope.kabupaten"), rank: ourKab.rank, total: kabupaten.length },
-    { key: "provinsi", label: t("ranking.scope.provinsi"), rank: ourProv.rank, total: provinsi.length },
-    { key: "nasional", label: t("ranking.scope.nasional"), rank: ourNas.rank, total: nasional.length },
-  ];
+  // ── Connectivity-gated empty states ──
+  if (status === "offline" && !hasCache) {
+    return (
+      <div className="flex-1 overflow-auto">
+        <Card className="bg-card border-border max-w-md mx-auto mt-16">
+          <CardContent className="p-8 flex flex-col items-center text-center gap-3">
+            <WifiSlash className="h-10 w-10 text-muted-foreground" />
+            <h3 className="text-sm font-bold text-foreground">{t("ranking.offlineEmptyTitle")}</h3>
+            <p className="text-xs text-muted-foreground">{t("ranking.offlineEmptyDesc")}</p>
+            <Button
+              onClick={onGoSync}
+              className="mt-2 bg-brand hover:bg-brand text-brand-foreground font-bold text-xs h-9"
+            >
+              {t("ranking.goSync")}
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
-  function renderTable(data: MockRankedCoop[]) {
+  if (status === "loading" && !hasCache) {
+    return (
+      <div className="flex-1 overflow-auto flex items-center justify-center">
+        <CircleNotch className="h-6 w-6 text-muted-foreground animate-spin" />
+      </div>
+    );
+  }
+
+  const isStale = status === "stale";
+  const lastUpdatedLabel = lastUpdated !== null ? formatDistanceToNow(new Date(lastUpdated), { addSuffix: true }) : "";
+
+  const levels = SCOPES.map((sc) => ({
+    scope: sc,
+    rank: ourRanks[sc],
+    total: boards[sc]?.[metric]?.total ?? 0,
+  }));
+
+  function renderTable(data: RankedCoop[]) {
     return (
       <Table>
         <TableHeader>
@@ -181,7 +111,7 @@ export default function Ranking({ coopProfile }: Props) {
         <TableBody>
           {data.map((c) => (
             <TableRow
-              key={c.rank}
+              key={`${c.rank}-${c.name}`}
               className={`border-border transition-colors ${
                 c.isOurs ? "bg-success/5 hover:bg-success/10" : "hover:bg-secondary"
               }`}
@@ -201,7 +131,7 @@ export default function Ranking({ coopProfile }: Props) {
                 </div>
               </TableCell>
               <TableCell className="py-2">
-                <span className="text-xs font-mono font-bold text-foreground">{c.healthScore}%</span>
+                <span className="text-xs font-mono font-bold text-foreground">{c.score}%</span>
               </TableCell>
               <TableCell className="py-2">
                 <span className={`text-xxxs font-bold px-1.5 py-0.5 rounded ${ragColor(c.ragStatus)}`}>
@@ -220,13 +150,61 @@ export default function Ranking({ coopProfile }: Props) {
 
   return (
     <div className="flex-1 overflow-auto space-y-4">
-      {/* ── Rank Summary Cards ── */}
+      {/* ── Status / connectivity banner ── */}
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <div className="flex items-center gap-2 text-xxs font-mono">
+          <span
+            className={`h-2 w-2 rounded-full ${
+              status === "live"
+                ? "bg-success"
+                : status === "stale"
+                  ? "bg-warning"
+                  : status === "offline"
+                    ? "bg-muted-foreground"
+                    : "bg-info animate-pulse"
+            }`}
+          />
+          <span className="text-muted-foreground uppercase tracking-wider">
+            {t(`ranking.status.${status}`)}
+            {lastUpdatedLabel && ` · ${t("ranking.lastUpdated", { time: lastUpdatedLabel })}`}
+          </span>
+          {isStale && <span className="text-warning">— {t("ranking.staleHint")}</span>}
+        </div>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={refresh}
+            disabled={status === "loading"}
+            className="h-8 text-xs gap-1.5"
+          >
+            <ArrowsClockwise className={status === "loading" ? "h-3.5 w-3.5 animate-spin" : "h-3.5 w-3.5"} />
+            {t("ranking.refresh")}
+          </Button>
+          <Button
+            onClick={submitStats}
+            disabled={isSubmitting || status === "offline"}
+            className="h-8 bg-brand hover:bg-brand text-brand-foreground text-xs gap-1.5"
+          >
+            {isSubmitting ? (
+              <CircleNotch className="h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <CloudArrowUp className="h-3.5 w-3.5" />
+            )}
+            {isSubmitting ? t("ranking.submitting") : t("ranking.submit")}
+          </Button>
+        </div>
+      </div>
+
+      {/* ── Rank Summary Cards (per scope) ── */}
       <div className="grid grid-cols-3 gap-4">
         {levels.map((lv) => (
-          <Card key={lv.key} className="bg-card border-border">
+          <Card key={lv.scope} className="bg-card border-border">
             <CardContent className="p-4 flex flex-col items-center gap-1">
-              <p className="text-xxs font-mono text-muted-foreground uppercase tracking-wider">{lv.label}</p>
-              <span className="text-2xl font-black text-success font-mono">#{lv.rank}</span>
+              <p className="text-xxs font-mono text-muted-foreground uppercase tracking-wider">
+                {t(`ranking.scope.${lv.scope}`)}
+              </p>
+              <span className="text-2xl font-black text-success font-mono">#{lv.rank ?? "—"}</span>
               <span className="text-xxxs font-mono text-muted-foreground">
                 {t("ranking.summary.from", { total: lv.total })}
               </span>
@@ -235,26 +213,50 @@ export default function Ranking({ coopProfile }: Props) {
         ))}
       </div>
 
-      {/* ── Leaderboard Tabs ── */}
+      {/* ── Metric + Scope tabs ── */}
       <Card className="bg-card border-border hover-glow-card">
         <CardHeader className="pb-0">
-          <CardTitle className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
-            <TrophyIcon className="h-3 w-3 text-warning" />
-            {t("ranking.title")}
-          </CardTitle>
+          <div className="flex items-center justify-between gap-2 flex-wrap">
+            <CardTitle className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
+              <TrophyIcon className="h-3 w-3 text-warning" />
+              {t("ranking.title")}
+            </CardTitle>
+          </div>
         </CardHeader>
-        <CardContent>
-          <Tabs defaultValue="kabupaten">
-            <TabsList className="w-full bg-muted">
-              {levels.map((lv) => (
-                <TabsTrigger key={lv.key} value={lv.key} className="flex-1 text-xs">
-                  {lv.label}
+        <CardContent className="space-y-3">
+          <Tabs value={metric} onValueChange={(v) => setMetric(v as RankingMetric)}>
+            <TabsList className="w-full bg-muted flex-wrap">
+              {METRICS.map((m) => (
+                <TabsTrigger key={m} value={m} className="flex-1 text-xs">
+                  {t(`ranking.metric.${m}`)}
                 </TabsTrigger>
               ))}
             </TabsList>
-            <TabsContent value="kabupaten">{renderTable(kabupaten)}</TabsContent>
-            <TabsContent value="provinsi">{renderTable(provinsi)}</TabsContent>
-            <TabsContent value="nasional">{renderTable(nasional)}</TabsContent>
+          </Tabs>
+
+          <Tabs value={scope} onValueChange={(v) => setScope(v as RankingScope)}>
+            <TabsList className="w-full bg-muted">
+              {SCOPES.map((sc) => (
+                <TabsTrigger key={sc} value={sc} className="flex-1 text-xs">
+                  {t(`ranking.scope.${sc}`)}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+
+            {SCOPES.map((sc) => {
+              const items = boards[sc]?.[metric]?.items;
+              return (
+                <TabsContent key={sc} value={sc} className="mt-2">
+                  {items ? (
+                    renderTable(items)
+                  ) : (
+                    <div className="py-8 flex justify-center">
+                      <CircleNotch className="h-5 w-5 text-muted-foreground animate-spin" />
+                    </div>
+                  )}
+                </TabsContent>
+              );
+            })}
           </Tabs>
         </CardContent>
       </Card>

@@ -27,6 +27,7 @@ import {
 } from "@phosphor-icons/react";
 import { getCurrentLevel } from "@/data/leveling";
 import { isTabUnlocked, getUnlockRequirementLabel } from "@/features/System/moduleUnlock";
+import type { RankingStatus } from "@/features/Finance/Ranking/useRanking";
 import type { CooperativeProfile, EwsAlert } from "@/types";
 
 interface SidebarProps {
@@ -60,6 +61,9 @@ interface SidebarProps {
   appTheme: "dark" | "light";
   onThemeToggle: () => void;
   onSwitchProfile: () => void;
+  rankingStatus: RankingStatus;
+  rankingRank: number | null;
+  rankingUnlocked: boolean;
 }
 
 interface NavItemDef {
@@ -100,11 +104,15 @@ export default function Sidebar({
   appTheme,
   onThemeToggle,
   onSwitchProfile,
+  rankingStatus,
+  rankingRank,
+  rankingUnlocked,
 }: SidebarProps) {
   const { t } = useTranslation();
   const criticalAlerts = ewsAlerts.filter((a) => a.level === "critical").length;
   const healthScore = coopProfile?.health_score ?? 0;
-  const currentLevel = healthScore > 0 ? getCurrentLevel(healthScore) : null;
+  const xp = coopProfile?.xp ?? 0;
+  const currentLevel = getCurrentLevel(xp);
 
   const [logoFailed, setLogoFailed] = useState(false);
   const coopInitials = (coopProfile?.name ?? "?")
@@ -182,7 +190,7 @@ export default function Sidebar({
   function renderNavItem(item: NavItemDef, accent: Accent) {
     const Icon = item.icon;
     const isActive = activeTab === item.id;
-    const unlocked = isTabUnlocked(item.id, healthScore);
+    const unlocked = isTabUnlocked(item.id, xp);
     const unlockLabel = getUnlockRequirementLabel(item.id);
     const a = ACCENT_CLASSES[accent];
 
@@ -225,40 +233,46 @@ export default function Sidebar({
   }
 
   return (
-    <aside className="w-64 border-r border-border bg-sidebar flex flex-col print:hidden">
+    <aside className="w-72 border-r border-border bg-sidebar flex flex-col print:hidden">
       <div className="flex flex-col flex-1 min-h-0">
         {/* ── Guild Header ── */}
         <div className="px-5 pt-4 pb-3 border-b border-border space-y-3">
           <div className="rounded-xl bg-card border border-border p-4 space-y-3">
-            <div className="flex items-center justify-between gap-2">
-              <div className="flex items-center gap-2 min-w-0">
-                <div className="w-9 h-9 rounded-xl bg-success/15 ring-1 ring-brand/30 flex items-center justify-center shrink-0 overflow-hidden">
-                  {coopProfile?.logo_path && !logoFailed ? (
-                    <img
-                      src={coopProfile.logo_path}
-                      alt={coopProfile.name}
-                      className="h-full w-full object-cover"
-                      onError={() => setLogoFailed(true)}
-                    />
-                  ) : (
-                    <span className="text-xs font-black text-success">{coopInitials}</span>
-                  )}
-                </div>
-                <h2 className="text-sm font-bold text-foreground truncate">{coopProfile?.name ?? "..."}</h2>
+            {/* ── Identity: emblem + name (wraps, never cut off) ── */}
+            <div className="flex items-start gap-3">
+              <div className="w-11 h-11 rounded-xl bg-success/15 ring-1 ring-brand/30 flex items-center justify-center shrink-0 overflow-hidden">
+                {coopProfile?.logo_path && !logoFailed ? (
+                  <img
+                    src={coopProfile.logo_path}
+                    alt={coopProfile.name}
+                    className="h-full w-full object-cover"
+                    onError={() => setLogoFailed(true)}
+                  />
+                ) : (
+                  <span className="text-sm font-black text-success">{coopInitials}</span>
+                )}
               </div>
-              {currentLevel && (
-                <span
-                  className={`text-xxxs font-black px-2 py-0.5 rounded-full shrink-0 ${currentLevel.bgClass} ${currentLevel.textClass} border border-current/20`}
-                >
-                  {`Lv.${currentLevel.tier}`}
-                </span>
-              )}
+              <div className="min-w-0 flex-1">
+                <h2 className="text-sm font-bold text-foreground leading-tight break-words">
+                  {coopProfile?.name ?? "..."}
+                </h2>
+                {coopProfile?.village && (
+                  <p className="text-xxs text-muted-foreground truncate mt-0.5">{coopProfile.village}</p>
+                )}
+              </div>
             </div>
+
+            {/* ── Tier / level — full-width pill ── */}
             {currentLevel && (
-              <p className="text-xxs font-mono text-muted-foreground uppercase tracking-wider">
-                {currentLevel.labelId}
-              </p>
+              <div
+                className={`flex items-center justify-between gap-2 rounded-lg px-2.5 py-1.5 border border-current/20 ${currentLevel.bgClass} ${currentLevel.textClass}`}
+              >
+                <span className="text-xxs font-black uppercase tracking-wider shrink-0">{`Lv.${currentLevel.tier}`}</span>
+                <span className="text-xxs font-semibold truncate">{currentLevel.labelId}</span>
+              </div>
             )}
+
+            {/* ── Vitals — health score ── */}
             {healthScore > 0 && (
               <div className="space-y-1">
                 <div className="flex justify-between text-xxxs font-mono">
@@ -270,6 +284,8 @@ export default function Sidebar({
                 </div>
               </div>
             )}
+
+            {/* ── Meta — member count ── */}
             <div className="flex items-center gap-1 text-xxs text-muted-foreground">
               <UsersIcon className="h-3 w-3 shrink-0" />
               <span>{memberCount}</span>
@@ -289,6 +305,35 @@ export default function Sidebar({
           {/* Meta control bar */}
           <div className="flex items-center justify-between gap-1 rounded-lg bg-secondary/40 px-1.5 py-1 mx-1">
             <div className="flex items-center gap-0.5">
+              <button
+                onClick={() => rankingUnlocked && onTabChange("ranking")}
+                disabled={!rankingUnlocked}
+                className={cn(
+                  "flex items-center gap-1 px-1.5 py-1 rounded-lg transition-colors shrink-0",
+                  rankingUnlocked
+                    ? "hover:bg-sidebar-ring text-muted-foreground hover:text-warning cursor-pointer"
+                    : "text-muted-foreground/40 cursor-not-allowed",
+                )}
+                title={rankingUnlocked ? t("ranking.beaconTitle") : t("ranking.beaconLocked")}
+              >
+                <TrophyIcon className="h-3.5 w-3.5" />
+                {rankingUnlocked && rankingRank != null && (
+                  <span className="text-xxxs font-mono font-bold leading-none">{`#${rankingRank}`}</span>
+                )}
+                {!rankingUnlocked && <LockSimple className="h-2.5 w-2.5" />}
+                <span
+                  className={cn(
+                    "h-1.5 w-1.5 rounded-full",
+                    rankingStatus === "live"
+                      ? "bg-success"
+                      : rankingStatus === "stale"
+                        ? "bg-warning"
+                        : rankingStatus === "offline"
+                          ? "bg-muted-foreground"
+                          : "bg-info animate-pulse",
+                  )}
+                />
+              </button>
               <button
                 onClick={() => onTabChange("sync")}
                 className="p-1.5 rounded-lg hover:bg-sidebar-ring transition-colors shrink-0 text-muted-foreground hover:text-info"

@@ -42,8 +42,8 @@ export async function createCooperative(input: CreateCooperativeInput): Promise<
   await db.execute(
     `INSERT INTO cooperatives (
       id, name, legal_id, address, village, district, regency, province,
-      postal_code, phone, email, business_units, officers, health_score, rag_status, founded_date, category
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      postal_code, phone, email, business_units, officers, health_score, rag_status, xp, founded_date, category
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       newId,
       input.name.trim(),
@@ -58,8 +58,9 @@ export async function createCooperative(input: CreateCooperativeInput): Promise<
       input.email.trim() || null,
       JSON.stringify(units),
       officersJson,
-      100.0,
-      "green",
+      10.0,
+      "Merah",
+      10,
       input.foundedDate.trim() || null,
       input.category,
     ],

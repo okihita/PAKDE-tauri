@@ -28,6 +28,7 @@ import Planners from "@/features/Learn/Planners/Planners";
 import Accounting from "@/features/Finance/Accounting";
 import Feasibility from "@/features/Finance/Feasibility/Feasibility";
 import Ranking from "@/features/Finance/Ranking/Ranking";
+import { useRanking } from "@/features/Finance/Ranking/useRanking";
 import CreateEvent from "@/features/Community/CreateEvent/CreateEvent";
 import Impact from "@/features/Community/Impact/Impact";
 import Participation from "@/features/Community/Participation/Participation";
@@ -197,15 +198,17 @@ function AppContent() {
   // Module gating guard: wrap setActiveTab to redirect locked tabs
   const guardedSetActiveTab = useCallback(
     (tab: typeof activeTab) => {
-      const score = coopProfile?.health_score ?? 0;
+      const score = coopProfile?.xp ?? 0;
       if (!isTabUnlocked(tab, score)) {
         setActiveTab("home");
       } else {
         setActiveTab(tab);
       }
     },
-    [coopProfile?.health_score],
+    [coopProfile?.xp],
   );
+
+  const ranking = useRanking(coopProfile);
 
   const handleSwitchProfile = () => {
     setCoopProfile(null);
@@ -373,6 +376,9 @@ function AppContent() {
           appTheme={appTheme}
           onThemeToggle={() => setAppTheme((t) => (t === "dark" ? "light" : "dark"))}
           onSwitchProfile={handleSwitchProfile}
+          rankingStatus={ranking.status}
+          rankingRank={ranking.ourRanks.kabupaten}
+          rankingUnlocked={isTabUnlocked("ranking", coopProfile?.xp ?? 0)}
         />
 
         <main
@@ -392,8 +398,8 @@ function AppContent() {
             </>
           )}
           {activeTab === "statistics" && <Statistics coopProfile={coopProfile} />}
-          {activeTab === "ranking" && <Ranking coopProfile={coopProfile} />}
-          {activeTab === "leveling" && <Leveling healthScore={coopProfile?.health_score ?? 0} />}
+          {activeTab === "ranking" && <Ranking ranking={ranking} onGoSync={() => guardedSetActiveTab("sync")} />}
+          {activeTab === "leveling" && <Leveling xp={coopProfile?.xp ?? 0} />}
           {activeTab === "units" && <Units onTabChange={setActiveTab} />}
           {activeTab === "equipment" && <Equipment />}
           {activeTab === "sales" && <Sales />}

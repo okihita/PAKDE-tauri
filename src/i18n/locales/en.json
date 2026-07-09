@@ -458,10 +458,18 @@
   },
   "ranking": {
     "title": "Cooperative Ranking",
+    "beaconTitle": "View ranking",
+    "beaconLocked": "Ranking unlocks at Health Score 60",
     "scope": {
       "kabupaten": "District",
       "provinsi": "Province",
       "nasional": "National"
+    },
+    "metric": {
+      "health": "Best Health",
+      "growth": "Fastest Growth",
+      "membership": "Membership",
+      "impact": "Community Impact"
     },
     "table": {
       "coop": "Cooperative",
@@ -470,7 +478,21 @@
     },
     "summary": {
       "from": "of {{total}} cooperatives"
-    }
+    },
+    "status": {
+      "live": "Live",
+      "stale": "Stale",
+      "offline": "Offline",
+      "loading": "Loading"
+    },
+    "lastUpdated": "synced {{time}}",
+    "refresh": "Refresh",
+    "submit": "Submit Coop Stats",
+    "submitting": "Submitting",
+    "staleHint": "Showing last synced data",
+    "offlineEmptyTitle": "Ranking needs the federated node",
+    "offlineEmptyDesc": "Leaderboards are only available when synced to the PAKDE cloud. Connect to the internet and sync to compete with other cooperatives.",
+    "goSync": "Go to Sync"
   },
   "event": {
     "empty": {
