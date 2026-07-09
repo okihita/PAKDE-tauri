@@ -32,7 +32,7 @@ export async function deleteCooperative(id: string): Promise<void> {
   const coopFile = await join(dataDir, "coops", `${id}.db`);
   if (await exists(coopFile)) await remove(coopFile);
   // Drop any cached connection so nothing writes to the deleted file.
-  invalidateCoopDb(id);
+  await invalidateCoopDb(id);
   // Coop-scoped event attachment files live under <dataDir>/<id>/events/...
   const coopFolder = await join(dataDir, id);
   if (await exists(coopFolder)) await remove(coopFolder, { recursive: true });

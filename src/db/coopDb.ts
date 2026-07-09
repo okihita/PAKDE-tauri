@@ -57,12 +57,21 @@ export const getDb = getCoopDb;
  * Drop any cached connection for a cooperative (e.g. after its DB file is
  * deleted). The next getCoopDb() re-opens a fresh connection instead of
  * writing to a deleted file.
+ *
+ * The close is scoped to this coop's db path and awaited: a no-argument
+ * `close()` would shut down *every* pool (registry included), and a
+ * fire-and-forget close races with the re-open on the same path — both
+ * surface as "attempted to acquire a connection on a closed pool".
  */
-export function invalidateCoopDb(coopId: string): void {
+export async function invalidateCoopDb(coopId: string): Promise<void> {
   const p = coopPromises.get(coopId);
-  if (p) {
-    void p.then((db) => (db as unknown as { close?: () => Promise<void> }).close?.()).catch(() => {});
-    coopPromises.delete(coopId);
+  if (!p) return;
+  coopPromises.delete(coopId);
+  try {
+    const db = await p;
+    await (db as unknown as { close?: (db: string) => Promise<unknown> }).close?.(coopDbPath(coopId));
+  } catch {
+    // Pool may already be gone — nothing to do.
   }
 }
 

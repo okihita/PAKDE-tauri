@@ -110,7 +110,7 @@ export async function clearDemoCooperative(): Promise<void> {
   const coopFile = await join(dataDir, "coops", `${DEMO_COOP.id}.db`);
   if (await exists(coopFile)) await remove(coopFile);
   // Drop any cached connection so the re-seed re-opens a fresh file.
-  invalidateCoopDb(DEMO_COOP.id);
+  await invalidateCoopDb(DEMO_COOP.id);
 
   // Drop the registry row (no-op if absent).
   await reg.execute("DELETE FROM cooperatives WHERE id = ?", [DEMO_COOP.id]);
