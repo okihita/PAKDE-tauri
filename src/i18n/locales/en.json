@@ -1262,6 +1262,13 @@
     "footerKemenkopAlt": "Kemenkop",
     "briefingFeatures": "Unlocked Features",
     "briefingBack": "Back",
-    "briefingStart": "Start"
+    "briefingStart": "Start",
+    "resumeCardTitle": "Resume Demo",
+    "resumeCardDesc": "Return to your previous demo session — all progress saved.",
+    "resumeCardAction": "Resume",
+    "freshStartDivider": "or start fresh",
+    "freshStartHeading": "Start New Demo",
+    "freshStartWarning": "Starting fresh will erase all saved demo progress.",
+    "briefingReseedWarning": "Your existing demo will be deleted. All data and progress will be lost."
   }
 }

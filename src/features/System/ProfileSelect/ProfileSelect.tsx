@@ -70,6 +70,7 @@ export default function ProfileSelect({ onProfileSelect, onDbError }: ProfileSel
   const [selectedTier, setSelectedTier] = useState<DemoLevel | null>(null);
   const [seeding, setSeeding] = useState(false);
   const [showJoinExisting, setShowJoinExisting] = useState(false);
+  const [demoExists, setDemoExists] = useState(false);
 
   // Slideshow loop
   useEffect(() => {
@@ -94,6 +95,8 @@ export default function ProfileSelect({ onProfileSelect, onDbError }: ProfileSel
         // exist before any profile query below.
         await initDb();
         await loadProfiles();
+        const seeded = await isDemoSeeded();
+        if (active) setDemoExists(seeded);
       } catch (e) {
         console.error(e);
         if (active) {
@@ -168,13 +171,9 @@ export default function ProfileSelect({ onProfileSelect, onDbError }: ProfileSel
     sfx.playSoftThud(100, 0.15);
   };
 
-  const enterDemo = async (level?: DemoLevel) => {
+  /** Load existing demo data without re-seeding — preserves user progress. */
+  const resumeDemo = async () => {
     try {
-      // Only seed when no demo exists yet — preserves user progress on re-entry.
-      if (!(await isDemoSeeded()) && level) {
-        await seedDemoCooperativeAtLevel(level);
-        localStorage.setItem("pakde-demo-tier", level);
-      }
       const coop = await getDemoCooperative();
       if (coop) {
         sfx.playChime();
@@ -183,7 +182,26 @@ export default function ProfileSelect({ onProfileSelect, onDbError }: ProfileSel
         }, 280);
       }
     } catch (e) {
-      console.error("[Demo] Failed:", e);
+      console.error("[Demo] Resume failed:", e);
+      setDevResult({ open: true, ok: false, message: e instanceof Error ? e.message : String(e) });
+    }
+  };
+
+  /** Clear + re-seed the demo at the chosen tier — used for fresh starts only. */
+  const startFreshDemo = async (level: DemoLevel) => {
+    try {
+      await seedDemoCooperativeAtLevel(level);
+      localStorage.setItem("pakde-demo-tier", level);
+      setDemoExists(true);
+      const coop = await getDemoCooperative();
+      if (coop) {
+        sfx.playChime();
+        setTimeout(() => {
+          onProfileSelect(coop);
+        }, 280);
+      }
+    } catch (e) {
+      console.error("[Demo] Start fresh failed:", e);
       setDevResult({ open: true, ok: false, message: e instanceof Error ? e.message : String(e) });
     }
   };
@@ -385,27 +403,18 @@ export default function ProfileSelect({ onProfileSelect, onDbError }: ProfileSel
                 <div
                   role="button"
                   tabIndex={0}
-                  onKeyDown={async (e) => {
+                  onKeyDown={(e) => {
                     if (e.key !== "Enter") return;
                     setShowCoopList(false);
                     setShowJoinExisting(false);
-                    if (await isDemoSeeded()) {
-                      await enterDemo();
-                    } else {
-                      setShowDemoTiers((prev) => !prev);
-                    }
+                    setShowDemoTiers((prev) => !prev);
                   }}
-                  onClick={async () => {
+                  onClick={() => {
                     handleUserInteraction();
                     sfx.playBleep(600, 0.03);
                     setShowCoopList(false);
                     setShowJoinExisting(false);
-                    // If demo already exists, resume immediately — no re-seed.
-                    if (await isDemoSeeded()) {
-                      await enterDemo();
-                    } else {
-                      setShowDemoTiers((prev) => !prev);
-                    }
+                    setShowDemoTiers((prev) => !prev);
                   }}
                   onMouseEnter={handleCardHover}
                   className="group relative w-full md:w-56 min-h-[240px] rounded-2xl border-2 border-amber-800/50 bg-amber-950/30 backdrop-blur-md p-5 cursor-pointer hover:border-amber-600/60 hover:bg-amber-950/50 hover:scale-[1.03] hover:shadow-[0_0_40px_rgba(245,158,11,0.12)] transition-all duration-300 text-left flex flex-col justify-between focus:outline-none focus:ring-2 focus:ring-amber-500/50"
@@ -438,11 +447,47 @@ export default function ProfileSelect({ onProfileSelect, onDbError }: ProfileSel
 
             {/* ── Submenu area (reserved space, prevents layout shift) ── */}
             <div className="w-full max-w-3xl mx-auto min-h-[280px] mt-6">
-              {/* Demo tier cards */}
+              {/* Demo tier cards — dual-path: resume existing or fresh start */}
               {showDemoTiers && (
                 <div className="animate-in fade-in slide-in-from-top-2 duration-300">
+                  {/* Resume card — only when a demo already exists */}
+                  {demoExists && (
+                    <>
+                      <div
+                        role="button"
+                        tabIndex={0}
+                        onKeyDown={(e) => e.key === "Enter" && resumeDemo()}
+                        onClick={() => {
+                          handleUserInteraction();
+                          resumeDemo();
+                        }}
+                        onMouseEnter={handleCardHover}
+                        className="group relative w-full rounded-xl border-2 border-amber-500/50 bg-amber-950/60 backdrop-blur-md p-5 cursor-pointer hover:scale-[1.02] hover:-translate-y-0.5 hover:shadow-[0_0_30px_rgba(245,158,11,0.18)] transition-all duration-200 text-left focus:outline-none focus:ring-2 focus:ring-amber-400/50 mb-5"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center shrink-0 group-hover:bg-amber-500/30 transition-colors">
+                            <GameController className="h-5 w-5 text-amber-400" weight="fill" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h4 className="text-sm font-bold text-amber-200">{t("profileSelect.resumeCardTitle")}</h4>
+                            <p className="text-xxs text-amber-400/60 mt-0.5">{t("profileSelect.resumeCardDesc")}</p>
+                          </div>
+                          <div className="shrink-0 rounded-lg bg-amber-500/20 border border-amber-500/30 px-3 py-1.5 text-xs font-bold text-amber-400 group-hover:bg-amber-500/30 transition-colors">
+                            {t("profileSelect.resumeCardAction")}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="text-center mb-4">
+                        <span className="text-xxs text-slate-500 uppercase tracking-widest">
+                          {t("profileSelect.freshStartDivider")}
+                        </span>
+                      </div>
+                    </>
+                  )}
+
                   <h3 className="text-xs font-bold text-amber-400 uppercase tracking-wider text-center mb-4">
-                    {t("profileSelect.tierHeading")}
+                    {demoExists ? t("profileSelect.freshStartHeading") : t("profileSelect.tierHeading")}
                   </h3>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     {DEMO_TIERS.map((tier) => (
@@ -502,6 +547,11 @@ export default function ProfileSelect({ onProfileSelect, onDbError }: ProfileSel
                       </div>
                     ))}
                   </div>
+                  {demoExists && (
+                    <p className="text-xxxs text-amber-500/60 text-center mt-3 flex items-center justify-center gap-1">
+                      ⚠ {t("profileSelect.freshStartWarning")}
+                    </p>
+                  )}
                 </div>
               )}
 
@@ -550,10 +600,11 @@ export default function ProfileSelect({ onProfileSelect, onDbError }: ProfileSel
             <CampaignBriefingDialog
               tier={tier}
               seeding={seeding}
+              isReseed={demoExists}
               onStart={async () => {
                 setSeeding(true);
                 try {
-                  await enterDemo(tier.level);
+                  await startFreshDemo(tier.level);
                 } finally {
                   setSeeding(false);
                   setSelectedTier(null);

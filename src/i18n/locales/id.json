@@ -1262,6 +1262,13 @@
     "footerKemenkopAlt": "Kemenkop",
     "briefingFeatures": "Fitur yang Dibuka",
     "briefingBack": "Kembali",
-    "briefingStart": "Mulai"
+    "briefingStart": "Mulai",
+    "resumeCardTitle": "Lanjutkan Demo",
+    "resumeCardDesc": "Kembali ke sesi demo sebelumnya — semua progres tersimpan.",
+    "resumeCardAction": "Lanjutkan",
+    "freshStartDivider": "atau mulai ulang",
+    "freshStartHeading": "Mulai Demo Baru",
+    "freshStartWarning": "Memulai ulang akan menghapus semua progres demo yang tersimpan.",
+    "briefingReseedWarning": "Demo yang sudah ada akan dihapus. Semua data dan progres akan hilang."
   }
 }

@@ -203,6 +203,7 @@ function AppContent() {
         setCoopProfile(profile);
         const users = await getUsersByCooperativeId(profile.id || "");
         if (isDemoCooperative(profile) && users.length > 0) {
+          setActiveTab("home");
           setCurrentUser(users[0]);
           setAppState("main");
           return;
@@ -279,6 +280,7 @@ function AppContent() {
               setAppState("db_error");
             }}
             onProfileSelect={async (profile) => {
+              setActiveTab("home");
               setCoopProfile(profile);
               localStorage.setItem("pakde-active-profile-id", profile.id || "");
               // Demo coop — auto-login with seeded user, skip PIN

@@ -1,4 +1,4 @@
-import { Camera, CheckCircleIcon, CircleNotch } from "@phosphor-icons/react";
+import { Camera, CheckCircleIcon, CircleNotch, Warning } from "@phosphor-icons/react";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "react-i18next";
@@ -7,11 +7,12 @@ import type { DemoTier } from "./demoTiers";
 interface Props {
   tier: DemoTier;
   seeding: boolean;
+  isReseed?: boolean;
   onStart: () => void;
   onClose: () => void;
 }
 
-export default function CampaignBriefingDialog({ tier, seeding, onStart, onClose }: Props) {
+export default function CampaignBriefingDialog({ tier, seeding, isReseed, onStart, onClose }: Props) {
   const { t } = useTranslation();
   return (
     <Dialog
@@ -30,6 +31,12 @@ export default function CampaignBriefingDialog({ tier, seeding, onStart, onClose
         </DialogHeader>
 
         <div className="space-y-4 text-xs">
+          {isReseed && (
+            <div className="flex items-start gap-2 p-3 rounded-lg bg-red-950/30 border border-red-800/30">
+              <Warning className="h-4 w-4 text-red-400 shrink-0 mt-0.5" weight="fill" />
+              <p className="text-xxs text-red-300/90">{t("profileSelect.briefingReseedWarning")}</p>
+            </div>
+          )}
           <p className="text-xxs text-slate-500">
             {tier.village}, {tier.regency}, {tier.province}
           </p>
