@@ -25,13 +25,7 @@ import {
   RocketLaunchIcon,
 } from "@phosphor-icons/react";
 import { getCurrentLevel } from "@/data/leveling";
-import { Tooltip } from "@/components/ui/tooltip";
-import {
-  isTabUnlocked,
-  getUnlockRequirementLabel,
-  TABS_LEVEL_REQUIREMENTS,
-  type TabId,
-} from "@/features/System/moduleUnlock";
+import { isTabUnlocked, TABS_LEVEL_REQUIREMENTS, type TabId } from "@/features/System/moduleUnlock";
 import type { RankingStatus } from "@/features/Finance/Ranking/useRanking";
 import type { CooperativeProfile, EwsAlert } from "@/types";
 
@@ -183,7 +177,6 @@ export default function Sidebar({
     const Icon = item.icon;
     const isActive = activeTab === item.id;
     const unlocked = isTabUnlocked(item.id, xp);
-    const unlockLabel = getUnlockRequirementLabel(item.id);
     const a = ACCENT_CLASSES[accent];
 
     const inner = !unlocked ? (
@@ -204,15 +197,7 @@ export default function Sidebar({
       </div>
     );
 
-    return (
-      <Tooltip
-        label={item.label}
-        description={unlocked ? undefined : (unlockLabel ?? undefined)}
-        className="block w-full"
-      >
-        {inner}
-      </Tooltip>
-    );
+    return inner;
   }
 
   function renderGroup(group: NavGroupDef) {
