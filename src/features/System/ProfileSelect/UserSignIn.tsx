@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { UserCheck, Key, WarningCircle, ArrowLeft, Eye, EyeSlash } from "@phosphor-icons/react";
@@ -12,7 +12,6 @@ const LBL_BACK = "Kembali";
 const LBL_SIGN_IN = "Masuk ke Koperasi";
 const LBL_SEL_USER = "Pilih Pengguna";
 const LBL_PIN = "Masukkan PIN (6 digit)";
-const LBL_SIGN_IN_BTN = "Masuk";
 const LBL_PIN_WRONG = "PIN tidak valid. Silakan coba lagi.";
 const LBL_LOAD_FAIL = "Gagal memuat data pengguna.";
 const PLACEHOLDER_PIN = "••••••";
@@ -33,6 +32,7 @@ export default function UserSignIn({ cooperativeId, cooperativeName, onSuccess, 
   const [loading, setLoading] = useState(true);
   const [signingIn, setSigningIn] = useState(false);
   const [error, setError] = useState("");
+  const submittingRef = useRef(false);
 
   useEffect(() => {
     (async () => {
@@ -49,24 +49,30 @@ export default function UserSignIn({ cooperativeId, cooperativeName, onSuccess, 
     })();
   }, [cooperativeId]);
 
-  const handleSignIn = async () => {
-    if (!selectedUserId || pin.length !== 6) return;
+  // Auto-submit once a full 6-digit PIN is entered — no explicit button.
+  // submittingRef guards against double-fire (e.g. StrictMode double-invoke).
+  useEffect(() => {
+    if (pin.length !== 6 || !selectedUserId || submittingRef.current) return;
+    submittingRef.current = true;
     setSigningIn(true);
     setError("");
-    try {
-      const user = await validatePin(cooperativeId, selectedUserId, pin);
-      if (user) {
-        onSuccess(user);
-      } else {
-        setError(LBL_PIN_WRONG);
+    (async () => {
+      try {
+        const user = await validatePin(cooperativeId, selectedUserId, pin);
+        if (user) onSuccess(user);
+        else {
+          setError(LBL_PIN_WRONG);
+          setPin("");
+        }
+      } catch (err: unknown) {
+        setError(err instanceof Error ? err.message : String(err));
         setPin("");
+      } finally {
+        setSigningIn(false);
+        submittingRef.current = false;
       }
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : String(err));
-      setPin("");
-    }
-    setSigningIn(false);
-  };
+    })();
+  }, [pin, selectedUserId, cooperativeId, onSuccess]);
 
   if (loading) {
     return (
@@ -157,11 +163,9 @@ export default function UserSignIn({ cooperativeId, cooperativeName, onSuccess, 
                   const v = e.target.value.replace(/\D/g, "").slice(0, 6);
                   setPin(v);
                 }}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") handleSignIn();
-                }}
                 placeholder={PLACEHOLDER_PIN}
                 maxLength={6}
+                disabled={signingIn}
                 autoFocus
                 className="w-full bg-slate-900 border border-slate-700 rounded-lg text-slate-100 text-sm h-11 px-4 pr-10 tracking-[0.4em] text-center focus:outline-none focus:border-brand transition-colors"
               />
@@ -176,23 +180,14 @@ export default function UserSignIn({ cooperativeId, cooperativeName, onSuccess, 
           </div>
         </div>
 
-        <div className="flex gap-2">
-          <Button
-            onClick={onBack}
-            variant="outline"
-            className="flex-1 border-slate-800 bg-slate-950 text-slate-400 hover:text-white text-xs h-9"
-          >
-            <ArrowLeft className="h-3.5 w-3.5 mr-1" />
-            {LBL_BACK}
-          </Button>
-          <Button
-            onClick={handleSignIn}
-            disabled={!selectedUserId || pin.length !== 6 || signingIn}
-            className="flex-1 bg-brand hover:bg-brand/90 text-brand-foreground font-bold text-xs h-9 disabled:opacity-40"
-          >
-            {signingIn ? <span className="animate-pulse">{LBL_LOADING}</span> : LBL_SIGN_IN_BTN}
-          </Button>
-        </div>
+        <Button
+          onClick={onBack}
+          variant="outline"
+          className="w-full border-slate-800 bg-slate-950 text-slate-400 hover:text-white text-xs h-9"
+        >
+          <ArrowLeft className="h-3.5 w-3.5 mr-1" />
+          {LBL_BACK}
+        </Button>
 
         <p className="text-xxs text-slate-600 text-center">{t("splash.version")}</p>
       </div>
