@@ -521,12 +521,12 @@
     "empty": {
       "title": "No events yet",
       "description": "Create your first cooperative event — member meetings, training sessions, or community gatherings. Events appear on the calendar automatically.",
-      "cta": "Create Event",
       "hint1": "Calendar integration",
       "hint2": "Location tracking",
       "hint3": "Time scheduling",
       "hint4": "Auto-reminders"
     },
+    "new": "Create Event",
     "importance": {
       "star1": "Low Priority",
       "star2": "Low-Medium",

@@ -28,12 +28,10 @@ export default function EventList({ events, onNew, onDelete }: Props) {
           <CalendarIcon className="h-3.5 w-3.5 text-warning" />
           {t("sidebar.nav.kegiatan")}
         </h3>
-        {events.length > 0 && (
-          <Button onClick={onNew} className="bg-brand hover:bg-brand text-brand-foreground font-bold text-xs h-8 px-3">
-            <CalendarPlus className="h-3.5 w-3.5 mr-1.5" />
-            {t("event.form.save")}
-          </Button>
-        )}
+        <Button onClick={onNew} className="bg-brand hover:bg-brand text-brand-foreground font-bold text-xs h-8 px-3">
+          <CalendarPlus className="h-3.5 w-3.5 mr-1.5" />
+          {t("event.new")}
+        </Button>
       </div>
 
       {events.length === 0 ? (
@@ -43,11 +41,7 @@ export default function EventList({ events, onNew, onDelete }: Props) {
           </div>
           <h2 className="text-sm font-bold text-foreground mb-2">{t("event.empty.title")}</h2>
           <p className="text-xxs text-muted-foreground max-w-xs mb-8 leading-relaxed">{t("event.empty.description")}</p>
-          <Button onClick={onNew} className="bg-brand hover:bg-brand text-brand-foreground font-bold text-xs h-9 px-5">
-            <SparkleIcon className="h-3.5 w-3.5 mr-1.5" />
-            {t("event.empty.cta")}
-          </Button>
-          <div className="mt-10 grid grid-cols-2 gap-3 max-w-xs w-full">
+          <div className="mt-2 grid grid-cols-2 gap-3 max-w-xs w-full">
             {[
               { icon: CalendarIcon, label: t("event.empty.hint1") },
               { icon: MapPinIcon, label: t("event.empty.hint2") },

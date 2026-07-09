@@ -521,12 +521,12 @@
     "empty": {
       "title": "Belum ada acara",
       "description": "Buat acara koperasi pertama Anda — rapat anggota, sesi pelatihan, atau pertemuan komunitas. Acara akan muncul di kalender secara otomatis.",
-      "cta": "Buat Acara",
       "hint1": "Integrasi kalender",
       "hint2": "Pencatatan lokasi",
       "hint3": "Penjadwalan waktu",
       "hint4": "Pengingat otomatis"
     },
+    "new": "Buat Acara",
     "importance": {
       "star1": "Prioritas Rendah",
       "star2": "Rendah-Sedang",
