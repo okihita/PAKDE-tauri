@@ -494,6 +494,30 @@
     "goSync": "Go to Sync"
   },
   "event": {
+    "typeLabel": "Event Type",
+    "type": {
+      "member_meeting": "Member Meeting",
+      "arisan": "Arisan",
+      "social": "Social",
+      "training": "Training",
+      "other": "Other"
+    },
+    "duration": "Duration (min)",
+    "durationPlaceholder": "—",
+    "linkPlaceholder": "https://…",
+    "participants": "Participants",
+    "requiredHint": "Can't save yet — complete:",
+    "requiredTitle": "Event name is required",
+    "requiredDate": "Date is required",
+    "noMembers": "No members registered yet.",
+    "files": "Files",
+    "proposal": "Proposal",
+    "report": "LPJ",
+    "upload": "Upload",
+    "socialLinks": "Social Media Links",
+    "addLink": "Add link",
+    "notes": "Notes",
+    "notesPlaceholder": "Free-form notes about this event…",
     "empty": {
       "title": "No events yet",
       "description": "Create your first cooperative event — member meetings, training sessions, or community gatherings. Events appear on the calendar automatically.",

@@ -53,7 +53,7 @@ export async function initDb(): Promise<void> {
     // NOTE: this wipes all data on a version bump — acceptable for the
     // current dev/demo stage. Bump SCHEMA_VERSION whenever the schema in
     // this file changes incompatibly.
-    const SCHEMA_VERSION = 2;
+    const SCHEMA_VERSION = 3;
 
     await db.execute(`CREATE TABLE IF NOT EXISTS _schema_meta (key TEXT PRIMARY KEY, value TEXT);`);
     const meta = await db.select<Array<{ value: string }>>(
@@ -330,7 +330,34 @@ export async function initDb(): Promise<void> {
     );
   `);
 
-    // ── 8. Post-schema data migrations ──────────────────────────
+    // ── 8. Community events (Kegiatan) ───────────────────────
+    //
+    // Coop-scoped event archive. Replaces the old `localStorage` "pakde-events"
+    // array. Files (proposal / LPJ) are stored on disk under the coop's
+    // app-data folder; only their relative path + metadata live in this row.
+
+    await db.execute(`
+    CREATE TABLE IF NOT EXISTS events (
+      id TEXT PRIMARY KEY,
+      coop_id TEXT NOT NULL,
+      type TEXT NOT NULL DEFAULT 'other',
+      title TEXT NOT NULL,
+      date TEXT NOT NULL,
+      location TEXT,
+      duration_min INTEGER,
+      participant_ids TEXT,
+      proposal_path TEXT, proposal_name TEXT, proposal_mime TEXT, proposal_size INTEGER,
+      report_path TEXT, report_name TEXT, report_mime TEXT, report_size INTEGER,
+      social_links TEXT,
+      notes TEXT,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL,
+      FOREIGN KEY (coop_id) REFERENCES cooperatives(id) ON DELETE CASCADE
+    );
+  `);
+    await db.execute(`CREATE INDEX IF NOT EXISTS idx_events_coop ON events(coop_id, date);`);
+
+    // ── 9. Post-schema data migrations ──────────────────────────
 
     // Backfill: any cooperative that has zero local_users gets a default
     // admin account (username "Slamet Riyadi", PIN "123456").  This

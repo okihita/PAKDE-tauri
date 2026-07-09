@@ -38,6 +38,7 @@ import UserSignIn from "@/features/System/ProfileSelect/UserSignIn";
 import ProfileCompletion from "@/features/Home/Dashboard/ProfileCompletion";
 import { type CooperativeProfile, type EwsAlert, type LocalUser } from "@/types";
 import { isDemoCooperative } from "@/db/seed-demo";
+import { getActiveCoopId } from "@/db/active-coop";
 
 type FontLevel = "small" | "normal" | "large" | "xlarge";
 const FONT_LEVELS: FontLevel[] = ["small", "normal", "large", "xlarge"];
@@ -385,7 +386,7 @@ function AppContent() {
           {activeTab === "learn" && <Learn />}
           {activeTab === "planners" && <Planners />}
           {activeTab === "anggota" && <Members />}
-          {activeTab === "kegiatan" && <CreateEvent />}
+          {activeTab === "kegiatan" && <CreateEvent coopId={coopProfile?.id ?? getActiveCoopId()} />}
           {activeTab === "dampak" && <Dampak />}
           {activeTab === "accounting" && (
             <Accounting

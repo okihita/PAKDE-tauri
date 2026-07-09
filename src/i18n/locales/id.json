@@ -494,6 +494,30 @@
     "goSync": "Buka Sinkronisasi"
   },
   "event": {
+    "typeLabel": "Jenis Kegiatan",
+    "type": {
+      "member_meeting": "Rapat Anggota",
+      "arisan": "Arisan",
+      "social": "Sosial",
+      "training": "Pelatihan",
+      "other": "Lainnya"
+    },
+    "duration": "Durasi (menit)",
+    "durationPlaceholder": "—",
+    "linkPlaceholder": "https://…",
+    "participants": "Peserta",
+    "requiredHint": "Belum bisa disimpan — lengkapi:",
+    "requiredTitle": "Nama acara wajib diisi",
+    "requiredDate": "Tanggal wajib diisi",
+    "noMembers": "Belum ada anggota terdaftar.",
+    "files": "Berkas",
+    "proposal": "Proposal",
+    "report": "LPJ",
+    "upload": "Unggah",
+    "socialLinks": "Tautan Media Sosial",
+    "addLink": "Tambah tautan",
+    "notes": "Catatan",
+    "notesPlaceholder": "Catatan bebas tentang kegiatan ini…",
     "empty": {
       "title": "Belum ada acara",
       "description": "Buat acara koperasi pertama Anda — rapat anggota, sesi pelatihan, atau pertemuan komunitas. Acara akan muncul di kalender secara otomatis.",
