@@ -2,7 +2,13 @@ import { useState, useEffect } from "react";
 import { CalendarIcon, CaretLeftIcon, CaretRightIcon, MapPinIcon, ClockIcon } from "@phosphor-icons/react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import i18next from "@/i18n";
 import { listEvents, type Kegiatan } from "@/features/Community/CreateEvent/eventsDb";
+
+/** Localized long month name (e.g. "Juli") respecting the active language. */
+function monthName(year: number, month: number): string {
+  return new Intl.DateTimeFormat(i18next.language || "id", { month: "long" }).format(new Date(year, month, 1));
+}
 
 interface CalendarEvent {
   date: number;
@@ -34,20 +40,6 @@ function kegiatanToCalendarEvent(k: Kegiatan): CalendarEvent | null {
 }
 
 const DAYS_SHORT = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"] as const;
-const MONTHS = [
-  "January",
-  "February",
-  "March",
-  "April",
-  "May",
-  "June",
-  "July",
-  "August",
-  "September",
-  "October",
-  "November",
-  "December",
-];
 
 // ── Component ──────────────────────────────────────────────────────
 
@@ -112,7 +104,7 @@ export default function CalendarWidget({ t }: { t: (key: string) => string }) {
           </CardTitle>
           <div className="flex items-center gap-2">
             <span className="text-xxs font-mono text-muted-foreground">
-              {MONTHS[viewMonth]} {viewYear}
+              {monthName(viewYear, viewMonth)} {viewYear}
             </span>
             <div className="flex gap-0.5">
               <button
@@ -195,7 +187,8 @@ export default function CalendarWidget({ t }: { t: (key: string) => string }) {
             <div className="flex items-center gap-2">
               <CalendarIcon className="h-3.5 w-3.5 text-warning shrink-0" />
               <span>
-                {selectedEvent?.date} {selectedEvent ? MONTHS[selectedEvent.month] : ""} {selectedEvent?.year}
+                {selectedEvent?.date} {selectedEvent ? monthName(selectedEvent.year, selectedEvent.month) : ""}{" "}
+                {selectedEvent?.year}
               </span>
             </div>
             {selectedEvent?.time && (

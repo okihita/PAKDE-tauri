@@ -1,6 +1,8 @@
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
   CalendarIcon,
   SparkleIcon,
@@ -9,8 +11,14 @@ import {
   LinkIcon,
   PaperclipIcon,
   CalendarPlus,
+  ClockIcon,
+  TagIcon,
+  WarningIcon,
+  TrashIcon,
 } from "@phosphor-icons/react";
-import type { Kegiatan } from "./eventsDb";
+import { openPath, openUrl } from "@tauri-apps/plugin-opener";
+import type { Kegiatan, EventFileMeta } from "./eventsDb";
+import { absoluteEventFilePath } from "./fileStore";
 
 interface Props {
   events: Kegiatan[];
@@ -20,6 +28,30 @@ interface Props {
 
 export default function EventList({ events, onNew, onDelete }: Props) {
   const { t } = useTranslation();
+  const [selected, setSelected] = useState<Kegiatan | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState<Kegiatan | null>(null);
+
+  const openFile = async (meta: EventFileMeta) => {
+    try {
+      await openPath(await absoluteEventFilePath(meta.path));
+    } catch (err) {
+      console.error("[events] failed to open file:", err);
+    }
+  };
+
+  const openLink = async (url: string) => {
+    try {
+      const href = /^https?:\/\//i.test(url) ? url : `https://${url}`;
+      await openUrl(href);
+    } catch (err) {
+      console.error("[events] failed to open link:", err);
+    }
+  };
+
+  const confirmDeleteEvent = () => {
+    if (confirmDelete) onDelete(confirmDelete);
+    setConfirmDelete(null);
+  };
 
   return (
     <div className="flex-1 overflow-auto p-6">
@@ -60,7 +92,8 @@ export default function EventList({ events, onNew, onDelete }: Props) {
           {events.map((ev) => (
             <Card
               key={ev.id}
-              className="bg-slate-950/60 border-slate-900/80 hover:border-warning/20 transition-all group"
+              onClick={() => setSelected(ev)}
+              className="bg-slate-950/60 border-slate-900/80 hover:border-warning/20 transition-all group cursor-pointer"
             >
               <CardContent className="p-4 space-y-3">
                 <div className="flex justify-between items-start gap-2">
@@ -74,7 +107,10 @@ export default function EventList({ events, onNew, onDelete }: Props) {
                   <Button
                     variant="ghost"
                     size="icon"
-                    onClick={() => onDelete(ev)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setConfirmDelete(ev);
+                    }}
                     className="h-7 w-7 text-danger hover:text-danger hover:bg-danger/10 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
                   >
                     <span className="text-xxxs font-mono">✕</span>
@@ -121,6 +157,154 @@ export default function EventList({ events, onNew, onDelete }: Props) {
           ))}
         </div>
       )}
+
+      {/* Detail dialog — read back a saved Kegiatan */}
+      <Dialog open={!!selected} onOpenChange={(o) => !o && setSelected(null)}>
+        <DialogContent className="bg-card border-border text-foreground max-w-md">
+          {selected && (
+            <>
+              <DialogHeader>
+                <DialogTitle className="text-sm font-bold text-foreground pr-6">{selected.title}</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-3 text-xs text-muted-foreground">
+                <div className="flex items-center gap-2">
+                  <TagIcon className="h-3.5 w-3.5 text-warning shrink-0" />
+                  <span>{t(`event.type.${selected.type}`)}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <CalendarIcon className="h-3.5 w-3.5 text-warning shrink-0" />
+                  <span>{selected.date}</span>
+                  {selected.duration_min ? (
+                    <span className="flex items-center gap-1">
+                      <ClockIcon className="h-3.5 w-3.5 text-warning shrink-0" />
+                      {selected.duration_min}m
+                    </span>
+                  ) : null}
+                </div>
+                {selected.location && (
+                  <div className="flex items-center gap-2">
+                    <MapPinIcon className="h-3.5 w-3.5 text-warning shrink-0" />
+                    <span>{selected.location}</span>
+                  </div>
+                )}
+                <div className="flex items-center gap-2">
+                  <UsersIcon className="h-3.5 w-3.5 text-warning shrink-0" />
+                  <span>
+                    {selected.participant_ids.length} {t("event.detail.participants").toLowerCase()}
+                  </span>
+                </div>
+
+                {(selected.proposal || selected.report) && (
+                  <div className="space-y-1.5 pt-1">
+                    <p className="text-xxxs font-mono text-muted-foreground uppercase tracking-wider">
+                      {t("event.detail.files")}
+                    </p>
+                    {selected.proposal &&
+                      (() => {
+                        const f = selected.proposal;
+                        return (
+                          <button
+                            onClick={() => void openFile(f)}
+                            className="flex items-center gap-2 w-full text-left text-xxxs text-info hover:text-info/80 transition-colors"
+                          >
+                            <PaperclipIcon className="h-3.5 w-3.5 shrink-0" />
+                            <span className="truncate">{f.name}</span>
+                            <span className="ml-auto text-slate-500 shrink-0">{t("event.detail.open")}</span>
+                          </button>
+                        );
+                      })()}
+                    {selected.report &&
+                      (() => {
+                        const f = selected.report;
+                        return (
+                          <button
+                            onClick={() => void openFile(f)}
+                            className="flex items-center gap-2 w-full text-left text-xxxs text-success hover:text-success/80 transition-colors"
+                          >
+                            <PaperclipIcon className="h-3.5 w-3.5 shrink-0" />
+                            <span className="truncate">{f.name}</span>
+                            <span className="ml-auto text-slate-500 shrink-0">{t("event.detail.open")}</span>
+                          </button>
+                        );
+                      })()}
+                  </div>
+                )}
+
+                {selected.social_links.length > 0 && (
+                  <div className="space-y-1.5 pt-1">
+                    <p className="text-xxxs font-mono text-muted-foreground uppercase tracking-wider">
+                      {t("event.detail.socialLinks")}
+                    </p>
+                    {selected.social_links.map((link, i) => (
+                      <button
+                        key={i}
+                        onClick={() => void openLink(link)}
+                        className="flex items-center gap-2 w-full text-left text-xxxs text-info hover:text-info/80 transition-colors truncate"
+                      >
+                        <LinkIcon className="h-3.5 w-3.5 shrink-0" />
+                        <span className="truncate">{link}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                {selected.description && (
+                  <div className="space-y-1 pt-1">
+                    <p className="text-xxxs font-mono text-muted-foreground uppercase tracking-wider">
+                      {t("event.detail.description")}
+                    </p>
+                    <p className="text-xxxs text-foreground/80 leading-relaxed whitespace-pre-line">
+                      {selected.description}
+                    </p>
+                  </div>
+                )}
+
+                {selected.notes && (
+                  <div className="space-y-1 pt-1">
+                    <p className="text-xxxs font-mono text-muted-foreground uppercase tracking-wider">
+                      {t("event.detail.notes")}
+                    </p>
+                    <p className="text-xxxs text-muted-foreground leading-relaxed whitespace-pre-line">
+                      {selected.notes}
+                    </p>
+                  </div>
+                )}
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete confirmation */}
+      <Dialog open={!!confirmDelete} onOpenChange={(o) => !o && setConfirmDelete(null)}>
+        <DialogContent className="bg-card border-border text-foreground max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="text-sm font-bold text-foreground flex items-center gap-2">
+              <WarningIcon className="h-4 w-4 text-danger" />
+              {t("event.confirmDelete.title")}
+            </DialogTitle>
+          </DialogHeader>
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            {t("event.confirmDelete.message", { title: confirmDelete?.title ?? "" })}
+          </p>
+          <div className="flex gap-2 pt-1">
+            <Button
+              variant="outline"
+              onClick={() => setConfirmDelete(null)}
+              className="border-border text-muted-foreground text-xs h-9 flex-1"
+            >
+              {t("event.confirmDelete.cancel")}
+            </Button>
+            <Button
+              onClick={confirmDeleteEvent}
+              className="bg-danger hover:bg-danger text-danger-foreground font-bold text-xs h-9 flex-1"
+            >
+              <TrashIcon className="h-3.5 w-3.5 mr-1.5" />
+              {t("event.confirmDelete.delete")}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

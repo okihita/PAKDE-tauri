@@ -69,8 +69,9 @@
       "settings": "Settings",
       "units": "Business Units",
       "equipment": "Equipment",
-      "sales": "Sales & Vendors",
-      "storeLayout": "Store Layout",
+      "asetFisik": "Physical Assets",
+      "sales": "Sales & Vendor",
+      "storeLayout": "Buildings & Layout",
       "development": "Potential",
       "learn": "Learn & Quiz",
       "planners": "Planner Collection"
@@ -845,6 +846,26 @@
       "whyTitle": "Why This Event",
       "checklistTitle": "Action Checklist",
       "roiTitle": "What the Cooperative Gains"
+    },
+    "detail": {
+      "type": "Type",
+      "date": "Date",
+      "duration": "Duration",
+      "location": "Location",
+      "participants": "Participants",
+      "noParticipants": "No participants registered",
+      "files": "Files",
+      "open": "Open",
+      "socialLinks": "Social Media Links",
+      "description": "Description",
+      "notes": "Notes",
+      "emptyDescription": "No description."
+    },
+    "confirmDelete": {
+      "title": "Delete Event?",
+      "message": "Event \"{{title}}\" and all of its files will be permanently deleted.",
+      "cancel": "Cancel",
+      "delete": "Delete"
     }
   },
   "equipment": {
@@ -1047,6 +1068,9 @@
     "description": "Printable planner collection to support your cooperative operations.",
     "pages": "{{n}} pgs",
     "pdf": "PDF"
+  },
+  "assets": {
+    "description": "Manage the cooperative's fixed assets: buildings, store layout, and operational equipment."
   },
   "units": {
     "title": "Business Units",

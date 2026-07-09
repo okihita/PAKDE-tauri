@@ -69,8 +69,9 @@
       "settings": "Pengaturan",
       "units": "Unit Usaha",
       "equipment": "Peralatan",
+      "asetFisik": "Aset Fisik",
       "sales": "Penjualan & Vendor",
-      "storeLayout": "Tata Letak Toko",
+      "storeLayout": "Gedung & Tata Letak",
       "development": "Potensi",
       "learn": "Belajar & Kuis",
       "planners": "Koleksi Planner"
@@ -845,6 +846,26 @@
       "whyTitle": "Mengapa Acara Ini",
       "checklistTitle": "Daftar Periksa",
       "roiTitle": "Manfaat untuk Koperasi"
+    },
+    "detail": {
+      "type": "Jenis",
+      "date": "Tanggal",
+      "duration": "Durasi",
+      "location": "Lokasi",
+      "participants": "Peserta",
+      "noParticipants": "Tidak ada peserta terdaftar",
+      "files": "Berkas",
+      "open": "Buka",
+      "socialLinks": "Tautan Media Sosial",
+      "description": "Deskripsi",
+      "notes": "Catatan",
+      "emptyDescription": "Tidak ada deskripsi."
+    },
+    "confirmDelete": {
+      "title": "Hapus Acara?",
+      "message": "Acara \"{{title}}\" dan seluruh berkasnya akan dihapus secara permanen.",
+      "cancel": "Batal",
+      "delete": "Hapus"
     }
   },
   "equipment": {
@@ -1047,6 +1068,9 @@
     "description": "Koleksi planner siap cetak untuk membantu operasional koperasi Anda.",
     "pages": "{{n}} hlm",
     "pdf": "PDF"
+  },
+  "assets": {
+    "description": "Kelola aset tetap koperasi: gedung, tata letak toko, dan peralatan operasional."
   },
   "units": {
     "title": "Unit Usaha Koperasi",
