@@ -64,7 +64,7 @@ const HEATMAP_DAYS: DayActivity[] = [
 ];
 
 interface ParticipationProps {
-  onTabChange?: (tab: "members") => void;
+  onTabChange?: (tab: "anggota") => void;
 }
 
 export default function Participation({ onTabChange }: ParticipationProps) {
@@ -79,7 +79,7 @@ export default function Participation({ onTabChange }: ParticipationProps) {
   const handleMemberClick = (n: string) => {
     if (onTabChange) {
       localStorage.setItem("pakde-member-search-filter", n);
-      onTabChange("members");
+      onTabChange("anggota");
     }
   };
 

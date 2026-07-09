@@ -29,8 +29,7 @@ import Feasibility from "@/features/Finance/Feasibility/Feasibility";
 import Ranking from "@/features/Finance/Ranking/Ranking";
 import { useRanking } from "@/features/Finance/Ranking/useRanking";
 import CreateEvent from "@/features/Community/CreateEvent/CreateEvent";
-import Impact from "@/features/Community/Impact/Impact";
-import Participation from "@/features/Community/Participation/Participation";
+import Dampak from "@/features/Community/Dampak/Dampak";
 import Sync from "@/features/System/Sync/Sync";
 import Settings from "@/features/System/Settings/Settings";
 import ProfileSelect from "@/features/System/ProfileSelect/ProfileSelect";
@@ -385,10 +384,9 @@ function AppContent() {
           {activeTab === "development" && <Development />}
           {activeTab === "learn" && <Learn />}
           {activeTab === "planners" && <Planners />}
-          {activeTab === "participation" && <Participation onTabChange={setActiveTab} />}
-          {activeTab === "members" && <Members />}
-          {activeTab === "event" && <CreateEvent />}
-          {activeTab === "impact" && <Impact />}
+          {activeTab === "anggota" && <Members />}
+          {activeTab === "kegiatan" && <CreateEvent />}
+          {activeTab === "dampak" && <Dampak />}
           {activeTab === "accounting" && (
             <Accounting
               financeTier={financeTier}

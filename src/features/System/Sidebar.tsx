@@ -116,10 +116,9 @@ export default function Sidebar({
       accent: "violet",
       label: t("sidebar.groups.komunitas"),
       items: [
-        { id: "participation", icon: ChartBarIcon, label: t("sidebar.nav.participation") },
-        { id: "members", icon: UsersIcon, label: t("sidebar.nav.members") },
-        { id: "event", icon: CalendarPlus, label: t("sidebar.nav.event") },
-        { id: "impact", icon: HandshakeIcon, label: t("sidebar.nav.impact") },
+        { id: "anggota", icon: UsersIcon, label: t("sidebar.nav.anggota") },
+        { id: "kegiatan", icon: CalendarPlus, label: t("sidebar.nav.kegiatan") },
+        { id: "dampak", icon: HandshakeIcon, label: t("sidebar.nav.dampak") },
       ],
     },
     {

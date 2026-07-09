@@ -9,7 +9,7 @@ import { BuildingsIcon, PlusIcon, SparkleIcon, PowerIcon, PulseIcon, MapPinIcon 
 import "./Units.css";
 
 interface UnitsProps {
-  onTabChange?: (tab: "members" | "storelayout") => void;
+  onTabChange?: (tab: "anggota" | "storelayout") => void;
 }
 
 export default function Units({ onTabChange }: UnitsProps) {
@@ -100,7 +100,7 @@ export default function Units({ onTabChange }: UnitsProps) {
             const handleMemberClick = (n: string) => {
               if (onTabChange) {
                 localStorage.setItem("pakde-member-search-filter", n);
-                onTabChange("members");
+                onTabChange("anggota");
               }
             };
 
