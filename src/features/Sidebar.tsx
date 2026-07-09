@@ -1,4 +1,4 @@
-import type { ComponentType } from "react";
+import { useState, type ComponentType } from "react";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 import {
@@ -14,7 +14,6 @@ import {
   UserCheck,
   SunIcon,
   MoonIcon,
-  Shield,
   MedalIcon,
   CalendarPlus,
   WrenchIcon,
@@ -106,6 +105,15 @@ export default function Sidebar({
   const criticalAlerts = ewsAlerts.filter((a) => a.level === "critical").length;
   const healthScore = coopProfile?.health_score ?? 0;
   const currentLevel = healthScore > 0 ? getCurrentLevel(healthScore) : null;
+
+  const [logoFailed, setLogoFailed] = useState(false);
+  const coopInitials = (coopProfile?.name ?? "?")
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((w) => w[0] ?? "")
+    .join("")
+    .toUpperCase();
 
   const GROUPS: NavGroupDef[] = [
     {
@@ -232,7 +240,18 @@ export default function Sidebar({
           <div className="rounded-xl bg-card border border-border p-4 space-y-3">
             <div className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-2 min-w-0">
-                <Shield className="h-3.5 w-3.5 text-success shrink-0" />
+                <div className="w-9 h-9 rounded-xl bg-success/15 ring-1 ring-brand/30 flex items-center justify-center shrink-0 overflow-hidden">
+                  {coopProfile?.logo_path && !logoFailed ? (
+                    <img
+                      src={coopProfile.logo_path}
+                      alt={coopProfile.name}
+                      className="h-full w-full object-cover"
+                      onError={() => setLogoFailed(true)}
+                    />
+                  ) : (
+                    <span className="text-xs font-black text-success">{coopInitials}</span>
+                  )}
+                </div>
                 <h2 className="text-sm font-bold text-foreground truncate">{coopProfile?.name ?? "..."}</h2>
               </div>
               {currentLevel && (
@@ -245,7 +264,7 @@ export default function Sidebar({
             </div>
             {currentLevel && (
               <p className="text-xxs font-mono text-muted-foreground uppercase tracking-wider">
-                {currentLevel.labelId} · {currentLevel.labelEn}
+                {currentLevel.labelId}
               </p>
             )}
             {healthScore > 0 && (
@@ -259,16 +278,9 @@ export default function Sidebar({
                 </div>
               </div>
             )}
-            <div className="flex items-center gap-2 text-xxs text-muted-foreground">
-              <span className="flex items-center gap-1">
-                <UsersIcon className="h-3 w-3 shrink-0" />
-                <span>{memberCount}</span>
-              </span>
-              <span className="text-border">|</span>
-              <span className="text-xxxs font-mono truncate">
-                {coopProfile?.village}
-                {coopProfile?.regency ? `, ${coopProfile.regency}` : ""}
-              </span>
+            <div className="flex items-center gap-1 text-xxs text-muted-foreground">
+              <UsersIcon className="h-3 w-3 shrink-0" />
+              <span>{memberCount}</span>
             </div>
           </div>
 
