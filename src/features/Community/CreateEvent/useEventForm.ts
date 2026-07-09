@@ -55,7 +55,7 @@ export function useEventForm(
 
   const [title, setTitle] = useState(() => (tmpl?.suggestedNameKey ? t(tmpl.suggestedNameKey) : ""));
   const [type, setType] = useState<EventType>("other");
-  const [date, setDate] = useState("");
+  const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [location, setLocation] = useState(() => (tmpl?.suggestedLocationKey ? t(tmpl.suggestedLocationKey) : ""));
   const [durationMin, setDurationMin] = useState<number | "">("");
   const [attendees, setAttendees] = useState(() => (tmpl ? tmpl.defaultAttendees : 0));
