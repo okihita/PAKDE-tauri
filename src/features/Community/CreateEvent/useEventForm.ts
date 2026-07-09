@@ -97,9 +97,9 @@ export function useEventForm(
 
   const handleFile = async (kind: "proposal" | "report", file: File | undefined) => {
     if (!file) return;
-    const id = `evt-${crypto.randomUUID()}`;
-    const meta = await storeEventFile(coopId, id, file);
+    const id = pendingIdRef.current ?? `evt-${crypto.randomUUID()}`;
     pendingIdRef.current = id;
+    const meta = await storeEventFile(coopId, id, file);
     if (kind === "proposal") setProposal(meta);
     else setReport(meta);
   };
@@ -124,6 +124,7 @@ export function useEventForm(
         proposal,
         report,
         social_links: socialLinks.map((l) => l.trim()).filter(Boolean),
+        description: description.trim(),
         notes: notes.trim(),
       };
       await createEvent(coopId, input, id);

@@ -14,7 +14,7 @@ import { mkdir } from "@tauri-apps/plugin-fs";
 import { getActiveCoopId } from "./active-coop";
 
 const COOPS_DIR = "coops";
-const COOP_SCHEMA_VERSION = 3;
+const COOP_SCHEMA_VERSION = 4;
 
 let coopDirEnsured: Promise<void> | null = null;
 const coopPromises = new Map<string, Promise<Database>>();
@@ -302,6 +302,9 @@ export async function initCoopDb(coopId: string): Promise<void> {
       );
     `);
     await db.execute(`CREATE INDEX IF NOT EXISTS idx_events_date ON events(date);`);
+
+    // ── events: add description column for coops created before v4 ──
+    await db.execute(`ALTER TABLE events ADD COLUMN description TEXT;`);
 
     await db.execute("INSERT OR REPLACE INTO _schema_meta (key, value) VALUES ('schema_version', ?);", [
       String(COOP_SCHEMA_VERSION),

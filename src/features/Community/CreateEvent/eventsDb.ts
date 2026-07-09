@@ -29,6 +29,7 @@ export interface Kegiatan {
   proposal: EventFileMeta | null;
   report: EventFileMeta | null;
   social_links: string[];
+  description: string;
   notes: string;
   created_at: string;
   updated_at: string;
@@ -44,6 +45,7 @@ export interface NewEventInput {
   proposal: EventFileMeta | null;
   report: EventFileMeta | null;
   social_links: string[];
+  description: string;
   notes: string;
 }
 
@@ -64,6 +66,7 @@ interface EventRow {
   report_mime: string | null;
   report_size: number | null;
   social_links: string | null;
+  description: string | null;
   notes: string | null;
   created_at: string;
   updated_at: string;
@@ -88,6 +91,7 @@ function rowToKegiatan(r: EventRow, coopId: string): Kegiatan {
         ? { path: r.report_path, name: r.report_name, mime: r.report_mime ?? "", size: r.report_size ?? 0 }
         : null,
     social_links: r.social_links ? JSON.parse(r.social_links) : [],
+    description: r.description ?? "",
     notes: r.notes ?? "",
     created_at: r.created_at,
     updated_at: r.updated_at,
@@ -111,8 +115,8 @@ export async function createEvent(
     `INSERT INTO events (
        id, type, title, date, location, duration_min,
        participant_ids, proposal_path, proposal_name, proposal_mime, proposal_size,
-       report_path, report_name, report_mime, report_size, social_links, notes, created_at, updated_at
-     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+       report_path, report_name, report_mime, report_size, social_links, description, notes, created_at, updated_at
+     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       id,
       data.type,
@@ -130,6 +134,7 @@ export async function createEvent(
       data.report?.mime ?? null,
       data.report?.size ?? null,
       JSON.stringify(data.social_links),
+      data.description,
       data.notes,
       now,
       now,
@@ -170,9 +175,9 @@ export async function migrateLocalStorageEvents(coopId: string): Promise<boolean
       await db.execute(
         `INSERT OR IGNORE INTO events (
            id, type, title, date, location, duration_min, participant_ids,
-           social_links, notes, created_at, updated_at
-         ) VALUES (?, 'other', ?, ?, ?, NULL, '[]', '[]', ?, ?, ?)`,
-        [e.id, e.name, e.date, e.location ?? "", e.description ?? "", now, now],
+           social_links, description, notes, created_at, updated_at
+         ) VALUES (?, 'other', ?, ?, ?, NULL, '[]', '[]', ?, ?, ?, ?)`,
+        [e.id, e.name, e.date, e.location ?? "", e.description ?? "", "", now, now],
       );
     }
   } catch (err) {

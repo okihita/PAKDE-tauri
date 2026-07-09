@@ -27,17 +27,19 @@ import {
 import type { EventType } from "./eventsDb";
 import EventPredictionPanels from "./EventPredictionPanels";
 import { computePredictions, importanceStars, type EventTemplate } from "./eventTemplates";
-import type { UseEventForm } from "./useEventForm";
+import { useEventForm } from "./useEventForm";
 
 const EVENT_TYPES: EventType[] = ["member_meeting", "arisan", "social", "training", "other"];
 
 interface Props {
-  form: UseEventForm;
+  coopId: string;
   selectedTemplate: EventTemplate | null;
   onBack: () => void;
+  onSaved: () => void;
 }
 
-export default function EventForm({ form, selectedTemplate, onBack }: Props) {
+export default function EventForm({ coopId, selectedTemplate, onBack, onSaved }: Props) {
+  const form = useEventForm(coopId, selectedTemplate, onSaved);
   const { t } = useTranslation();
   const proposalInputRef = useRef<HTMLInputElement>(null);
   const reportInputRef = useRef<HTMLInputElement>(null);

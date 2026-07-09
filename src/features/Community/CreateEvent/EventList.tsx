@@ -118,6 +118,9 @@ export default function EventList({ events, onNew, onDelete }: Props) {
                     </span>
                   )}
                 </div>
+                {ev.description && (
+                  <p className="text-xxxs text-foreground/80 leading-relaxed line-clamp-3">{ev.description}</p>
+                )}
                 {ev.notes && <p className="text-xxxs text-muted-foreground leading-relaxed line-clamp-2">{ev.notes}</p>}
               </CardContent>
             </Card>

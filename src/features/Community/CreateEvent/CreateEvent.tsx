@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { listEvents, deleteEvent, migrateLocalStorageEvents, type Kegiatan } from "./eventsDb";
 import { deleteEventFiles } from "./fileStore";
-import { useEventForm } from "./useEventForm";
 import EventTemplatePicker from "./EventTemplatePicker";
 import EventList from "./EventList";
 import EventForm from "./EventForm";
@@ -47,20 +46,27 @@ export default function CreateEvent({ coopId }: Props) {
     await load();
   };
 
-  const form = useEventForm(coopId, selectedTemplate, () => {
+  const handleSaved = () => {
     void (async () => {
       setMode("list");
       setSelectedTemplate(null);
       await load();
     })();
-  });
+  };
 
   if (mode === "templates") {
     return <EventTemplatePicker onSelect={selectTemplate} onBack={backToList} />;
   }
 
   if (mode === "create") {
-    return <EventForm form={form} selectedTemplate={selectedTemplate} onBack={() => setMode("templates")} />;
+    return (
+      <EventForm
+        coopId={coopId}
+        selectedTemplate={selectedTemplate}
+        onBack={() => setMode("templates")}
+        onSaved={handleSaved}
+      />
+    );
   }
 
   return <EventList events={events} onNew={openTemplates} onDelete={handleDelete} />;
