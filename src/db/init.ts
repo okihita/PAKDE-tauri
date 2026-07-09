@@ -22,6 +22,8 @@
 
 import { getDb } from "./index";
 import { initWilayah } from "./wilayah-init";
+import { appDataDir, join } from "@tauri-apps/api/path";
+import { copyFile } from "@tauri-apps/plugin-fs";
 
 // Guard so concurrent / strict-mode callers share a single initialization.
 // Running initDb twice at once (e.g. React StrictMode double-invokes mount
@@ -62,6 +64,24 @@ export async function initDb(): Promise<void> {
     const currentVersion = meta.length ? Number(meta[0].value) : 0;
 
     if (currentVersion < SCHEMA_VERSION) {
+      // ── Safety net: snapshot the DB before any destructive migration ──
+      // A schema bump used to DROP every table with no recovery path, silently
+      // wiping all cooperatives, members, journals and sales. We now VACUUM a
+      // timestamped copy into the app-data dir first, so a bad migration is
+      // never unrecoverable. If the backup fails we abort the migration (and
+      // dbInitPromise is reset, so it retries next launch) rather than risk
+      // data loss.
+      try {
+        const dir = await appDataDir();
+        const stamp = new Date().toISOString().replace(/[:.]/g, "-");
+        const src = await join(dir, "kdkmp.db");
+        const dst = await join(dir, `kdkmp.backup.${stamp}.db`);
+        await copyFile(src, dst);
+      } catch (backupErr) {
+        console.error("Pre-migration backup failed; aborting migration to avoid data loss.", backupErr);
+        throw backupErr;
+      }
+
       const tables = await db.select<Array<{ name: string }>>(
         "SELECT name FROM sqlite_master WHERE type = 'table' AND name != '_schema_meta';",
       );

@@ -69,7 +69,7 @@ export default function CreateProfileDialog({ open, onOpenChange, onProfileCreat
     emblem: EMBLEMS[0],
   });
 
-  const isValid = formData.name.trim() && formData.province.trim();
+  const isValid = formData.name.trim() && formData.province.trim() && formData.regency.trim();
 
   const handleNext = () => {
     if (!isValid) {
