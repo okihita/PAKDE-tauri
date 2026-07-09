@@ -1,7 +1,6 @@
 import { useState, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { getDb } from "@/db";
-import { getActiveCoopId } from "@/db/active-coop";
 import { useToast } from "@/hooks/useToast";
 import type { InventoryItem, SalesTransaction, SalesTransactionItem, Member } from "@/types";
 
@@ -194,11 +193,10 @@ export function useSales() {
       const jeNumber = `JE-SALES-${Date.now().toString().slice(-6)}`;
       const jeDesc = `Penjualan ${paymentType === "cash" ? "Tunai" : "Kredit (Yarnen)"} - POS`;
 
-      const coopId = getActiveCoopId();
       await db.execute(
-        `INSERT INTO journal_entries (id, cooperative_id, number, date, description, category, created_by)
-         VALUES (?, ?, ?, ?, ?, ?, 'usr-001')`,
-        [jeId, coopId, jeNumber, timestamp.split(" ")[0], jeDesc, "operasional"],
+        `INSERT INTO journal_entries (id, number, date, description, category, created_by)
+         VALUES (?, ?, ?, ?, ?, 'usr-001')`,
+        [jeId, jeNumber, timestamp.split(" ")[0], jeDesc, "operasional"],
       );
 
       // Line 1: Debit Cash (1.1.01) or Accounts Receivable (1.1.03)

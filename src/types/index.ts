@@ -2,7 +2,6 @@
 
 export interface LocalUser {
   id: string;
-  cooperative_id: string;
   name: string;
   role: "admin" | "operator" | "pengawas";
   pin_hash: string;
@@ -95,7 +94,6 @@ export interface CooperativeProfile {
 
 export interface EwsAlert {
   id: string;
-  cooperative_id: string;
   level: "info" | "warning" | "critical";
   indicator: string;
   message: string;
@@ -146,7 +144,6 @@ export interface SensitivityResult {
 
 export interface SyncHistoryItem {
   id: string;
-  cooperative_id: string;
   direction: "upload" | "download";
   status: "success" | "failed" | "in_progress";
   entity_count: number;
@@ -159,7 +156,6 @@ export interface SyncHistoryItem {
 
 export interface JournalEntryRow {
   id: string;
-  cooperative_id: string;
   number: string;
   date: string;
   description: string;
@@ -207,7 +203,6 @@ export interface InventoryItem {
 
 export interface StoreLayout {
   id: string;
-  cooperative_id: string;
   name: string;
   grid_width: number;
   grid_height: number;
@@ -234,7 +229,6 @@ export interface LayoutZone {
 
 export interface SalesTransaction {
   id: string;
-  cooperative_id: string;
   member_id: string | null;
   member_name?: string;
   total_amount: number;

@@ -1,4 +1,4 @@
-import { getDb } from "@/db";
+import { getRegistryDb, getCoopDb, initCoopDb } from "@/db";
 import type { CooperativeProfile, EwsAlert } from "@/types";
 
 export interface CreateCooperativeInput {
@@ -24,7 +24,7 @@ export interface CreateCooperativeInput {
 }
 
 export async function createCooperative(input: CreateCooperativeInput): Promise<CooperativeProfile> {
-  const db = await getDb();
+  const db = await getRegistryDb();
   const newId = crypto.randomUUID();
 
   const units: string[] = [];
@@ -68,39 +68,40 @@ export async function createCooperative(input: CreateCooperativeInput): Promise<
 
   const rows = await db.select<CooperativeProfile[]>("SELECT * FROM cooperatives WHERE id = ?", [newId]);
   if (rows.length === 0) throw new Error("Failed to verify cooperative creation.");
+
+  // Provision this cooperative's own data file before any feature writes to it.
+  await initCoopDb(newId);
+
   return rows[0];
 }
 
 export async function listCooperatives(): Promise<CooperativeProfile[]> {
-  const db = await getDb();
+  const db = await getRegistryDb();
   return db.select<CooperativeProfile[]>("SELECT * FROM cooperatives WHERE is_demo = 0 ORDER BY created_at DESC");
 }
 
 export async function getCooperativeById(id: string): Promise<CooperativeProfile | null> {
-  const db = await getDb();
+  const db = await getRegistryDb();
   const rows = await db.select<CooperativeProfile[]>("SELECT * FROM cooperatives WHERE id = ?", [id]);
   return rows.length > 0 ? rows[0] : null;
 }
 
 /** Returns the seeded demo cooperative, or null if not yet seeded. */
 export async function getDemoCooperative(): Promise<CooperativeProfile | null> {
-  const db = await getDb();
+  const db = await getRegistryDb();
   const rows = await db.select<CooperativeProfile[]>("SELECT * FROM cooperatives WHERE is_demo = 1 LIMIT 1");
   return rows.length > 0 ? rows[0] : null;
 }
 
 /** Number of members registered under a cooperative. */
 export async function getMemberCount(cooperativeId: string): Promise<number> {
-  const db = await getDb();
-  const rows = await db.select<Array<{ count: number }>>(
-    "SELECT COUNT(*) AS count FROM members WHERE cooperative_id = ?",
-    [cooperativeId],
-  );
+  const db = await getCoopDb(cooperativeId);
+  const rows = await db.select<Array<{ count: number }>>("SELECT COUNT(*) AS count FROM members");
   return rows[0]?.count ?? 0;
 }
 
 /** Active (unresolved) EWS alerts for a cooperative, used by the shell badge. */
 export async function getActiveEwsAlerts(cooperativeId: string): Promise<EwsAlert[]> {
-  const db = await getDb();
-  return db.select<EwsAlert[]>("SELECT * FROM ews_alerts WHERE cooperative_id = ? AND is_active = 1", [cooperativeId]);
+  const db = await getCoopDb(cooperativeId);
+  return db.select<EwsAlert[]>("SELECT * FROM ews_alerts WHERE is_active = 1");
 }

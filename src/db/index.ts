@@ -1,17 +1,13 @@
-import Database from "@tauri-apps/plugin-sql";
+// ── Database entry points ──────────────────────────────────────
+//
+// Two logical databases:
+//   • registry.db  — `cooperatives` metadata (cross-coop). See registry.ts.
+//   • coops/<id>.db — one file per cooperative (operational data). See coopDb.ts.
+//
+// `getDb()` returns the ACTIVE cooperative's DB for backward compatibility with
+// feature hooks, which only ever run inside an active-coop context. Functions
+// that target a specific cooperative must call `getCoopDb(coopId)` directly.
 
-// Memoize the connection promise so concurrent callers (e.g. initDb + a hook
-// firing on the same tick) share one Database.load instead of racing two
-// opens, which throws SQLITE_BUSY ("database is locked").
-let dbPromise: Promise<Database> | null = null;
-
-export async function getDb(): Promise<Database> {
-  if (!dbPromise) {
-    dbPromise = (async () => {
-      const db = await Database.load("sqlite:kdkmp.db");
-      await db.execute("PRAGMA foreign_keys = ON;");
-      return db;
-    })();
-  }
-  return dbPromise;
-}
+export { initDb } from "./init";
+export { getRegistryDb, initRegistryDb, REGISTRY_SCHEMA_VERSION } from "./registry";
+export { getCoopDb, initCoopDb, getDb, coopDbPath, invalidateCoopDb } from "./coopDb";

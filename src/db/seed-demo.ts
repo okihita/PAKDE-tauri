@@ -1,6 +1,8 @@
 // ── Demo seed helpers ──────────────────────────────────────
 
-import { getDb } from "./index";
+import { getRegistryDb, getCoopDb, initCoopDb, invalidateCoopDb } from "@/db";
+import { appDataDir, join } from "@tauri-apps/api/path";
+import { exists, remove } from "@tauri-apps/plugin-fs";
 import { DEMO_TIERS, type DemoTier } from "@/features/System/ProfileSelect/demoTiers";
 
 /** Well-known UUID for the demo cooperative — referenced by both seed logic and UI. */
@@ -25,12 +27,11 @@ const DEMO_COOP = {
 export type DemoLevel = "pemula" | "menengah" | "lanjutan";
 
 /**
- * Clear + seed the demo cooperative at the given complexity tier.
- * All three tiers share cooperative id `kdp-001`; the difference is
- * how much data (COA, categories, inventory) gets populated.
+ * Clear + seed the demo cooperative at the given complexity tier. The demo
+ * cooperative owns its own `coops/<uuid>.db` file; its metadata row lives in
+ * the registry (`cooperatives`). No `cooperative_id` column is involved.
  */
 export async function seedDemoCooperativeAtLevel(level: DemoLevel): Promise<void> {
-  const db = await getDb();
   const tier = DEMO_TIERS.find((t) => t.level === level) ?? DEMO_TIERS[0];
 
   // Progression (xp) + operational EWS health, mapped onto the demo tier so a
@@ -42,14 +43,14 @@ export async function seedDemoCooperativeAtLevel(level: DemoLevel): Promise<void
   };
   const prog = TIER_PROGRESSION[tier.level];
 
-  // 1. Clear any existing demo data
+  // 1. Clear any existing demo data (file + registry row)
   await clearDemoCooperative();
 
-  // 2. Insert cooperative row — driven by the selected tier so the seeded
-  //    coop matches the mini-card and mission brief (name, location, units, tenure).
+  // 2. Insert the cooperative metadata row into the REGISTRY.
+  const reg = await getRegistryDb();
   const units = JSON.stringify(tier.units);
   const foundedDate = computeFoundedDate(tier);
-  await db.execute(
+  await reg.execute(
     `INSERT INTO cooperatives (id, name, regency, province, village, level, business_units, officers, status, founded_date, category, xp, health_score, rag_status, is_demo)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)`,
     [
@@ -70,25 +71,30 @@ export async function seedDemoCooperativeAtLevel(level: DemoLevel): Promise<void
     ],
   );
 
-  // 3. Seed demo admin user (PIN: 123456)
+  // 3. Provision the demo coop's own data file. We seed our own admin below,
+  //    so skip the default-admin backfill.
+  await initCoopDb(DEMO_COOP.id);
+  const db = await getCoopDb(DEMO_COOP.id);
+
+  // 4. Seed demo admin user (PIN: 123456)
   const demoUserId = "usr-demo-001";
   const defaultPinHash = "8d969ee56701d853af7b830aef854b3c7b288d60c9329ee3073a56657a8c462a"; // SHA-256 of "123456"
   await db.execute(
-    `INSERT INTO local_users (id, cooperative_id, name, role, pin_hash)
-     VALUES (?, ?, ?, ?, ?)`,
-    [demoUserId, DEMO_COOP.id, "Slamet Riyadi", "admin", defaultPinHash],
+    `INSERT INTO local_users (id, name, role, pin_hash)
+     VALUES (?, ?, ?, ?)`,
+    [demoUserId, "Slamet Riyadi", "admin", defaultPinHash],
   );
 
-  // 4. Seed COA — always full set (no harm; unused accounts just sit idle)
+  // 5. Seed COA — always full set (no harm; unused accounts just sit idle)
   await seedDemoCoaAccounts(db);
 
-  // 5. Seed categories — tier-specific
+  // 6. Seed categories — tier-specific
   await seedDemoCategoriesAtLevel(db, level);
 
-  // 6. Seed inventory — tier-specific
+  // 7. Seed inventory — tier-specific
   await seedDemoInventoryAtLevel(db, level);
 
-  // 7. Seed members to match the tier's "Anggota" stat
+  // 8. Seed members to match the tier's "Anggota" stat
   await seedDemoMembers(db, tier);
 }
 
@@ -97,55 +103,29 @@ export async function seedDemoCooperative(): Promise<void> {
 }
 
 export async function clearDemoCooperative(): Promise<void> {
-  const db = await getDb();
+  const reg = await getRegistryDb();
 
-  // Delete in dependency order (children before parents) to avoid FK constraint violations.
-  await db.execute(
-    `DELETE FROM sales_transaction_items WHERE transaction_id IN
-     (SELECT id FROM sales_transactions WHERE cooperative_id = ?)`,
-    [DEMO_COOP.id],
-  );
-  await db.execute("DELETE FROM sales_transactions WHERE cooperative_id = ?", [DEMO_COOP.id]);
-  await db.execute(
-    `DELETE FROM journal_lines WHERE journal_entry_id IN
-     (SELECT id FROM journal_entries WHERE cooperative_id = ?)`,
-    [DEMO_COOP.id],
-  );
-  await db.execute("DELETE FROM journal_entries WHERE cooperative_id = ?", [DEMO_COOP.id]);
-  await db.execute(
-    "DELETE FROM sensitivity_analyses WHERE financial_analysis_id IN (SELECT id FROM financial_analyses WHERE cooperative_id = ?)",
-    [DEMO_COOP.id],
-  );
-  await db.execute("DELETE FROM financial_analyses WHERE cooperative_id = ?", [DEMO_COOP.id]);
-  await db.execute(
-    "DELETE FROM layout_zones WHERE layout_id IN (SELECT id FROM store_layouts WHERE cooperative_id = ?)",
-    [DEMO_COOP.id],
-  );
-  await db.execute("DELETE FROM store_layouts WHERE cooperative_id = ?", [DEMO_COOP.id]);
-  await db.execute("DELETE FROM inventory_items WHERE cooperative_id = ?", [DEMO_COOP.id]);
-  await db.execute("DELETE FROM categories WHERE cooperative_id = ?", [DEMO_COOP.id]);
-  await db.execute("DELETE FROM members WHERE cooperative_id = ?", [DEMO_COOP.id]);
-  await db.execute("DELETE FROM local_users WHERE cooperative_id = ?", [DEMO_COOP.id]);
-  await db.execute("DELETE FROM ews_alerts WHERE cooperative_id = ?", [DEMO_COOP.id]);
-  await db.execute("DELETE FROM ews_metrics WHERE cooperative_id = ?", [DEMO_COOP.id]);
-  await db.execute("DELETE FROM sync_history WHERE cooperative_id = ?", [DEMO_COOP.id]);
-  await db.execute("DELETE FROM coa_accounts WHERE cooperative_id = ?", [DEMO_COOP.id]);
-  await db.execute("DELETE FROM cooperatives WHERE id = ?", [DEMO_COOP.id]);
+  // Delete the demo coop's data file directly (children are inside it).
+  const dataDir = await appDataDir();
+  const coopFile = await join(dataDir, "coops", `${DEMO_COOP.id}.db`);
+  if (await exists(coopFile)) await remove(coopFile);
+  // Drop any cached connection so the re-seed re-opens a fresh file.
+  invalidateCoopDb(DEMO_COOP.id);
+
+  // Drop the registry row (no-op if absent).
+  await reg.execute("DELETE FROM cooperatives WHERE id = ?", [DEMO_COOP.id]);
 }
 
 export async function isDemoSeeded(): Promise<boolean> {
-  const db = await getDb();
-  const rows = await db.select<Array<{ id: string }>>("SELECT id FROM cooperatives WHERE is_demo = 1 LIMIT 1");
+  const reg = await getRegistryDb();
+  const rows = await reg.select<Array<{ id: string }>>("SELECT id FROM cooperatives WHERE is_demo = 1 LIMIT 1");
   return rows.length > 0;
 }
 
 // ── Internal seed helpers ──
 
-async function seedDemoCoaAccounts(db: Awaited<ReturnType<typeof getDb>>): Promise<void> {
-  const existing = await db.select<Array<{ code: string }>>(
-    "SELECT code FROM coa_accounts WHERE cooperative_id = ? LIMIT 1",
-    [DEMO_COOP.id],
-  );
+async function seedDemoCoaAccounts(db: Awaited<ReturnType<typeof getCoopDb>>): Promise<void> {
+  const existing = await db.select<Array<{ code: string }>>("SELECT code FROM coa_accounts LIMIT 1");
   if (existing.length > 0) return;
 
   const accounts = [
@@ -175,14 +155,14 @@ async function seedDemoCoaAccounts(db: Awaited<ReturnType<typeof getDb>>): Promi
   ];
   for (const acc of accounts) {
     await db.execute(
-      `INSERT INTO coa_accounts (code, cooperative_id, name, type, normal_balance, balance)
-       VALUES (?, ?, ?, ?, ?, ?)`,
-      [acc.code, DEMO_COOP.id, acc.name, acc.type, acc.normal_balance, acc.balance],
+      `INSERT INTO coa_accounts (code, name, type, normal_balance, balance)
+       VALUES (?, ?, ?, ?, ?)`,
+      [acc.code, acc.name, acc.type, acc.normal_balance, acc.balance],
     );
   }
 }
 
-async function seedDemoCategoriesAtLevel(db: Awaited<ReturnType<typeof getDb>>, level: DemoLevel): Promise<void> {
+async function seedDemoCategoriesAtLevel(db: Awaited<ReturnType<typeof getCoopDb>>, level: DemoLevel): Promise<void> {
   const allCategories = [
     { id: "unit_pupuk", name: "Unit Pupuk", icon: "🌱" },
     { id: "unit_simpan_pinjam", name: "Unit Simpan Pinjam", icon: "💰" },
@@ -197,16 +177,11 @@ async function seedDemoCategoriesAtLevel(db: Awaited<ReturnType<typeof getDb>>, 
   const tierIds = tiers[level];
   for (const cat of allCategories) {
     if (!tierIds.includes(cat.id)) continue;
-    await db.execute("INSERT INTO categories (id, cooperative_id, name, icon) VALUES (?, ?, ?, ?)", [
-      cat.id,
-      DEMO_COOP.id,
-      cat.name,
-      cat.icon,
-    ]);
+    await db.execute("INSERT INTO categories (id, name, icon) VALUES (?, ?, ?)", [cat.id, cat.name, cat.icon]);
   }
 }
 
-async function seedDemoInventoryAtLevel(db: Awaited<ReturnType<typeof getDb>>, level: DemoLevel): Promise<void> {
+async function seedDemoInventoryAtLevel(db: Awaited<ReturnType<typeof getCoopDb>>, level: DemoLevel): Promise<void> {
   const allItems = [
     {
       id: "item_urea",
@@ -289,18 +264,9 @@ async function seedDemoInventoryAtLevel(db: Awaited<ReturnType<typeof getDb>>, l
   for (const item of allItems) {
     if (!tierIds.includes(item.id)) continue;
     await db.execute(
-      `INSERT INTO inventory_items (id, cooperative_id, name, category_id, stock_quantity, unit, cost_price, selling_price)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-      [
-        item.id,
-        DEMO_COOP.id,
-        item.name,
-        item.category_id,
-        item.stock_quantity,
-        item.unit,
-        item.cost_price,
-        item.selling_price,
-      ],
+      `INSERT INTO inventory_items (id, name, category_id, stock_quantity, unit, cost_price, selling_price)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [item.id, item.name, item.category_id, item.stock_quantity, item.unit, item.cost_price, item.selling_price],
     );
   }
 }
@@ -377,7 +343,7 @@ function computeFoundedDate(tier: DemoTier): string {
 }
 
 /** Seed enough members to match the tier's "Anggota" stat. */
-async function seedDemoMembers(db: Awaited<ReturnType<typeof getDb>>, tier: DemoTier): Promise<void> {
+async function seedDemoMembers(db: Awaited<ReturnType<typeof getCoopDb>>, tier: DemoTier): Promise<void> {
   const anggota = tier.stats.find((s) => s.label === "Anggota")?.value ?? "0";
   const count = parseInt(anggota, 10) || 0;
   for (let i = 0; i < count; i++) {
@@ -385,9 +351,9 @@ async function seedDemoMembers(db: Awaited<ReturnType<typeof getDb>>, tier: Demo
     const nik = `3201${String(10000000 + i).slice(-8)}`;
     const name = `${MEMBER_FIRST_NAMES[i % MEMBER_FIRST_NAMES.length]} ${String.fromCharCode(65 + (i % 26))}.`;
     await db.execute(
-      `INSERT INTO members (id, cooperative_id, nik, name, status, registered_at)
-       VALUES (?, ?, ?, ?, 'aktif', datetime('now'))`,
-      [id, DEMO_COOP.id, nik, name],
+      `INSERT INTO members (id, nik, name, status, registered_at)
+       VALUES (?, ?, ?, 'aktif', datetime('now'))`,
+      [id, nik, name],
     );
   }
 }

@@ -4,7 +4,7 @@
 // old `localStorage` "pakde-events" array, so events now survive profile
 // switching and live alongside every other entity.
 
-import { getDb } from "@/db";
+import { getCoopDb } from "@/db";
 import { getActiveCoopId } from "@/db/active-coop";
 
 export type EventType = "member_meeting" | "arisan" | "social" | "training" | "other";
@@ -49,7 +49,6 @@ export interface NewEventInput {
 
 interface EventRow {
   id: string;
-  coop_id: string;
   type: EventType;
   title: string;
   date: string;
@@ -70,10 +69,10 @@ interface EventRow {
   updated_at: string;
 }
 
-function rowToKegiatan(r: EventRow): Kegiatan {
+function rowToKegiatan(r: EventRow, coopId: string): Kegiatan {
   return {
     id: r.id,
-    coop_id: r.coop_id,
+    coop_id: coopId,
     type: r.type,
     title: r.title,
     date: r.date,
@@ -96,12 +95,9 @@ function rowToKegiatan(r: EventRow): Kegiatan {
 }
 
 export async function listEvents(coopId: string = getActiveCoopId()): Promise<Kegiatan[]> {
-  const db = await getDb();
-  const rows = await db.select<EventRow[]>(
-    "SELECT * FROM events WHERE coop_id = ? ORDER BY date DESC, created_at DESC",
-    [coopId],
-  );
-  return rows.map(rowToKegiatan);
+  const db = await getCoopDb(coopId);
+  const rows = await db.select<EventRow[]>("SELECT * FROM events ORDER BY date DESC, created_at DESC");
+  return rows.map((r) => rowToKegiatan(r, coopId));
 }
 
 export async function createEvent(
@@ -109,17 +105,16 @@ export async function createEvent(
   data: NewEventInput,
   id: string = `evt-${crypto.randomUUID()}`,
 ): Promise<Kegiatan> {
-  const db = await getDb();
+  const db = await getCoopDb(coopId);
   const now = new Date().toISOString();
   await db.execute(
     `INSERT INTO events (
-       id, coop_id, type, title, date, location, duration_min,
+       id, type, title, date, location, duration_min,
        participant_ids, proposal_path, proposal_name, proposal_mime, proposal_size,
        report_path, report_name, report_mime, report_size, social_links, notes, created_at, updated_at
-     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       id,
-      coopId,
       data.type,
       data.title,
       data.date,
@@ -141,12 +136,12 @@ export async function createEvent(
     ],
   );
   const rows = await db.select<EventRow[]>("SELECT * FROM events WHERE id = ?", [id]);
-  return rowToKegiatan(rows[0]);
+  return rowToKegiatan(rows[0], coopId);
 }
 
 export async function deleteEvent(coopId: string, id: string): Promise<void> {
-  const db = await getDb();
-  await db.execute("DELETE FROM events WHERE id = ? AND coop_id = ?", [id, coopId]);
+  const db = await getCoopDb(coopId);
+  await db.execute("DELETE FROM events WHERE id = ?", [id]);
 }
 
 /**
@@ -169,15 +164,15 @@ export async function migrateLocalStorageEvents(coopId: string): Promise<boolean
       description: string;
       createdAt: string;
     }>;
-    const db = await getDb();
+    const db = await getCoopDb(coopId);
     const now = new Date().toISOString();
     for (const e of legacy) {
       await db.execute(
         `INSERT OR IGNORE INTO events (
-           id, coop_id, type, title, date, location, duration_min, participant_ids,
+           id, type, title, date, location, duration_min, participant_ids,
            social_links, notes, created_at, updated_at
-         ) VALUES (?, ?, 'other', ?, ?, ?, NULL, '[]', '[]', ?, ?, ?)`,
-        [e.id, coopId, e.name, e.date, e.location ?? "", e.description ?? "", now, now],
+         ) VALUES (?, 'other', ?, ?, ?, NULL, '[]', '[]', ?, ?, ?)`,
+        [e.id, e.name, e.date, e.location ?? "", e.description ?? "", now, now],
       );
     }
   } catch (err) {

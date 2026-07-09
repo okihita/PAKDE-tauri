@@ -1,11 +1,9 @@
-import { getActiveCoopId } from "@/db/active-coop";
 import { useState, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { getDb } from "@/db";
 import type { SyncHistoryItem, CountRow } from "@/types";
 
 export function useSync() {
-  const coopId = getActiveCoopId();
   const { t } = useTranslation();
   const [syncHistoryList, setSyncHistoryList] = useState<SyncHistoryItem[]>([]);
   const [isSyncing, setIsSyncing] = useState(false);
@@ -38,7 +36,7 @@ export function useSync() {
             const entries = await db.select<CountRow[]>("SELECT COUNT(*) as count FROM journal_entries");
             const count = (members[0]?.count || 0) + (entries[0]?.count || 0);
             await db.execute(
-              `INSERT INTO sync_history (id, cooperative_id, direction, status, entity_count, completed_at) VALUES (?, ${coopId}, 'upload', 'success', ?, datetime('now'))`,
+              `INSERT INTO sync_history (id, direction, status, entity_count, completed_at) VALUES (?, 'upload', 'success', ?, datetime('now'))`,
               [syncId, count],
             );
             setSyncProgress(t("sync.steps.done"));

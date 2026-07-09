@@ -11,7 +11,7 @@ import type { CooperativeProfile } from "@/types";
 import { updateCooperative, deleteCooperative } from "./settingsDb";
 import { isDemoCooperative, seedDemoCooperativeAtLevel, type DemoLevel } from "@/db/seed-demo";
 import { appDataDir, join } from "@tauri-apps/api/path";
-import { remove } from "@tauri-apps/plugin-fs";
+import { remove, exists } from "@tauri-apps/plugin-fs";
 import {
   MoonIcon,
   SunIcon,
@@ -104,8 +104,11 @@ export default function Settings({
     setResetting(true);
     try {
       const dataDir = await appDataDir();
-      const dbPath = await join(dataDir, "kdkmp.db");
-      await remove(dbPath);
+      // Wipe the registry and every cooperative's data file.
+      const registryPath = await join(dataDir, "registry.db");
+      if (await exists(registryPath)) await remove(registryPath);
+      const coopsDir = await join(dataDir, "coops");
+      if (await exists(coopsDir)) await remove(coopsDir, { recursive: true });
       localStorage.clear();
       window.location.reload();
     } catch (err) {

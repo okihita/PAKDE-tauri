@@ -1,5 +1,5 @@
 // Generates mock Indonesian cooperative members for testing.
-import { getDb } from "@/db";
+import { getCoopDb } from "@/db";
 import { DEMO_COOP_UUID } from "@/db/seed-demo";
 
 const FIRST_NAMES_MALE = [
@@ -129,7 +129,7 @@ function pad(n: number, width: number): string {
 
 /** Seed 50 mock members into the database. */
 export async function seedMockMembers(): Promise<number> {
-  const db = await getDb();
+  const db = await getCoopDb(DEMO_COOP_UUID);
 
   // Clear existing test members (those with id starting with "seed-")
   await db.execute("DELETE FROM members WHERE id LIKE 'seed-%'");
@@ -196,13 +196,12 @@ export async function seedMockMembers(): Promise<number> {
 
   for (const m of members) {
     await db.execute(
-      `INSERT INTO members (id, cooperative_id, nik, name, place_of_birth, date_of_birth, gender,
+      `INSERT INTO members (id, nik, name, place_of_birth, date_of_birth, gender,
         occupation, education, rt, rw, hamlet, status, savings_pokok, savings_wajib,
         savings_sukarela, loan_total, loan_outstanding, loan_status)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         m.id,
-        DEMO_COOP_UUID,
         m.nik,
         m.name,
         m.place_of_birth,

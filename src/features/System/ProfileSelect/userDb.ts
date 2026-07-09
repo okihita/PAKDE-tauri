@@ -1,4 +1,4 @@
-import { getDb } from "@/db";
+import { getCoopDb } from "@/db";
 import type { LocalUser } from "@/types";
 
 /** Hash a PIN using SHA-256 via Web Crypto API. */
@@ -19,23 +19,15 @@ export interface CreateUserInput {
 }
 
 export async function createUser(input: CreateUserInput): Promise<LocalUser> {
-  const db = await getDb();
+  const db = await getCoopDb(input.cooperativeId);
   const id = `usr-${crypto.randomUUID().slice(0, 8)}`;
   const pinHash = await hashPin(input.pin);
   const recoveryAnswerHash = input.recoveryAnswer ? await hashPin(input.recoveryAnswer) : null;
 
   await db.execute(
-    `INSERT INTO local_users (id, cooperative_id, name, role, pin_hash, recovery_question, recovery_answer_hash)
-     VALUES (?, ?, ?, ?, ?, ?, ?)`,
-    [
-      id,
-      input.cooperativeId,
-      input.name.trim(),
-      input.role,
-      pinHash,
-      input.recoveryQuestion || null,
-      recoveryAnswerHash,
-    ],
+    `INSERT INTO local_users (id, name, role, pin_hash, recovery_question, recovery_answer_hash)
+     VALUES (?, ?, ?, ?, ?, ?)`,
+    [id, input.name.trim(), input.role, pinHash, input.recoveryQuestion || null, recoveryAnswerHash],
   );
 
   const rows = await db.select<LocalUser[]>("SELECT * FROM local_users WHERE id = ?", [id]);
@@ -44,22 +36,19 @@ export async function createUser(input: CreateUserInput): Promise<LocalUser> {
 }
 
 export async function getUsersByCooperativeId(cooperativeId: string): Promise<LocalUser[]> {
-  const db = await getDb();
-  return db.select<LocalUser[]>("SELECT * FROM local_users WHERE cooperative_id = ?", [cooperativeId]);
+  const db = await getCoopDb(cooperativeId);
+  return db.select<LocalUser[]>("SELECT * FROM local_users");
 }
 
 export async function getUserById(userId: string): Promise<LocalUser | null> {
-  const db = await getDb();
+  const db = await getCoopDb();
   const rows = await db.select<LocalUser[]>("SELECT * FROM local_users WHERE id = ?", [userId]);
   return rows.length > 0 ? rows[0] : null;
 }
 
 export async function validatePin(cooperativeId: string, userId: string, pin: string): Promise<LocalUser | null> {
-  const db = await getDb();
-  const rows = await db.select<LocalUser[]>("SELECT * FROM local_users WHERE id = ? AND cooperative_id = ?", [
-    userId,
-    cooperativeId,
-  ]);
+  const db = await getCoopDb(cooperativeId);
+  const rows = await db.select<LocalUser[]>("SELECT * FROM local_users WHERE id = ?", [userId]);
   if (rows.length === 0) return null;
 
   const user = rows[0];
@@ -98,6 +87,6 @@ export async function validatePin(cooperativeId: string, userId: string, pin: st
 }
 
 export async function deleteUser(userId: string): Promise<void> {
-  const db = await getDb();
+  const db = await getCoopDb();
   await db.execute("DELETE FROM local_users WHERE id = ?", [userId]);
 }

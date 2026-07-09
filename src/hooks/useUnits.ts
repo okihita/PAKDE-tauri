@@ -1,7 +1,7 @@
 import { getActiveCoopId } from "@/db/active-coop";
+import { getDb, getRegistryDb } from "@/db";
 import { useState, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { getDb } from "@/db";
 import { useToast } from "@/hooks/useToast";
 
 export interface BusinessCategory {
@@ -29,9 +29,10 @@ export function useUnits() {
   const loadUnitsData = useCallback(async () => {
     try {
       const db = await getDb();
+      const regDb = await getRegistryDb();
 
-      // 1. Get active cooperative profile business units array
-      const coopRes = await db.select<Array<{ business_units: string }>>(
+      // 1. Get active cooperative profile business units array (registry)
+      const coopRes = await regDb.select<Array<{ business_units: string }>>(
         `SELECT business_units FROM cooperatives WHERE id = ${coopId} LIMIT 1`,
       );
       let activeIds: string[] = [];
@@ -81,7 +82,7 @@ export function useUnits() {
   // Toggle activation status
   const toggleUnitStatus = async (unitId: string, currentActive: boolean) => {
     try {
-      const db = await getDb();
+      const regDb = await getRegistryDb();
       let nextActiveIds: string[] = [];
 
       if (currentActive) {
@@ -92,7 +93,7 @@ export function useUnits() {
         nextActiveIds = [...activeUnitIds, unitId];
       }
 
-      await db.execute(
+      await regDb.execute(
         // eslint-disable-next-line no-template-curly-in-string
         "UPDATE cooperatives SET business_units = ?, updated_at = datetime('now') WHERE id = ${coopId}",
         [JSON.stringify(nextActiveIds)],
@@ -119,18 +120,19 @@ export function useUnits() {
 
     try {
       const db = await getDb();
+      const regDb = await getRegistryDb();
       const newUnitId = `unit_${Date.now()}`;
 
-      // Insert category
-      await db.execute(`INSERT INTO categories (id, cooperative_id, name, icon) VALUES (?, ${coopId}, ?, ?)`, [
+      // Insert category (coop-scoped file — no cooperative_id column)
+      await db.execute(`INSERT INTO categories (id, name, icon) VALUES (?, ?, ?)`, [
         newUnitId,
         name.trim(),
         icon.trim(),
       ]);
 
-      // Append to active business units
+      // Append to active business units (registry)
       const nextActiveIds = [...activeUnitIds, newUnitId];
-      await db.execute(
+      await regDb.execute(
         // eslint-disable-next-line no-template-curly-in-string
         "UPDATE cooperatives SET business_units = ?, updated_at = datetime('now') WHERE id = ${coopId}",
         [JSON.stringify(nextActiveIds)],

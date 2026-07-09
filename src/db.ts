@@ -1,2 +1,1 @@
-export { getDb } from "./db/index";
-export { initDb } from "./db/init";
+export { getDb, getCoopDb, getRegistryDb, initDb, initRegistryDb, initCoopDb, invalidateCoopDb } from "./db/index";

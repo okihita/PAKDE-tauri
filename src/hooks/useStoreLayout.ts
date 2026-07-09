@@ -10,47 +10,23 @@ function generateId(): string {
   return `sl-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
-// Lazily heal schema drift for installations whose database was created by an
-// earlier version of init.ts (e.g. store_layouts pre-dating the cell_size
-// column). Idempotent — runs only what's actually missing.
-async function ensureStoreLayoutSchema(db: Awaited<ReturnType<typeof getDb>>) {
-  const cols = await db.select<Array<{ name: string }>>("SELECT name FROM pragma_table_info('store_layouts')");
-  const invCols = await db.select<Array<{ name: string }>>("SELECT name FROM pragma_table_info('inventory_items')");
-  const has = (rows: Array<{ name: string }>, n: string) => rows.some((r) => r.name === n);
-
-  if (!has(cols, "cell_size")) {
-    await db.execute("ALTER TABLE store_layouts ADD COLUMN cell_size REAL DEFAULT 1.0");
-  }
-  if (!has(invCols, "zone_id")) {
-    await db.execute("ALTER TABLE inventory_items ADD COLUMN zone_id TEXT");
-  }
-  if (!has(invCols, "shelf_row")) {
-    await db.execute("ALTER TABLE inventory_items ADD COLUMN shelf_row INTEGER");
-  }
-  if (!has(invCols, "shelf_col")) {
-    await db.execute("ALTER TABLE inventory_items ADD COLUMN shelf_col INTEGER");
-  }
-}
-
-// Lazily heal missing tables for the same reason (older DB created without the
-// floorplan feature's tables).
-// Schema heal runs once per session — subsequent getReadyDb calls skip the
-// PRAGMA queries and possible DDL entirely.
+// Ensure the floor-plan tables exist. The per-cooperative schema created in
+// coopDb.ts already contains these; this is a belt-and-braces guard for any
+// coop file opened before initCoopDb ran.
+// Runs once per session — subsequent getReadyDb calls skip the DDL.
 let schemaHealed = false;
 
 async function ensureStoreLayoutTables(db: Awaited<ReturnType<typeof getDb>>) {
   await db.execute(`
     CREATE TABLE IF NOT EXISTS store_layouts (
       id TEXT PRIMARY KEY,
-      cooperative_id TEXT NOT NULL DEFAULT 'kdp-001',
       name TEXT NOT NULL,
       grid_width INTEGER DEFAULT 20,
       grid_height INTEGER DEFAULT 15,
       cell_size REAL DEFAULT 1.0,
       canvas_data TEXT,
       created_at TEXT DEFAULT (datetime('now')),
-      updated_at TEXT DEFAULT (datetime('now')),
-      FOREIGN KEY (cooperative_id) REFERENCES cooperatives(id)
+      updated_at TEXT DEFAULT (datetime('now'))
     );
   `);
   await db.execute(`
@@ -70,7 +46,6 @@ async function ensureStoreLayoutTables(db: Awaited<ReturnType<typeof getDb>>) {
       FOREIGN KEY (layout_id) REFERENCES store_layouts(id) ON DELETE CASCADE
     );
   `);
-  await ensureStoreLayoutSchema(db);
 }
 
 export function useStoreLayout() {
@@ -146,11 +121,10 @@ export function useStoreLayout() {
       try {
         const db = await getReadyDb();
         const id = generateId();
-        const coopId = localStorage.getItem("pakde-active-profile-id") || "kdp-001";
         await db.execute(
-          `INSERT INTO store_layouts (id, cooperative_id, name, grid_width, grid_height, cell_size)
-           VALUES (?, ?, ?, ?, ?, ?)`,
-          [id, coopId, name, gridWidth, gridHeight, cellSize],
+          `INSERT INTO store_layouts (id, name, grid_width, grid_height, cell_size)
+           VALUES (?, ?, ?, ?, ?)`,
+          [id, name, gridWidth, gridHeight, cellSize],
         );
         await loadLayouts();
         toast.success(t("storeLayout.toast.layoutCreated"));
