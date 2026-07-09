@@ -180,6 +180,14 @@ function AppContent() {
     })();
   }, [appState, coopProfile?.id]);
 
+  const refreshMemberCount = useCallback(async () => {
+    try {
+      setMemberCount(await getMemberCount(getActiveCoopId()));
+    } catch (e) {
+      console.error(e);
+    }
+  }, []);
+
   // Boot resume: if a cooperative was previously active, skip the title screen
   // and drop the user straight back into their session. Demo coop → auto-login
   // straight to main; real coop → PIN prompt (security gate stays). First run
@@ -412,7 +420,7 @@ function AppContent() {
           {activeTab === "development" && <Development onTabChange={setActiveTab} />}
           {activeTab === "learn" && <Learn />}
           {activeTab === "planners" && <Planners />}
-          {activeTab === "anggota" && <Members />}
+          {activeTab === "anggota" && <Members onMembersChanged={refreshMemberCount} />}
           {activeTab === "kegiatan" && <CreateEvent coopId={coopProfile?.id ?? getActiveCoopId()} />}
           {activeTab === "dampak" && <Dampak />}
           {activeTab === "accounting" && (

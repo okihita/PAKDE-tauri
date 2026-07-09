@@ -24,7 +24,7 @@ const MEMBER_DEFAULT: Member = {
   loan_status: "lancar",
 };
 
-export function useMembers() {
+export function useMembers(onChange?: () => void) {
   const { t } = useTranslation();
   const toast = useToast();
 
@@ -138,6 +138,7 @@ export function useMembers() {
       }
       setShowMemberModal(false);
       loadMembersData();
+      onChange?.();
     } catch (err) {
       toast.error(t("toast.memberSaveFailed", { error: err instanceof Error ? err.message : String(err) }));
     }
@@ -154,6 +155,7 @@ export function useMembers() {
       const db = await getDb();
       await db.execute("DELETE FROM members WHERE id = ?", [member.id]);
       loadMembersData();
+      onChange?.();
     } catch (err) {
       toast.error(t("toast.memberDeleteFailed", { error: String(err) }));
     }

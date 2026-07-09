@@ -11,9 +11,9 @@ import { useMembers } from "@/hooks/useMembers";
 import { seedMockMembers } from "@/data/seed-members";
 import { useEffect, useState } from "react";
 
-export default function Members() {
+export default function Members({ onMembersChanged }: { onMembersChanged?: () => void }) {
   const { t } = useTranslation();
-  const m = useMembers();
+  const m = useMembers(onMembersChanged);
   const [seeding, setSeeding] = useState(false);
 
   const statusOptions = [
@@ -27,6 +27,7 @@ export default function Members() {
     try {
       await seedMockMembers();
       await m.loadMembersData();
+      onMembersChanged?.();
     } finally {
       setSeeding(false);
     }
