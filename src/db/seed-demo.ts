@@ -346,14 +346,18 @@ function computeFoundedDate(tier: DemoTier): string {
 async function seedDemoMembers(db: Awaited<ReturnType<typeof getCoopDb>>, tier: DemoTier): Promise<void> {
   const anggota = tier.stats.find((s) => s.label === "Anggota")?.value ?? "0";
   const count = parseInt(anggota, 10) || 0;
+  const berjalanDays = parseDurationToDays(tier.stats.find((s) => s.label === "Berjalan")?.value ?? "1 tahun");
   for (let i = 0; i < count; i++) {
     const id = `mem-demo-${i}`;
     const nik = `3201${String(10000000 + i).slice(-8)}`;
     const name = `${MEMBER_FIRST_NAMES[i % MEMBER_FIRST_NAMES.length]} ${String.fromCharCode(65 + (i % 26))}.`;
+    // Deterministic varying savings based on index; pokok is one-off, wajib scales with coop age
+    const savingsPokok = 50_000 + ((i * 17) % 46) * 10_000; // 50k–500k
+    const savingsWajib = ((i * 29) % 51) * 50_000 + Math.floor(berjalanDays / 30) * 5_000; // varies + monthly accrual
     await db.execute(
-      `INSERT INTO members (id, nik, name, status, registered_at)
-       VALUES (?, ?, ?, 'aktif', datetime('now'))`,
-      [id, nik, name],
+      `INSERT INTO members (id, nik, name, status, registered_at, savings_pokok, savings_wajib)
+       VALUES (?, ?, ?, 'aktif', datetime('now'), ?, ?)`,
+      [id, nik, name, savingsPokok, savingsWajib],
     );
   }
 }
