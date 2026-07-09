@@ -50,6 +50,9 @@
   --color-danger-foreground: hsl(var(--danger-foreground));
   --color-info: hsl(var(--info));
   --color-info-foreground: hsl(var(--info-foreground));
+  --color-sky: hsl(var(--sky));
+  --color-violet: hsl(var(--violet));
+  --color-amber: hsl(var(--amber));
 }
 
 @layer base {
@@ -87,6 +90,9 @@
     --danger-foreground: 210 40% 98%;
     --info: 197 91% 22%;
     --info-foreground: 210 40% 98%;
+    --sky: 205 90% 65%;
+    --violet: 265 85% 70%;
+    --amber: 30 95% 58%;
   }
 
   .light {
@@ -122,6 +128,9 @@
     --danger-foreground: 210 40% 98%;
     --info: 217 91% 52%;
     --info-foreground: 210 40% 98%;
+    --sky: 205 90% 45%;
+    --violet: 265 70% 45%;
+    --amber: 30 90% 45%;
   }
 
   html {
@@ -186,4 +195,25 @@
   .ken-burns {
     animation: none !important;
   }
+}
+
+/* ── Playful sidebar scrollbar ──────────────────────────── */
+.nav-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: hsl(var(--brand)) transparent;
+}
+.nav-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+.nav-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.nav-scroll::-webkit-scrollbar-thumb {
+  background: hsl(var(--brand) / 0.4);
+  border-radius: 9999px;
+  transition: background 0.2s ease;
+}
+.nav-scroll::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--brand) / 0.85);
+  box-shadow: 0 0 8px hsl(var(--brand) / 0.4);
 }

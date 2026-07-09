@@ -1,5 +1,6 @@
-import { useState, useEffect } from "react";
+import type { ComponentType } from "react";
 import { useTranslation } from "react-i18next";
+import { cn } from "@/lib/utils";
 import {
   SquaresFour,
   UsersIcon,
@@ -15,10 +16,6 @@ import {
   MoonIcon,
   Shield,
   MedalIcon,
-  CaretDownIcon,
-  CaretRightIcon,
-  ChartLine,
-  WalletIcon,
   CalendarPlus,
   WrenchIcon,
   HandshakeIcon,
@@ -68,18 +65,36 @@ interface SidebarProps {
 
 interface NavItemDef {
   id: string;
-  icon: React.ComponentType<{ className?: string }>;
+  icon: ComponentType<{ className?: string }>;
   label: string;
 }
 
 interface NavGroupDef {
   id: string;
-  icon: React.ComponentType<{ className?: string }>;
   label: string;
+  accent: Accent;
   items: NavItemDef[];
 }
 
-const COLLAPSE_KEY = "pakde-sidebar-groups";
+type Accent = "sky" | "brand" | "violet" | "warning" | "muted" | "amber";
+
+/** Static class strings so Tailwind's content scanner picks them up. */
+const ACCENT_CLASSES: Record<Accent, { label: string; icon: string; active: string }> = {
+  sky: { label: "text-sky", icon: "text-sky", active: "bg-sky/10 text-sky border-sky/20" },
+  brand: { label: "text-brand", icon: "text-brand", active: "bg-brand/10 text-brand border-brand/20" },
+  violet: { label: "text-violet", icon: "text-violet", active: "bg-violet/10 text-violet border-violet/20" },
+  warning: {
+    label: "text-warning",
+    icon: "text-warning",
+    active: "bg-warning/10 text-warning border-warning/20",
+  },
+  muted: {
+    label: "text-muted-foreground",
+    icon: "text-muted-foreground",
+    active: "bg-secondary text-foreground border-transparent",
+  },
+  amber: { label: "text-amber", icon: "text-amber", active: "bg-amber/10 text-amber border-amber/20" },
+};
 
 export default function Sidebar({
   activeTab,
@@ -97,32 +112,10 @@ export default function Sidebar({
   const healthScore = coopProfile?.health_score ?? 0;
   const currentLevel = healthScore > 0 ? getCurrentLevel(healthScore) : null;
 
-  const [collapsed, setCollapsed] = useState<Set<string>>(() => {
-    try {
-      const saved = localStorage.getItem(COLLAPSE_KEY);
-      return new Set(saved ? JSON.parse(saved) : []);
-    } catch {
-      return new Set();
-    }
-  });
-
-  useEffect(() => {
-    localStorage.setItem(COLLAPSE_KEY, JSON.stringify([...collapsed]));
-  }, [collapsed]);
-
-  const toggleGroup = (id: string) => {
-    setCollapsed((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  };
-
   const GROUPS: NavGroupDef[] = [
     {
       id: "analitik",
-      icon: ChartLine,
+      accent: "sky",
       label: t("sidebar.groups.analitik"),
       items: [
         { id: "statistics", icon: ChartBarIcon, label: t("sidebar.nav.statistics") },
@@ -132,7 +125,7 @@ export default function Sidebar({
     },
     {
       id: "bisnis",
-      icon: TrendUpIcon,
+      accent: "brand",
       label: t("sidebar.groups.bisnis"),
       items: [
         { id: "units", icon: BuildingsIcon, label: t("sidebar.nav.units") },
@@ -144,7 +137,7 @@ export default function Sidebar({
     },
     {
       id: "komunitas",
-      icon: UsersIcon,
+      accent: "violet",
       label: t("sidebar.groups.komunitas"),
       items: [
         { id: "participation", icon: ChartBarIcon, label: t("sidebar.nav.participation") },
@@ -155,7 +148,7 @@ export default function Sidebar({
     },
     {
       id: "keuangan",
-      icon: WalletIcon,
+      accent: "warning",
       label: t("sidebar.groups.keuangan"),
       items: [
         { id: "accounting", icon: Note, label: t("sidebar.nav.accounting") },
@@ -164,7 +157,7 @@ export default function Sidebar({
     },
     {
       id: "learn",
-      icon: BookOpenIcon,
+      accent: "sky",
       label: t("sidebar.groups.learn"),
       items: [
         { id: "learn", icon: BookOpenIcon, label: t("sidebar.nav.learn") },
@@ -173,7 +166,7 @@ export default function Sidebar({
     },
     {
       id: "sistem",
-      icon: Gear,
+      accent: "muted",
       label: t("sidebar.groups.sistem"),
       items: [
         { id: "sync", icon: ArrowsClockwise, label: t("sidebar.nav.sync") },
@@ -182,20 +175,37 @@ export default function Sidebar({
     },
   ];
 
-  const HOME_ITEM: NavItemDef = { id: "home", icon: SquaresFour, label: t("sidebar.nav.home") };
+  function renderHome() {
+    const isActive = activeTab === "home";
+    return (
+      <button
+        key="home"
+        type="button"
+        onClick={() => onTabChange("home")}
+        className={cn(
+          "flex items-center gap-2 w-full text-left px-4 py-2 rounded-lg text-xxs font-bold uppercase tracking-wider transition-colors",
+          isActive ? "bg-amber/10 text-amber" : "text-amber/80 hover:bg-secondary hover:text-amber",
+        )}
+      >
+        <SquaresFour className="h-3.5 w-3.5 shrink-0" />
+        <span>{t("sidebar.nav.home")}</span>
+      </button>
+    );
+  }
 
-  function renderNavItem(item: NavItemDef, isChild = false) {
+  function renderNavItem(item: NavItemDef, accent: Accent) {
     const Icon = item.icon;
     const isActive = activeTab === item.id;
     const unlocked = isTabUnlocked(item.id, healthScore);
     const unlockLabel = getUnlockRequirementLabel(item.id);
+    const a = ACCENT_CLASSES[accent];
 
     if (!unlocked) {
       return (
         <div
           key={item.id}
           title={unlockLabel || undefined}
-          className={`flex items-center gap-3 rounded-lg transition-all text-xs font-semibold border-[0.5px] opacity-40 cursor-not-allowed text-muted-foreground border-transparent ${isChild ? "px-4 ml-3 py-2" : "px-4 py-3"}`}
+          className="flex items-center gap-3 rounded-lg px-4 py-2 transition-all text-xs font-semibold border-[0.5px] opacity-40 cursor-not-allowed text-muted-foreground border-transparent"
         >
           <LockSimple className="h-4 w-4 shrink-0" />
           <span>{item.label}</span>
@@ -206,42 +216,31 @@ export default function Sidebar({
     return (
       <div
         key={item.id}
-        className={`flex items-center gap-3 rounded-lg cursor-pointer transition-all text-xs font-semibold border-[0.5px] ${
-          isActive
-            ? "bg-success/10 text-success border-success/20"
-            : "text-muted-foreground hover:bg-secondary hover:text-foreground border-transparent"
-        } ${isChild ? "px-4 ml-3 py-2" : "px-4 py-3"}`}
+        className={cn(
+          "flex items-center gap-3 rounded-lg px-4 py-2 cursor-pointer transition-all text-xs font-semibold border-[0.5px]",
+          isActive ? a.active : "text-muted-foreground hover:bg-secondary hover:text-foreground border-transparent",
+        )}
         onClick={() => onTabChange(item.id as never)}
       >
-        <Icon className="h-4 w-4 shrink-0" />
+        <Icon className={cn("h-4 w-4 shrink-0", !isActive && a.icon)} />
         <span>{item.label}</span>
       </div>
     );
   }
 
   function renderGroup(group: NavGroupDef) {
-    const isCollapsed = collapsed.has(group.id);
-    const GroupIcon = group.icon;
+    const a = ACCENT_CLASSES[group.accent];
     return (
-      <div key={group.id} className="space-y-0.5">
-        {/* Group header */}
-        <div
-          className="flex items-center gap-2 px-4 py-2 rounded-lg cursor-pointer text-xxs font-bold text-muted-foreground uppercase tracking-wider hover:text-foreground transition-colors"
-          onClick={() => toggleGroup(group.id)}
-        >
-          <GroupIcon className="h-3.5 w-3.5 shrink-0" />
-          <span className="flex-1">{group.label}</span>
-          {isCollapsed ? <CaretRightIcon className="h-3 w-3" /> : <CaretDownIcon className="h-3 w-3" />}
-        </div>
-        {/* Group items */}
-        {!isCollapsed && group.items.map((item) => renderNavItem(item, true))}
+      <div key={group.id} className="border-t border-border mt-1">
+        <p className={cn("px-4 pt-3 pb-1 text-xxs font-bold uppercase tracking-wider", a.label)}>{group.label}</p>
+        <div className="space-y-0.5">{group.items.map((item) => renderNavItem(item, group.accent))}</div>
       </div>
     );
   }
 
   return (
-    <aside className="w-64 border-r border-border bg-sidebar flex flex-col justify-between print:hidden">
-      <div>
+    <aside className="w-64 border-r border-border bg-sidebar flex flex-col print:hidden">
+      <div className="flex flex-col flex-1 min-h-0">
         {/* ── Guild Header ── */}
         <div className="px-5 pt-4 pb-3 border-b border-border space-y-3">
           <div className="rounded-xl bg-card border border-border p-4 space-y-3">
@@ -318,9 +317,8 @@ export default function Sidebar({
         </div>
 
         {/* ── Navigation ── */}
-        <nav className="p-3 space-y-1">
-          {renderNavItem(HOME_ITEM)}
-          <div className="border-t border-border my-2" />
+        <nav className="flex-1 overflow-y-auto p-3 nav-scroll">
+          {renderHome()}
           {GROUPS.map(renderGroup)}
         </nav>
       </div>
