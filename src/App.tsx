@@ -417,7 +417,7 @@ function AppContent() {
           {activeTab === "equipment" && <Equipment />}
           {activeTab === "sales" && <Sales />}
           {activeTab === "storelayout" && <StoreLayout />}
-          {activeTab === "development" && <Development />}
+          {activeTab === "development" && <Development onTabChange={setActiveTab} />}
           {activeTab === "learn" && <Learn />}
           {activeTab === "planners" && <Planners />}
           {activeTab === "anggota" && <Members />}

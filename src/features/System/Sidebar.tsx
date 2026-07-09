@@ -18,6 +18,7 @@ import {
   WrenchIcon,
   HandshakeIcon,
   BuildingsIcon,
+  StorefrontIcon,
   BookOpenIcon,
   FileTextIcon,
   SignOut,
@@ -122,6 +123,7 @@ export default function Sidebar({
       label: t("sidebar.groups.bisnis"),
       items: [
         { id: "units", icon: BuildingsIcon, label: t("sidebar.nav.units") },
+        { id: "storelayout", icon: StorefrontIcon, label: t("sidebar.nav.storeLayout") },
         { id: "sales", icon: HandshakeIcon, label: t("sidebar.nav.sales") },
         { id: "equipment", icon: WrenchIcon, label: t("sidebar.nav.equipment") },
         { id: "development", icon: RocketLaunchIcon, label: t("sidebar.nav.development") },

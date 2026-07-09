@@ -71,7 +71,7 @@
       "equipment": "Peralatan",
       "sales": "Penjualan & Vendor",
       "storeLayout": "Tata Letak Toko",
-      "development": "Ekspansi & Pengembangan",
+      "development": "Potensi",
       "learn": "Belajar & Kuis",
       "planners": "Koleksi Planner"
     },
@@ -974,58 +974,59 @@
     }
   },
   "development": {
-    "title": "Ekspansi Bisnis & Unit Baru",
-    "description": "Dapatkan rekomendasi berbasis data untuk memperluas koperasi Anda dan membuka unit usaha baru dengan kelayakan tinggi.",
+    "title": "Pemetaan Potensi Usaha",
+    "description": "Pindai peluang usaha baru dengan menyandingkannya terhadap kapasitas maksimal desa — komoditas, demografi, dan kebutuhan wilayah.",
     "workflow": {
-      "title": "Alur Kerja Rekomendasi Ekspansi",
+      "title": "Alur Kerja Pemetaan Potensi",
       "step1": {
-        "title": "1. Pengumpulan Data",
-        "desc": "Mengumpulkan data kesehatan keuangan, demografi anggota, dan riwayat transaksi dari database lokal."
+        "title": "1. Profil Desa & Kapasitas",
+        "desc": "Mengumpulkan profil desa, demografi anggota, dan plafon kapasitas maksimal dari database lokal."
       },
       "step2": {
-        "title": "2. Analisis Regional",
-        "desc": "Mengagregasikan tren permintaan, harga komoditas, dan kebutuhan desa di tingkat kabupaten/provinsi."
+        "title": "2. Peta Komoditas & Peluang",
+        "desc": "Mengagregasikan tren permintaan, harga komoditas, dan celah pasar di tingkat kabupaten/provinsi."
       },
       "step3": {
-        "title": "3. Skrining Kelayakan",
-        "desc": "Menghasilkan profil risiko RAG serta estimasi ENPV dan EIRR untuk usulan unit (misal: apotek, toko pupuk)."
+        "title": "3. Skrining Kecocokan",
+        "desc": "Menskoring kecocokan tiap peluang terhadap kapasitas desa — bukan angka kelayakan finansial."
       },
       "step4": {
-        "title": "4. Presentasi RAT",
-        "desc": "Mengekspor laporan kelayakan terstruktur yang siap diajukan untuk pemungutan suara di Rapat Anggota Tahunan (RAT)."
+        "title": "4. Rekomendasi & Tindak Lanjut",
+        "desc": "Menyajikan peluang teratas lalu menyerahkannya ke Kelayakan Finansial untuk validasi NPV/IRR."
       }
     },
     "preview": {
-      "title": "Pratinjau Rekomendasi (Fitur Mendatang)",
-      "badge": "Analisis AI",
+      "title": "Pratinjau Peluang (Fitur Mendatang)",
+      "badge": "Pemindaian AI",
       "unitName": "Unit Penyediaan Pupuk & Benih Tani",
       "reason": "Berdasarkan kenaikan transaksi tani anggota sebesar 34% dan kelangkaan distributor bersertifikasi di desa Anda.",
       "metrics": {
-        "enpv": "Est. ENPV: Rp 120.000.000",
-        "eirr": "Est. EIRR: 24.5%",
-        "ebcr": "Est. EBCR: 1,62",
-        "enpvLabel": "Proyeksi ENPV",
-        "eirrLabel": "EIRR Proyek",
-        "ebcrLabel": "Rasio Manfaat-Biaya"
+        "potensi": "92 / 100",
+        "kapasitas": "68% terpakai",
+        "peluang": "Tinggi",
+        "potensiLabel": "Skor Potensi",
+        "kapasitasLabel": "Kapasitas Desa",
+        "peluangLabel": "Peluang Pasar"
       },
-      "suitability": "Kesesuaian Tinggi (92%)",
+      "suitability": "Peluang Tinggi (92%)",
+      "validateCta": "Validasi Kelayakan Finansial →",
       "alert": "Layar ini akan menampilkan rekomendasi langsung setelah Jaringan Sinkronisasi Federasi aktif pada Fase 2."
     },
     "simulation": {
-      "ctaTitle": "Analisis Potensi Koperasi",
-      "ctaDesc": "Jalankan simulasi diagnostik untuk melihat bagaimana sistem mengagregasikan data lokal dan regional koperasi guna merekomendasikan ekspansi usaha.",
-      "button": "Jalankan Diagnostik & Analisis Kelayakan",
-      "analyzing": "Menjalankan Sistem Diagnostik...",
+      "ctaTitle": "Pindai Potensi Usaha Desa",
+      "ctaDesc": "Jalankan simulasi diagnostik untuk melihat bagaimana sistem memindai data lokal dan regional guna menyajikan peluang usaha terbaik.",
+      "button": "Pindai Potensi Usaha",
+      "analyzing": "Memindai Potensi Desa...",
       "states": {
-        "1": "Mengagregasi transaksi lokal & profil demografis anggota...",
-        "2": "Mengambil indeks pasar kabupaten regional & harga komoditas...",
-        "3": "Menghitung ENPV, EIRR proyek, dan profil risiko RAG...",
-        "4": "Menyusun laporan kelayakan untuk pemungutan suara RAT..."
+        "1": "Mengagregasi profil desa, demografi anggota & kapasitas maksimal...",
+        "2": "Memetakan komoditas, celah pasar & kebutuhan desa...",
+        "3": "Menskoring kecocokan peluang dengan kapasitas desa...",
+        "4": "Menyusun rekomendasi peluang & menyerahkan ke kelayakan..."
       },
-      "success": "Analisis selesai! Rekomendasi ekspansi ditemukan.",
+      "success": "Pemindaian selesai! Peluang usaha ditemukan.",
       "reset": "Mulai Ulang Simulasi",
-      "export": "Ekspor Laporan Kelayakan untuk RAT",
-      "exportSuccess": "Laporan Studi Kelayakan berhasil disusun dan diekspor."
+      "export": "Ekspor Peta Potensi",
+      "exportSuccess": "Peta potensi berhasil disusun dan diekspor."
     }
   },
   "learn": {

@@ -16,8 +16,9 @@ import {
   PlayIcon,
 } from "@phosphor-icons/react";
 import "./Development.css";
+import type { TabId } from "@/features/System/moduleUnlock";
 
-export default function Development() {
+export default function Development({ onTabChange }: { onTabChange?: (tab: TabId) => void }) {
   const { t } = useTranslation();
   const toast = useToast();
 
@@ -263,51 +264,64 @@ export default function Development() {
                 </p>
               </div>
 
-              {/* Financial calculations grid */}
+              {/* Opportunity-fit grid (financial validation lives in Kelayakan Finansial) */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <div className="p-3 rounded-lg border border-border bg-input/20">
                   <span className="text-xxxs font-mono text-gray-400 uppercase">
-                    {t("development.preview.metrics.enpvLabel")}
+                    {t("development.preview.metrics.potensiLabel")}
                   </span>
                   <p className="text-xs font-bold font-mono mt-1 text-success">
-                    {t("development.preview.metrics.enpv")}
+                    {t("development.preview.metrics.potensi")}
                   </p>
                 </div>
                 <div className="p-3 rounded-lg border border-border bg-input/20">
                   <span className="text-xxxs font-mono text-gray-400 uppercase">
-                    {t("development.preview.metrics.eirrLabel")}
+                    {t("development.preview.metrics.kapasitasLabel")}
                   </span>
                   <p className="text-xs font-bold font-mono mt-1 text-success">
-                    {t("development.preview.metrics.eirr")}
+                    {t("development.preview.metrics.kapasitas")}
                   </p>
                 </div>
                 <div className="p-3 rounded-lg border border-border bg-input/20">
                   <span className="text-xxxs font-mono text-gray-400 uppercase">
-                    {t("development.preview.metrics.ebcrLabel")}
+                    {t("development.preview.metrics.peluangLabel")}
                   </span>
                   <p className="text-xs font-bold font-mono mt-1 text-success">
-                    {t("development.preview.metrics.ebcr")}
+                    {t("development.preview.metrics.peluang")}
                   </p>
                 </div>
               </div>
 
               {/* Warnings and next actions */}
               <div className="flex flex-col md:flex-row items-center justify-between gap-4 pt-4 border-t border-border">
-                <Button
-                  onClick={handleExport}
-                  className="w-full md:w-auto bg-brand hover:bg-brand text-brand-foreground font-bold text-xs h-9 px-5 flex items-center justify-center gap-2"
-                >
-                  <FileTextIcon className="h-3.5 w-3.5" />
-                  {t("development.simulation.export")}
-                </Button>
-                <Button
-                  onClick={handleReset}
-                  variant="outline"
-                  className="w-full md:w-auto border-border text-muted-foreground font-bold text-xs h-9 px-5 flex items-center justify-center gap-2"
-                >
-                  <ArrowsClockwise className="h-3.5 w-3.5" />
-                  {t("development.simulation.reset")}
-                </Button>
+                {onTabChange ? (
+                  <Button
+                    onClick={() => onTabChange("feasibility")}
+                    className="w-full md:w-auto bg-brand hover:bg-brand text-brand-foreground font-bold text-xs h-9 px-5 flex items-center justify-center gap-2"
+                  >
+                    {t("development.preview.validateCta")}
+                  </Button>
+                ) : (
+                  <span />
+                )}
+                <div className="flex flex-col md:flex-row items-center gap-4">
+                  <Button
+                    onClick={handleExport}
+                    variant="outline"
+                    className="w-full md:w-auto border-border text-muted-foreground font-bold text-xs h-9 px-5 flex items-center justify-center gap-2"
+                  >
+                    <FileTextIcon className="h-3.5 w-3.5" />
+                    {t("development.simulation.export")}
+                  </Button>
+                  <Button
+                    onClick={handleReset}
+                    variant="outline"
+                    className="w-full md:w-auto border-border text-muted-foreground font-bold text-xs h-9 px-5 flex items-center justify-center gap-2"
+                  >
+                    <ArrowsClockwise className="h-3.5 w-3.5" />
+                    {t("development.simulation.reset")}
+                  </Button>
+                </div>
               </div>
             </CardContent>
           </Card>

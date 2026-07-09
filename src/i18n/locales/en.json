@@ -71,7 +71,7 @@
       "equipment": "Equipment",
       "sales": "Sales & Vendors",
       "storeLayout": "Store Layout",
-      "development": "Expansion & Development",
+      "development": "Potential",
       "learn": "Learn & Quiz",
       "planners": "Planner Collection"
     },
@@ -974,58 +974,59 @@
     }
   },
   "development": {
-    "title": "Business Expansion & New Units",
-    "description": "Receive data-driven recommendations on how to expand your cooperative and launch new high-feasibility business units.",
+    "title": "Business Potential Mapping",
+    "description": "Scan new business opportunities by matching them against the village's maximum capacity — commodities, demography, and local demand.",
     "workflow": {
-      "title": "Expansion Recommendation Workflow",
+      "title": "Potential Mapping Workflow",
       "step1": {
-        "title": "1. Data Gathering",
-        "desc": "Collects financial health, member demography, and historical transactions from the local database."
+        "title": "1. Village Profile & Capacity",
+        "desc": "Collects village profile, member demography, and the maximum capacity ceiling from the local database."
       },
       "step2": {
-        "title": "2. Regional Analysis",
-        "desc": "Aggregates demand trends, commodity rates, and village needs at the county/provincial level."
+        "title": "2. Commodity & Opportunity Map",
+        "desc": "Aggregates demand trends, commodity rates, and market gaps at the county/provincial level."
       },
       "step3": {
-        "title": "3. Feasibility Screening",
-        "desc": "Generates ENPV, EIRR, and RAG risk profiles for suggested units (e.g. fertilizer shop, pharmacy)."
+        "title": "3. Fit Screening",
+        "desc": "Scores each opportunity's fit against village capacity — not the financial feasibility figures."
       },
       "step4": {
-        "title": "4. RAT Presentation",
-        "desc": "Exports structured feasibility reports ready for the Annual Member Meeting (RAT) vote."
+        "title": "4. Recommendation & Next Steps",
+        "desc": "Surfaces the top opportunity, then hands off to Financial Feasibility for NPV/IRR validation."
       }
     },
     "preview": {
-      "title": "Recommendation Preview (Upcoming Feature)",
-      "badge": "AI Analysis",
+      "title": "Opportunity Preview (Upcoming Feature)",
+      "badge": "AI Scan",
       "unitName": "Fertilizer & Seed Supply Unit (Unit Toko Pupuk & Benih)",
       "reason": "Based on 34% rise in member farming transactions and regional shortage of certified distributors in your village.",
       "metrics": {
-        "enpv": "Est. ENPV: Rp 120,000,000",
-        "eirr": "Est. EIRR: 24.5%",
-        "ebcr": "Est. EBCR: 1.62",
-        "enpvLabel": "ENPV Projection",
-        "eirrLabel": "Project EIRR",
-        "ebcrLabel": "Benefit-Cost Ratio"
+        "potensi": "92 / 100",
+        "kapasitas": "68% utilized",
+        "peluang": "High",
+        "potensiLabel": "Potential Score",
+        "kapasitasLabel": "Village Capacity",
+        "peluangLabel": "Market Opportunity"
       },
-      "suitability": "High Suitability (92%)",
+      "suitability": "High Opportunity (92%)",
+      "validateCta": "Validate Financial Feasibility →",
       "alert": "This screen will display live recommendations once the Federated Sync Network goes live in Phase 2."
     },
     "simulation": {
-      "ctaTitle": "Analyze Cooperative Potential",
-      "ctaDesc": "Trigger a simulated diagnostic run to see how the system aggregates local and regional cooperative data to recommend expansions.",
-      "button": "Run Diagnostics & Feasibility Analysis",
-      "analyzing": "Running Diagnostic System...",
+      "ctaTitle": "Scan Village Business Potential",
+      "ctaDesc": "Trigger a simulated diagnostic run to see how the system scans local and regional data to surface the best business opportunities.",
+      "button": "Scan Business Potential",
+      "analyzing": "Scanning Village Potential...",
       "states": {
-        "1": "Aggregating local transactions & member demographic profiles...",
-        "2": "Retrieving regional county market indices & commodity rates...",
-        "3": "Calculating project ENPV, EIRR, and RAG risk profiles...",
-        "4": "Structuring feasibility reports for RAT voting..."
+        "1": "Aggregating village profile, member demography & maximum capacity...",
+        "2": "Mapping commodities, market gaps & village needs...",
+        "3": "Scoring opportunity fit against village capacity...",
+        "4": "Compiling opportunity recommendations & handing off to feasibility..."
       },
-      "success": "Analysis complete! Recommended expansion found.",
+      "success": "Scan complete! Business opportunity found.",
       "reset": "Reset Simulation",
-      "export": "Export Feasibility Study Report for RAT",
-      "exportSuccess": "Feasibility Study Report successfully compiled and exported."
+      "export": "Export Potential Map",
+      "exportSuccess": "Potential map successfully compiled and exported."
     }
   },
   "learn": {
