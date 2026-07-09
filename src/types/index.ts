@@ -201,6 +201,19 @@ export interface InventoryItem {
   updated_at?: string;
 }
 
+export type EquipmentCondition = "Baik" | "Rusak Ringan" | "Perlu Perbaikan";
+
+export interface EquipmentItem {
+  id: string;
+  name: string;
+  quantity: number;
+  condition: EquipmentCondition;
+  last_maintenance: string;
+  value: number;
+  created_at?: string;
+  updated_at?: string;
+}
+
 export interface StoreLayout {
   id: string;
   name: string;

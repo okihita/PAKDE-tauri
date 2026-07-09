@@ -875,6 +875,35 @@
       "condition": "Kondisi",
       "lastMaintenance": "Perawatan Terakhir",
       "value": "Nilai (Rp)"
+    },
+    "addItem": "Tambah Alat",
+    "search": "Cari alat...",
+    "empty": "Belum ada alat terdaftar.",
+    "actions": "Aksi",
+    "recordMaintenance": "Servis",
+    "dialogAdd": "Tambah Alat",
+    "dialogEdit": "Edit Alat",
+    "form": {
+      "name": "Nama",
+      "namePlaceholder": "cth. Mesin Penggiling Padi",
+      "quantity": "Jumlah",
+      "value": "Nilai (Rp)",
+      "condition": "Kondisi",
+      "lastMaintenance": "Perawatan Terakhir"
+    },
+    "condition": {
+      "baik": "Baik",
+      "rusakRingan": "Rusak Ringan",
+      "perluPerbaikan": "Perlu Perbaikan"
+    },
+    "toast": {
+      "nameRequired": "Nama alat wajib diisi.",
+      "itemCreated": "Alat ditambahkan.",
+      "itemUpdated": "Alat diperbarui.",
+      "itemDeleted": "Alat dihapus.",
+      "maintenanceDone": "Perawatan dicatat.",
+      "saveFailed": "Gagal menyimpan alat.",
+      "deleteConfirm": "Hapus alat ini? Tindakan tidak dapat dibatalkan."
     }
   },
   "sales": {

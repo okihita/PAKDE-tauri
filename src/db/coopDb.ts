@@ -310,4 +310,47 @@ export async function initCoopDb(coopId: string): Promise<void> {
       String(COOP_SCHEMA_VERSION),
     ]);
   }
+
+  // ── equipment (physical assets, outside the version gate so existing
+  //    coops pick it up on next launch without re-running the v4→ migration) ──
+  await db.execute(`
+    CREATE TABLE IF NOT EXISTS equipment (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      quantity INTEGER DEFAULT 1,
+      condition TEXT DEFAULT 'Baik' CHECK(condition IN ('Baik','Rusak Ringan','Perlu Perbaikan')),
+      last_maintenance TEXT,
+      value REAL DEFAULT 0,
+      created_at TEXT DEFAULT (datetime('now')),
+      updated_at TEXT DEFAULT (datetime('now'))
+    );
+  `);
+
+  // Seed demo equipment only when the table is empty (idempotent).
+  const eqCount = await db.select<Array<{ c: number }>>("SELECT COUNT(*) as c FROM equipment");
+  if (eqCount.length === 0 || eqCount[0].c === 0) {
+    const seed: Array<[string, number, string, string, number]> = [
+      ["Mesin Penggiling Padi", 2, "Baik", "2026-06-15", 45000000],
+      ["Traktor Mini", 1, "Baik", "2026-05-20", 85000000],
+      ["Mesin Pemotong Kayu", 3, "Rusak Ringan", "2026-04-10", 12000000],
+      ["Pompa Air Diesel", 4, "Baik", "2026-06-01", 8000000],
+      ["Kendaraan Angkut", 2, "Perlu Perbaikan", "2026-03-22", 65000000],
+      ["Mesin Jahit Industri", 6, "Baik", "2026-06-10", 5000000],
+      ["Alat Sortir Gabah", 2, "Baik", "2026-05-28", 22000000],
+      ["Genset 5000W", 1, "Rusak Ringan", "2026-02-14", 15000000],
+    ];
+    for (const [name, quantity, condition, lastMaintenance, value] of seed) {
+      await db.execute(
+        "INSERT INTO equipment (id, name, quantity, condition, last_maintenance, value) VALUES (?, ?, ?, ?, ?, ?)",
+        [
+          `eq-seed-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          name,
+          quantity,
+          condition,
+          lastMaintenance,
+          value,
+        ],
+      );
+    }
+  }
 }

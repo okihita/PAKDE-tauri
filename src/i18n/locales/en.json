@@ -875,6 +875,35 @@
       "condition": "Condition",
       "lastMaintenance": "Last Maintenance",
       "value": "Value (Rp)"
+    },
+    "addItem": "Add Equipment",
+    "search": "Search equipment...",
+    "empty": "No equipment registered yet.",
+    "actions": "Actions",
+    "recordMaintenance": "Service",
+    "dialogAdd": "Add Equipment",
+    "dialogEdit": "Edit Equipment",
+    "form": {
+      "name": "Name",
+      "namePlaceholder": "e.g. Rice Milling Machine",
+      "quantity": "Quantity",
+      "value": "Value (Rp)",
+      "condition": "Condition",
+      "lastMaintenance": "Last Maintenance"
+    },
+    "condition": {
+      "baik": "Good",
+      "rusakRingan": "Minor Damage",
+      "perluPerbaikan": "Needs Repair"
+    },
+    "toast": {
+      "nameRequired": "Equipment name is required.",
+      "itemCreated": "Equipment added.",
+      "itemUpdated": "Equipment updated.",
+      "itemDeleted": "Equipment deleted.",
+      "maintenanceDone": "Maintenance recorded.",
+      "saveFailed": "Failed to save equipment.",
+      "deleteConfirm": "Delete this equipment? This cannot be undone."
     }
   },
   "sales": {
