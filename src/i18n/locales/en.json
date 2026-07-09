@@ -459,7 +459,7 @@
   "ranking": {
     "title": "Cooperative Ranking",
     "beaconTitle": "View ranking",
-    "beaconLocked": "Ranking unlocks at Health Score 60",
+    "beaconLocked": "Ranking unlocks at XP 60",
     "scope": {
       "kabupaten": "District",
       "provinsi": "Province",

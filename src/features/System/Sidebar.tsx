@@ -26,34 +26,18 @@ import {
 } from "@phosphor-icons/react";
 import { getCurrentLevel } from "@/data/leveling";
 import { Tooltip } from "@/components/ui/tooltip";
-import { isTabUnlocked, getUnlockRequirementLabel } from "@/features/System/moduleUnlock";
+import {
+  isTabUnlocked,
+  getUnlockRequirementLabel,
+  TABS_LEVEL_REQUIREMENTS,
+  type TabId,
+} from "@/features/System/moduleUnlock";
 import type { RankingStatus } from "@/features/Finance/Ranking/useRanking";
 import type { CooperativeProfile, EwsAlert } from "@/types";
 
 interface SidebarProps {
-  activeTab: string;
-  onTabChange: (
-    tab:
-      | "home"
-      | "statistics"
-      | "ranking"
-      | "leveling"
-      | "units"
-      | "equipment"
-      | "sales"
-      | "storelayout"
-      | "development"
-      | "learn"
-      | "planners"
-      | "participation"
-      | "members"
-      | "event"
-      | "impact"
-      | "accounting"
-      | "feasibility"
-      | "sync"
-      | "settings",
-  ) => void;
+  activeTab: TabId;
+  onTabChange: (tab: TabId) => void;
   coopProfile: CooperativeProfile | null;
   ewsAlerts: EwsAlert[];
   memberCount: number;
@@ -67,7 +51,7 @@ interface SidebarProps {
 }
 
 interface NavItemDef {
-  id: string;
+  id: TabId;
   icon: ComponentType<{ className?: string }>;
   label: string;
 }
@@ -171,6 +155,13 @@ export default function Sidebar({
     },
   ];
 
+  // Invariant: every sidebar item must have an unlock threshold in the single
+  // source of truth (moduleUnlock). Catches typos / orphan tabs at runtime.
+  const orphanIds = GROUPS.flatMap((g) => g.items.map((i) => i.id)).filter((id) => !(id in TABS_LEVEL_REQUIREMENTS));
+  if (orphanIds.length) {
+    console.error("[sidebar] menu items missing unlock threshold:", orphanIds);
+  }
+
   function renderHome() {
     const isActive = activeTab === "home";
     return (
@@ -207,7 +198,7 @@ export default function Sidebar({
           "flex items-center gap-3 rounded-lg px-4 py-2 cursor-pointer transition-all text-xs font-semibold border-[0.5px]",
           isActive ? a.active : "text-muted-foreground hover:bg-secondary hover:text-foreground border-transparent",
         )}
-        onClick={() => onTabChange(item.id as never)}
+        onClick={() => onTabChange(item.id)}
       >
         <Icon className={cn("h-4 w-4 shrink-0", !isActive && a.icon)} />
         <span>{item.label}</span>
@@ -227,9 +218,14 @@ export default function Sidebar({
 
   function renderGroup(group: NavGroupDef) {
     const a = ACCENT_CLASSES[group.accent];
-    // Unlocked (available) items float to the top of each section; locked
-    // items sink below, preserving relative order within each partition.
-    const sorted = [...group.items].sort((x, y) => Number(isTabUnlocked(y.id, xp)) - Number(isTabUnlocked(x.id, xp)));
+    // Order is derived from the same unlock-threshold table that drives
+    // availability, so it is identical across every profile (xp-independent).
+    // Low-threshold items naturally surface first without runtime reshuffling.
+    const sorted = [...group.items].sort(
+      (x, y) =>
+        ((TABS_LEVEL_REQUIREMENTS as Record<string, number>)[x.id] ?? 0) -
+        ((TABS_LEVEL_REQUIREMENTS as Record<string, number>)[y.id] ?? 0),
+    );
     return (
       <div key={group.id} className="border-t border-border mt-1">
         <p className={cn("px-4 pt-3 pb-1 text-xxs font-bold uppercase tracking-wider", a.label)}>{group.label}</p>

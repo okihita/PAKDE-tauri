@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 import "@/i18n"; // initialize i18next before render
 import { listCooperatives, getCooperativeById } from "@/features/System/ProfileSelect/cooperativeDb";
 import { getUsersByCooperativeId } from "@/features/System/ProfileSelect/userDb";
-import { isTabUnlocked } from "@/features/System/moduleUnlock";
+import { isTabUnlocked, type TabId } from "@/features/System/moduleUnlock";
 import { ToastProvider } from "@/hooks/useToast";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { exit } from "@tauri-apps/plugin-process";
@@ -63,27 +63,7 @@ function AppContent() {
   const [dbErrorMessage, setDbErrorMessage] = useState("");
   const [currentUser, setCurrentUser] = useState<LocalUser | null>(null);
 
-  const [activeTab, setActiveTab] = useState<
-    | "home"
-    | "statistics"
-    | "ranking"
-    | "leveling"
-    | "units"
-    | "equipment"
-    | "sales"
-    | "storelayout"
-    | "development"
-    | "learn"
-    | "planners"
-    | "participation"
-    | "members"
-    | "event"
-    | "impact"
-    | "accounting"
-    | "feasibility"
-    | "sync"
-    | "settings"
-  >("home");
+  const [activeTab, setActiveTab] = useState<TabId>("home");
   const [financeTier, setFinanceTier] = useState<"simplified" | "standard" | "advanced">(() => {
     return (localStorage.getItem("pakde-finance-tier") as "simplified" | "standard" | "advanced") || "simplified";
   });

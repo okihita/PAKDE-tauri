@@ -459,7 +459,7 @@
   "ranking": {
     "title": "Peringkat Koperasi",
     "beaconTitle": "Lihat peringkat",
-    "beaconLocked": "Peringkat terbuka pada Health Score 60",
+    "beaconLocked": "Peringkat terbuka pada XP 60",
     "scope": {
       "kabupaten": "Kabupaten/Kota",
       "provinsi": "Provinsi",
