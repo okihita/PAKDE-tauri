@@ -26,6 +26,7 @@ import { DEMO_TIERS } from "./demoTiers";
 import CampaignBriefingDialog from "./CampaignBriefingDialog";
 import { seedDemoCooperativeAtLevel, type DemoLevel } from "@/db/seed-demo";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Tooltip } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
 
 // Module-level constants for branding (not translatable)
@@ -471,17 +472,13 @@ export default function ProfileSelect({ onProfileSelect, onDbError }: ProfileSel
                             if (!cfg) return null;
                             const Icon = cfg.icon;
                             return (
-                              <div key={unitId} className="group/tip relative hover:z-10">
+                              <Tooltip key={unitId} label={cfg.label} description={cfg.desc} className="inline-flex">
                                 <div
                                   className={`flex items-center justify-center h-6 w-6 rounded-md border ${cfg.boxClass}`}
                                 >
                                   <Icon weight="fill" className={`h-3.5 w-3.5 ${cfg.iconClass}`} />
                                 </div>
-                                <span className="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 px-2.5 py-1.5 rounded bg-slate-800 border border-slate-700 shadow-lg opacity-0 group-hover/tip:opacity-100 transition-opacity duration-100 pointer-events-none min-w-48 max-w-64 z-10">
-                                  <p className="text-xxxs font-bold text-slate-200">{cfg.label}</p>
-                                  <p className="text-xxxs text-slate-500 mt-0.5 leading-relaxed">{cfg.desc}</p>
-                                </span>
-                              </div>
+                              </Tooltip>
                             );
                           })}
                         </div>

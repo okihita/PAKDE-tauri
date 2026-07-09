@@ -26,6 +26,7 @@ import {
   RocketLaunchIcon,
 } from "@phosphor-icons/react";
 import { getCurrentLevel } from "@/data/leveling";
+import { Tooltip } from "@/components/ui/tooltip";
 import { isTabUnlocked, getUnlockRequirementLabel } from "@/features/System/moduleUnlock";
 import type { RankingStatus } from "@/features/Finance/Ranking/useRanking";
 import type { CooperativeProfile, EwsAlert } from "@/types";
@@ -197,22 +198,13 @@ export default function Sidebar({
     const unlockLabel = getUnlockRequirementLabel(item.id);
     const a = ACCENT_CLASSES[accent];
 
-    if (!unlocked) {
-      return (
-        <div
-          key={item.id}
-          title={unlockLabel || undefined}
-          className="flex items-center gap-3 rounded-lg px-4 py-2 transition-all text-xs font-semibold border-[0.5px] opacity-40 cursor-not-allowed text-muted-foreground border-transparent"
-        >
-          <LockSimple className="h-4 w-4 shrink-0" />
-          <span>{item.label}</span>
-        </div>
-      );
-    }
-
-    return (
+    const inner = !unlocked ? (
+      <div className="flex items-center gap-3 rounded-lg px-4 py-2 transition-all text-xs font-semibold border-[0.5px] opacity-40 cursor-not-allowed text-muted-foreground border-transparent">
+        <LockSimple className="h-4 w-4 shrink-0" />
+        <span>{item.label}</span>
+      </div>
+    ) : (
       <div
-        key={item.id}
         className={cn(
           "flex items-center gap-3 rounded-lg px-4 py-2 cursor-pointer transition-all text-xs font-semibold border-[0.5px]",
           isActive ? a.active : "text-muted-foreground hover:bg-secondary hover:text-foreground border-transparent",
@@ -222,6 +214,16 @@ export default function Sidebar({
         <Icon className={cn("h-4 w-4 shrink-0", !isActive && a.icon)} />
         <span>{item.label}</span>
       </div>
+    );
+
+    return (
+      <Tooltip
+        label={item.label}
+        description={unlocked ? undefined : (unlockLabel ?? undefined)}
+        className="block w-full"
+      >
+        {inner}
+      </Tooltip>
     );
   }
 

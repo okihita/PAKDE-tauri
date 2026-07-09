@@ -175,67 +175,45 @@ export default function Leveling({ xp = 0 }: Props) {
         </div>
       </div>
 
-      {/* Current status bar */}
+      {/* Level strip = XP progress bar.
+          Fixed, palette-independent fill + a scrimmed label pill keep the
+          tier text legible in light/dark and across every theme palette. */}
       <Card className="bg-card border-border text-foreground">
-        <CardContent className="p-4">
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-2">
+        <CardContent className="p-4 space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-foreground flex items-center gap-2">
               <TrophyIcon className="h-4 w-4 text-warning" />
-              <span className="text-xs font-bold text-foreground">
-                {isId ? `Level Saat Ini: ${currentLevel.labelId}` : `Current Level: ${currentLevel.labelEn}`}
-              </span>
-            </div>
-            <span className="text-xxs font-mono text-muted-foreground">
-              {isId ? `XP: ${xp} / 100` : `XP: ${xp} / 100`}
+              {isId
+                ? `Level ${currentLevel.tier} · ${currentLevel.labelId}`
+                : `Level ${currentLevel.tier} · ${currentLevel.labelEn}`}
             </span>
+            <span className="text-xxs font-mono text-muted-foreground">XP {xp} / 100</span>
           </div>
-          {/* Global XP bar */}
-          <div className="h-2 bg-muted rounded-full overflow-hidden">
+
+          <div className="relative h-7 rounded-full bg-muted overflow-hidden">
+            {/* Continuous XP fill */}
             <div
-              className="h-full bg-linear-to-r from-brand to-warning rounded-full transition-all duration-500"
+              className="absolute inset-y-0 left-0 bg-linear-to-r from-[#16a34a] to-[#eab308] transition-all duration-500"
               style={{ width: `${Math.min(100, xp)}%` }}
             />
+            {/* 10 level dividers — the strip reads as 10 segments */}
+            {Array.from({ length: 9 }).map((_, i) => (
+              <div key={i} className="absolute inset-y-0 w-px bg-background/30" style={{ left: `${(i + 1) * 10}%` }} />
+            ))}
+            {/* Centered tier label — scrim guarantees contrast over any fill */}
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+              <span className="rounded-full bg-background/85 px-2 py-0.5 text-xxs font-bold text-foreground backdrop-blur-sm">
+                {isId ? currentLevel.labelId : currentLevel.labelEn}
+              </span>
+            </div>
           </div>
-          <div className="flex justify-between mt-1 text-xxxs font-mono text-muted-foreground">
+
+          <div className="flex justify-between text-xxxs font-mono text-muted-foreground">
             <span>{isId ? "Rintisan" : "Pioneer"}</span>
             <span>{isId ? "Teladan" : "Exemplary"}</span>
           </div>
         </CardContent>
       </Card>
-
-      {/* 10-level summary strip */}
-      <div className="grid grid-cols-10 gap-1">
-        {LEVELS.map((level: LevelDef) => {
-          const Icon = level.id === "teladan" ? TrophyIcon : StarIcon;
-          const label = isId ? level.labelId : level.labelEn;
-          const isActive = currentLevel.id === level.id;
-          const isComplete = xp >= level.maxXp && level.maxXp >= 100 ? xp >= 100 : xp >= level.maxXp;
-          return (
-            <div
-              key={level.id}
-              className={`flex flex-col items-center gap-0.5 py-2 rounded-lg border ${
-                isActive
-                  ? `${level.bgClass} border-success/30`
-                  : isComplete
-                    ? `${level.bgClass} border-muted`
-                    : "bg-input/50 border-border"
-              }`}
-            >
-              {isComplete ? (
-                <CheckCircleIcon className={`h-3.5 w-3.5 ${level.textClass}`} />
-              ) : (
-                <Icon className={`h-3.5 w-3.5 ${isActive ? level.textClass : "text-muted-foreground"}`} />
-              )}
-              <span
-                className={`text-xxxs font-mono font-bold leading-tight ${isActive ? level.textClass : "text-muted-foreground"}`}
-              >
-                L{level.tier}
-              </span>
-              <span className="text-xxxs text-muted-foreground text-center leading-tight leading-none">{label}</span>
-            </div>
-          );
-        })}
-      </div>
 
       {/* Level cards */}
       <div className="space-y-3">

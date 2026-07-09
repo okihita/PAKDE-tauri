@@ -7,8 +7,6 @@ import { Input } from "@/components/ui/input";
 import { useUpdater } from "@/hooks/useUpdater";
 import { useToast } from "@/hooks/useToast";
 import { useIconSettings } from "@/components/IconContext";
-import { usePalette } from "@/hooks/usePalette";
-import { PALETTES } from "@/data/palettes";
 import type { CooperativeProfile } from "@/types";
 import { updateCooperative, deleteCooperative } from "./settingsDb";
 import { isDemoCooperative, seedDemoCooperativeAtLevel, type DemoLevel } from "@/db/seed-demo";
@@ -19,7 +17,6 @@ import {
   SunIcon,
   GlobeIcon,
   TextAaIcon,
-  PaletteIcon,
   PaintBucketIcon,
   UserIcon,
   BuildingsIcon,
@@ -92,7 +89,6 @@ export default function Settings({
   const u = useUpdater();
   const toast = useToast();
   const { settings: iconSettings, setWeight } = useIconSettings();
-  const [activePalette, setPalette] = usePalette();
   const [resetConfirm, setResetConfirm] = useState(false);
   const [resetting, setResetting] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState(false);
@@ -213,7 +209,7 @@ export default function Settings({
         <Card className="bg-card border-border">
           <CardHeader>
             <CardTitle className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
-              <PaletteIcon className="h-3.5 w-3.5 text-success" />
+              <PaintBucketIcon className="h-3.5 w-3.5 text-success" />
               {t("settings.preferences.title")}
             </CardTitle>
           </CardHeader>
@@ -289,7 +285,7 @@ export default function Settings({
             {/* Icon Weight */}
             <div className="space-y-2">
               <label className="text-xxs font-mono text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
-                <PaletteIcon className="h-3 w-3 text-slate-500" />
+                <PaintBucketIcon className="h-3 w-3 text-slate-500" />
                 {t("settings.preferences.iconWeight")}
               </label>
               <div className="grid grid-cols-3 gap-1.5">
@@ -304,48 +300,6 @@ export default function Settings({
                     <span className="text-xxxs font-bold text-foreground">{opt.label}</span>
                   </button>
                 ))}
-              </div>
-            </div>
-
-            {/* PaletteIcon */}
-            <div className="space-y-2">
-              <label className="text-xxs font-mono text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
-                <PaletteIcon className="h-3 w-3 text-slate-500" />
-                {t("settings.preferences.palette")}
-              </label>
-              <div className="space-y-2">
-                <div className="grid grid-cols-4 gap-2">
-                  {PALETTES.map((p) => (
-                    <button
-                      key={p.id}
-                      onClick={() => setPalette(p.id)}
-                      className={`flex flex-col items-center gap-1.5 py-2.5 rounded-lg border-2 cursor-pointer transition-all ${
-                        activePalette.id === p.id ? bannerActive : bannerInactive
-                      }`}
-                    >
-                      <span
-                        className="w-5 h-5 rounded-full border border-white/20"
-                        style={{ backgroundColor: p.swatch }}
-                      />
-                      <span className="text-xxxs font-bold text-foreground">{t(p.i18nKey)}</span>
-                    </button>
-                  ))}
-                </div>
-                {/* Live preview strip */}
-                <div className="flex items-center gap-1.5 text-xxxs font-mono">
-                  <span className="px-1.5 py-0.5 rounded bg-success/20 text-success">
-                    {t("settings.preferences.previewSuccess")}
-                  </span>
-                  <span className="px-1.5 py-0.5 rounded bg-warning/20 text-warning">
-                    {t("settings.preferences.previewWarning")}
-                  </span>
-                  <span className="px-1.5 py-0.5 rounded bg-danger/20 text-danger">
-                    {t("settings.preferences.previewError")}
-                  </span>
-                  <span className="px-1.5 py-0.5 rounded bg-info/20 text-info">
-                    {t("settings.preferences.previewInfo")}
-                  </span>
-                </div>
               </div>
             </div>
           </CardContent>

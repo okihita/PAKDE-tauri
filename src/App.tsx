@@ -8,7 +8,6 @@ import { ToastProvider } from "@/hooks/useToast";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { exit } from "@tauri-apps/plugin-process";
 import { IconProvider } from "@/components/IconContext";
-import { usePaletteInit } from "@/hooks/usePalette";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { SignOut, XCircle } from "@phosphor-icons/react";
@@ -58,7 +57,6 @@ function quitApp() {
 }
 
 function AppContent() {
-  usePaletteInit();
   const [appState, setAppState] = useState<"profile_select" | "user_signin" | "user_create" | "main" | "db_error">(
     "profile_select",
   );
