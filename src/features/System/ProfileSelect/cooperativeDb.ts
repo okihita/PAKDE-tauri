@@ -1,5 +1,5 @@
 import { getDb } from "@/db";
-import type { CooperativeProfile } from "@/types";
+import type { CooperativeProfile, EwsAlert } from "@/types";
 
 export interface CreateCooperativeInput {
   name: string;
@@ -87,4 +87,20 @@ export async function getDemoCooperative(): Promise<CooperativeProfile | null> {
   const db = await getDb();
   const rows = await db.select<CooperativeProfile[]>("SELECT * FROM cooperatives WHERE is_demo = 1 LIMIT 1");
   return rows.length > 0 ? rows[0] : null;
+}
+
+/** Number of members registered under a cooperative. */
+export async function getMemberCount(cooperativeId: string): Promise<number> {
+  const db = await getDb();
+  const rows = await db.select<Array<{ count: number }>>(
+    "SELECT COUNT(*) AS count FROM members WHERE cooperative_id = ?",
+    [cooperativeId],
+  );
+  return rows[0]?.count ?? 0;
+}
+
+/** Active (unresolved) EWS alerts for a cooperative, used by the shell badge. */
+export async function getActiveEwsAlerts(cooperativeId: string): Promise<EwsAlert[]> {
+  const db = await getDb();
+  return db.select<EwsAlert[]>("SELECT * FROM ews_alerts WHERE cooperative_id = ? AND is_active = 1", [cooperativeId]);
 }

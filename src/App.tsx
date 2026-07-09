@@ -1,7 +1,12 @@
 import { useState, useEffect, useCallback } from "react";
 import { cn } from "@/lib/utils";
 import "@/i18n"; // initialize i18next before render
-import { listCooperatives, getCooperativeById } from "@/features/System/ProfileSelect/cooperativeDb";
+import {
+  listCooperatives,
+  getCooperativeById,
+  getMemberCount,
+  getActiveEwsAlerts,
+} from "@/features/System/ProfileSelect/cooperativeDb";
 import { getUsersByCooperativeId } from "@/features/System/ProfileSelect/userDb";
 import { isTabUnlocked, type TabId } from "@/features/System/moduleUnlock";
 import { ToastProvider } from "@/hooks/useToast";
@@ -75,8 +80,8 @@ function AppContent() {
     return saved && FONT_LEVELS.includes(saved) ? saved : FONT_LEVEL_DEFAULT;
   });
   const [coopProfile, setCoopProfile] = useState<CooperativeProfile | null>(null);
-  const [ewsAlerts, _setEwsAlerts] = useState<EwsAlert[]>([]);
-  const [memberCount, _setMemberCount] = useState(0);
+  const [ewsAlerts, setEwsAlerts] = useState<EwsAlert[]>([]);
+  const [memberCount, setMemberCount] = useState(0);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [showQuitConfirm, setShowQuitConfirm] = useState(false);
 
@@ -160,6 +165,9 @@ function AppContent() {
         if (activeId) {
           const profile = await getCooperativeById(activeId);
           if (profile) setCoopProfile(profile);
+
+          setMemberCount(await getMemberCount(activeId));
+          setEwsAlerts(await getActiveEwsAlerts(activeId));
         } else {
           const profiles = await listCooperatives();
           if (profiles.length > 0) {
