@@ -106,18 +106,22 @@ function AppContent() {
     const handleKeyDown = (e: KeyboardEvent) => {
       // Escape: back/exit/logout
       if (e.key === "Escape") {
-        if (appState === "profile_select" && !showQuitConfirm) {
+        // If a confirmation dialog is already open, Escape closes it (highest priority).
+        if (showLogoutConfirm) {
           e.preventDefault();
-          setShowQuitConfirm(true);
+          e.stopPropagation();
+          setShowLogoutConfirm(false);
           return;
         }
-        if (appState === "profile_select" && showQuitConfirm) {
+        if (showQuitConfirm) {
+          e.preventDefault();
+          e.stopPropagation();
           setShowQuitConfirm(false);
           return;
         }
-        if (appState === "main" && !showLogoutConfirm) {
+        if (appState === "profile_select") {
           e.preventDefault();
-          setShowLogoutConfirm(true);
+          setShowQuitConfirm(true);
           return;
         }
         if (appState === "user_signin" || appState === "user_create") {
@@ -125,8 +129,9 @@ function AppContent() {
           setAppState("profile_select");
           return;
         }
-        if (showLogoutConfirm) {
-          setShowLogoutConfirm(false);
+        if (appState === "main") {
+          e.preventDefault();
+          setShowLogoutConfirm(true);
           return;
         }
       }
@@ -314,7 +319,10 @@ function AppContent() {
 
           {/* Quit confirmation dialog */}
           <Dialog open={showQuitConfirm} onOpenChange={setShowQuitConfirm}>
-            <DialogContent className="bg-slate-900 border border-slate-800 max-w-sm shadow-2xl">
+            <DialogContent
+              className="bg-slate-900 border border-slate-800 max-w-sm shadow-2xl"
+              onEscapeKeyDown={(e) => e.preventDefault()}
+            >
               <DialogHeader>
                 <DialogTitle className="flex items-center gap-2 text-sm font-bold text-slate-200">
                   <XCircle className="h-5 w-5 text-danger shrink-0" />
@@ -455,9 +463,16 @@ function AppContent() {
         </main>
       </div>
 
-      {/* Logout confirmation dialog */}
+      {/* Logout confirmation dialog.
+          Radix's built-in Escape handling is disabled here (onEscapeKeyDown) so the
+          keydown listener in App owns open/close. Otherwise Radix's capture-phase
+          Escape handler mutates `open` mid-event, re-runs the effect, and re-registers
+          the listener with a stale closure — causing the dialog to instantly re-open. */}
       <Dialog open={showLogoutConfirm} onOpenChange={setShowLogoutConfirm}>
-        <DialogContent className="bg-slate-900 border border-slate-800 max-w-sm shadow-2xl">
+        <DialogContent
+          className="bg-slate-900 border border-slate-800 max-w-sm shadow-2xl"
+          onEscapeKeyDown={(e) => e.preventDefault()}
+        >
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-sm font-bold text-slate-200">
               <SignOut className="h-5 w-5 text-danger shrink-0" />
