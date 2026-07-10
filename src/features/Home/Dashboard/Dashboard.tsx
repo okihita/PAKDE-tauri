@@ -12,6 +12,7 @@ import { CSS } from "@dnd-kit/utilities";
 import CalendarWidget from "./DashboardCalendar";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { getInitialTasksForCoop } from "./dashboardTasks";
+import { getCurrentLevel, type LevelDef } from "@/data/leveling";
 import "./Dashboard.css";
 
 interface Todo {
@@ -152,18 +153,57 @@ function SortableCard({ id, children, className }: { id: string; children: React
   );
 }
 
+// ── Main quest (reflects the cooperative's actual level quests) ──
+//
+// Unlike daily/weekly todos, the main quest list is derived from the real
+// leveling subgoals for the cooperative's current level (keyed on xp), not
+// hardcoded suggestions. The user's checked-off progress is persisted per
+// quest id so it survives reloads and harmlessly drops when the level changes.
+
+const MAIN_QUEST_DONE_KEY = "pakde-mainquest-done";
+
+function useMainQuests(level: LevelDef) {
+  const questIds = level.aspects.flatMap((a) => a.quests.map((q) => q.id));
+
+  const [doneMap, setDoneMap] = useState<Record<string, boolean>>(() => {
+    try {
+      const saved = localStorage.getItem(MAIN_QUEST_DONE_KEY);
+      return saved ? JSON.parse(saved) : {};
+    } catch {
+      return {};
+    }
+  });
+
+  useEffect(() => {
+    localStorage.setItem(MAIN_QUEST_DONE_KEY, JSON.stringify(doneMap));
+  }, [doneMap]);
+
+  const items: Todo[] = questIds.map((id) => ({ id, text: id, done: !!doneMap[id] }));
+  const toggleItem = (id: string) => setDoneMap((m) => ({ ...m, [id]: !m[id] }));
+  const removeDone = () =>
+    setDoneMap((m) => {
+      const next = { ...m };
+      for (const id of questIds) if (next[id]) delete next[id];
+      return next;
+    });
+  const doneCount = items.filter((i) => i.done).length;
+
+  return { items, toggleItem, removeDone, doneCount };
+}
+
 // ── Main ──────────────────────────────────────────────────────────
 
-export default function Dashboard({ healthScore = 0 }: { healthScore?: number }) {
+export default function Dashboard({ healthScore = 0, xp = 0 }: { healthScore?: number; xp?: number }) {
   const { t } = useTranslation();
   const { items: cardOrder, onDragEnd } = useCardOrder();
 
   // Compute level-aware task defaults
   const taskDefaults = getInitialTasksForCoop(healthScore, []);
+  const currentLevel = getCurrentLevel(xp);
 
   const daily = useTodoList("pakde-todos-daily");
   const weekly = useTodoList("pakde-todos-weekly", taskDefaults.weeklyQuests);
-  const main = useTodoList("pakde-todos-main", taskDefaults.mainQuests);
+  const main = useMainQuests(currentLevel);
   const { readIds, markRead, markAllRead } = useNewsRead();
   const [tab, setTab] = useState<"daily" | "weekly">("daily");
   const [newTask, setNewTask] = useState("");
@@ -189,6 +229,11 @@ export default function Dashboard({ healthScore = 0 }: { healthScore?: number })
             <CardTitle className="text-xs font-mono tracking-widest text-muted-foreground uppercase flex items-center gap-2">
               <CheckCircleIcon className="h-3 w-3 text-success" />
               {t("beranda.todoMain")}
+              <span
+                className={`ml-1 px-1.5 py-0.5 rounded text-xxxs font-mono ${currentLevel.bgClass} ${currentLevel.textClass}`}
+              >
+                {currentLevel.labelId}
+              </span>
             </CardTitle>
             {main.doneCount > 0 && (
               <button

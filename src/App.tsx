@@ -39,7 +39,7 @@ import Settings from "@/features/System/Settings/Settings";
 import ProfileSelect from "@/features/System/ProfileSelect/ProfileSelect";
 import CreateUserProfile from "@/features/System/ProfileSelect/CreateUserProfile";
 import UserSignIn from "@/features/System/ProfileSelect/UserSignIn";
-import ProfileCompletion from "@/features/Home/Dashboard/ProfileCompletion";
+
 import { type CooperativeProfile, type EwsAlert, type LocalUser } from "@/types";
 import { isDemoCooperative } from "@/db/seed-demo";
 import { getActiveCoopId } from "@/db/active-coop";
@@ -417,12 +417,7 @@ function AppContent() {
         <main className="flex-1 max-h-full overscroll-contain overflow-y-auto p-6 brand-scroll">
           {activeTab === "home" && (
             <>
-              {coopProfile && (
-                <div className="mb-4">
-                  <ProfileCompletion profile={coopProfile} onUpdate={(p) => setCoopProfile(p)} />
-                </div>
-              )}
-              <Dashboard healthScore={coopProfile?.health_score ?? 0} />
+              <Dashboard healthScore={coopProfile?.health_score ?? 0} xp={coopProfile?.xp ?? 0} />
             </>
           )}
           {activeTab === "statistics" && <Statistics coopProfile={coopProfile} />}
