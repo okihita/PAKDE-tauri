@@ -11,6 +11,7 @@ export interface CreateCooperativeInput {
   district: string;
   regency: string;
   province: string;
+  villageCode?: string;
   postalCode: string;
   phone: string;
   email: string;
@@ -48,6 +49,7 @@ export async function createCooperative(input: CreateCooperativeInput): Promise<
     district: input.district.trim() || null,
     regency: input.regency.trim(),
     province: input.province.trim(),
+    village_code: input.villageCode?.trim() || null,
     postal_code: input.postalCode.trim() || null,
     phone: input.phone.trim() || null,
     email: input.email.trim() || null,

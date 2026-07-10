@@ -92,6 +92,8 @@ export interface CooperativeProfile {
   district: string;
   regency: string;
   province: string;
+  /** Real level-4 village code (e.g. `18.02.01.2001`) from wilayah.sqlite. */
+  village_code?: string;
   postal_code: string;
   phone: string;
   email: string;

@@ -4,6 +4,8 @@ import { getRegistryDb, getCoopDb, initCoopDb, invalidateCoopDb } from "@/db";
 import { appDataDir, join } from "@tauri-apps/api/path";
 import { exists, remove } from "@tauri-apps/plugin-fs";
 import { DEMO_TIERS, type DemoTier } from "@/features/System/ProfileSelect/demoTiers";
+import { resolveWilayah } from "@/db/wilayahLookup";
+import { generateNik, type Gender } from "@/data/nik";
 
 /** Well-known UUID for the demo cooperative — referenced by both seed logic and UI. */
 export const DEMO_COOP_UUID = "00000000-0000-0000-0000-000000000001";
@@ -50,15 +52,20 @@ export async function seedDemoCooperativeAtLevel(level: DemoLevel): Promise<void
   const reg = await getRegistryDb();
   const units = JSON.stringify(tier.units);
   const foundedDate = computeFoundedDate(tier);
+  // The village code is the source of truth; derive names from wilayah.sqlite so
+  // registry, tier metadata, and narrative agree. Fall back to tier literals.
+  const wil = await resolveWilayah(tier.villageCode);
   await reg.execute(
-    `INSERT INTO cooperatives (id, name, regency, province, village, level, business_units, officers, status, founded_date, category, xp, health_score, rag_status, is_demo)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)`,
+    `INSERT INTO cooperatives (id, name, regency, province, village, district, village_code, level, business_units, officers, status, founded_date, category, xp, health_score, rag_status, is_demo)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)`,
     [
       DEMO_COOP.id,
       tier.coopName,
-      tier.regency,
-      tier.province,
-      tier.village,
+      wil?.regency_name ?? tier.regency,
+      wil?.province_name ?? tier.province,
+      wil?.village_name ?? tier.village,
+      wil?.district_name ?? null,
+      tier.villageCode,
       DEMO_COOP.level,
       units,
       DEMO_COOP.officers,
@@ -326,6 +333,19 @@ const MEMBER_FIRST_NAMES = [
   "Rina",
 ];
 
+const MEMBER_OCCUPATIONS = [
+  "Petani",
+  "Pedagang",
+  "Wiraswasta",
+  "Buruh Tani",
+  "Peternak",
+  "Ibu Rumah Tangga",
+  "Guru",
+  "Nelayan",
+];
+
+const MEMBER_EDUCATIONS = ["SD", "SMP", "SMA/SMK", "Diploma", "S1"];
+
 /** Parse an Indonesian duration like "4 bulan" / "2 tahun" into days. */
 function parseDurationToDays(value: string): number {
   const m = value.match(/(\d+)\s*(bulan|tahun)/i);
@@ -347,17 +367,48 @@ async function seedDemoMembers(db: Awaited<ReturnType<typeof getCoopDb>>, tier: 
   const anggota = tier.stats.find((s) => s.label === "Anggota")?.value ?? "0";
   const count = parseInt(anggota, 10) || 0;
   const berjalanDays = parseDurationToDays(tier.stats.find((s) => s.label === "Berjalan")?.value ?? "1 tahun");
+  const wil = await resolveWilayah(tier.villageCode);
+  const placeOfBirth = wil?.regency_name ?? tier.regency;
+  const now = new Date();
+  const thisYear = now.getFullYear();
+
   for (let i = 0; i < count; i++) {
     const id = `mem-demo-${i}`;
-    const nik = `3201${String(10000000 + i).slice(-8)}`;
     const name = `${MEMBER_FIRST_NAMES[i % MEMBER_FIRST_NAMES.length]} ${String.fromCharCode(65 + (i % 26))}.`;
+    // Deterministic demographics keyed on index.
+    const gender: Gender = i % 2 === 0 ? "L" : "P";
+    const age = 22 + ((i * 7) % 44); // 22–65
+    const birthYear = thisYear - age;
+    const birthMonth = ((i * 5) % 12) + 1; // 1–12
+    const birthDay = ((i * 11) % 28) + 1; // 1–28 (safe for all months)
+    const dob = `${birthYear}-${String(birthMonth).padStart(2, "0")}-${String(birthDay).padStart(2, "0")}`;
+    const nik = generateNik(tier.villageCode, dob, gender, i + 1);
+    const occupation = MEMBER_OCCUPATIONS[i % MEMBER_OCCUPATIONS.length];
+    const education = MEMBER_EDUCATIONS[i % MEMBER_EDUCATIONS.length];
+    const rt = String((i % 12) + 1).padStart(3, "0");
+    const rw = String((i % 6) + 1).padStart(3, "0");
+
     // Deterministic varying savings based on index; pokok is one-off, wajib scales with coop age
     const savingsPokok = 50_000 + ((i * 17) % 46) * 10_000; // 50k–500k
     const savingsWajib = ((i * 29) % 51) * 50_000 + Math.floor(berjalanDays / 30) * 5_000; // varies + monthly accrual
     await db.execute(
-      `INSERT INTO members (id, nik, name, status, registered_at, kode_wilayah, status_keanggotaan, savings_pokok, savings_wajib)
-       VALUES (?, ?, ?, 'aktif', datetime('now'), '35.01.01.001', 'anggota_biasa', ?, ?)`,
-      [id, nik, name, savingsPokok, savingsWajib],
+      `INSERT INTO members (id, nik, name, gender, date_of_birth, place_of_birth, occupation, education, rt, rw, status, registered_at, kode_wilayah, status_keanggotaan, savings_pokok, savings_wajib)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'aktif', datetime('now'), ?, 'anggota_biasa', ?, ?)`,
+      [
+        id,
+        nik,
+        name,
+        gender,
+        dob,
+        placeOfBirth,
+        occupation,
+        education,
+        rt,
+        rw,
+        tier.villageCode,
+        savingsPokok,
+        savingsWajib,
+      ],
     );
 
     // Mirror principal + mandatory savings into the simpanan_anggota ledger.
