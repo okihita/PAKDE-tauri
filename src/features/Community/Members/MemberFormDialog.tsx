@@ -115,7 +115,7 @@ export default function MemberFormDialog({ m }: { m: MembersHook }) {
   // Zero-pad a numeric RT/RW field to 3 digits on blur (Indonesian convention).
   const padOnBlur = (field: "rt" | "rw") => (value: string) => {
     const v = value.trim();
-    if (/^\d+$/.test(v)) m.setMemberFormValues({ ...m.memberFormValues, [field]: v.padStart(3, "0") });
+    if (/^\d+$/.test(v)) m.setMemberFormValues((prev) => ({ ...prev, [field]: v.padStart(3, "0") }));
   };
 
   return (
