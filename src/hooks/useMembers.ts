@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { createRepository, newId } from "@/db";
 import { getActiveCoopId } from "@/db/active-coop";
@@ -14,6 +14,18 @@ const membersRepo = createRepository<Member>("members", { createdAt: false });
 const simpananRepo = createRepository<Simpanan>("simpanan_anggota");
 
 const today = () => new Date().toISOString().slice(0, 10);
+
+// Order by join date (registered_at) ascending, empty dates last, then NIK.
+// Done in JS (not SQL) so empty/legacy dates don't sort before real dates and
+// so the same comparator drives both the list order and the derived member #.
+const byJoinThenNik = (a: Member, b: Member) => {
+  const da = a.registered_at?.trim() || "";
+  const db = b.registered_at?.trim() || "";
+  if (da && !db) return -1;
+  if (!da && db) return 1;
+  if (da && db && da !== db) return da < db ? -1 : 1;
+  return a.nik.localeCompare(b.nik);
+};
 
 const MEMBER_DEFAULT: Member = {
   nik: "",
@@ -293,16 +305,29 @@ export function useMembers(onChange?: () => void) {
     }
   };
 
-  const filteredMembers = membersList.filter((mbr) => {
-    const matchesSearch =
-      mbr.name.toLowerCase().includes(memberSearchQuery.toLowerCase()) || mbr.nik.includes(memberSearchQuery);
-    const matchesFilter = memberFilterStatus === "semua" || mbr.status === memberFilterStatus;
-    return matchesSearch && matchesFilter;
-  });
+  const filteredMembers = membersList
+    .filter((mbr) => {
+      const matchesSearch =
+        mbr.name.toLowerCase().includes(memberSearchQuery.toLowerCase()) || mbr.nik.includes(memberSearchQuery);
+      const matchesFilter = memberFilterStatus === "semua" || mbr.status === memberFilterStatus;
+      return matchesSearch && matchesFilter;
+    })
+    .sort(byJoinThenNik);
+
+  // 1-based membership number derived from the full join-date ordering, so a
+  // member keeps a stable # across search/filter (computed off all members).
+  const memberSequence = useMemo(() => {
+    const seq: Record<string, number> = {};
+    [...membersList].sort(byJoinThenNik).forEach((mbr, i) => {
+      if (mbr.id) seq[mbr.id] = i + 1;
+    });
+    return seq;
+  }, [membersList]);
 
   return {
     membersList,
     filteredMembers,
+    memberSequence,
     memberSearchQuery,
     setMemberSearchQuery,
     memberFilterStatus,
@@ -321,6 +346,7 @@ export function useMembers(onChange?: () => void) {
     loadMembersData,
     openAddMemberModal,
     openEditMemberModal,
+    loadSimpananForMember,
     handleMemberFormSubmit,
     deleteMember,
   };

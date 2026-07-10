@@ -179,6 +179,7 @@
       "newThisMonth": "New (This Month)"
     },
     "tableHeaders": {
+      "id": "#",
       "nik": "NIK",
       "name": "Name",
       "gender": "Gender",
@@ -189,6 +190,20 @@
       "outstanding": "Outstanding",
       "action": "Actions",
       "noData": "No member data."
+    },
+    "detail": {
+      "title": "Member Detail",
+      "edit": "Edit",
+      "delete": "Delete",
+      "joinDate": "Joined",
+      "totalSavings": "Total Savings",
+      "section": {
+        "personal": "Personal",
+        "membership": "Membership",
+        "savings": "Savings",
+        "loan": "Loan",
+        "savingsHistory": "Savings History"
+      }
     },
     "membership": {
       "anggotaBiasa": "Regular Member",

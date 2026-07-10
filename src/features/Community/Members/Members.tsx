@@ -1,6 +1,6 @@
 import "./Members.css";
 import { useTranslation } from "react-i18next";
-import { MagnifyingGlassIcon, PlusIcon, TrashIcon, PencilSimpleIcon } from "@phosphor-icons/react";
+import { MagnifyingGlassIcon, PlusIcon, TrashIcon } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -15,10 +15,10 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useMembers, type MemberInsights } from "@/hooks/useMembers";
-import { resolveWilayah, formatWilayahShort } from "@/db/wilayahLookup";
 import { useEffect, useMemo, useState } from "react";
 import type { Member } from "@/types";
 import MemberFormDialog from "./MemberFormDialog";
+import MemberDetailDialog from "./MemberDetailDialog";
 
 function InsightTile({ label, value, sub, danger }: { label: string; value: string; sub?: string; danger?: boolean }) {
   return (
@@ -30,44 +30,55 @@ function InsightTile({ label, value, sub, danger }: { label: string; value: stri
   );
 }
 
+type SortKey = "id" | "name" | "simpanan" | "outstanding";
+
+function SortableHeader({
+  label,
+  active,
+  dir,
+  align,
+  className,
+  onClick,
+}: {
+  label: string;
+  active: boolean;
+  dir: "asc" | "desc";
+  align?: "right";
+  className?: string;
+  onClick: () => void;
+}) {
+  return (
+    <TableHead className={`text-xxs text-muted-foreground ${align === "right" ? "text-right" : ""} ${className ?? ""}`}>
+      <button type="button" onClick={onClick} className="inline-flex items-center gap-1 hover:text-foreground">
+        <span>{label}</span>
+        {active && <span className="text-xxxs">{dir === "asc" ? "▲" : "▼"}</span>}
+      </button>
+    </TableHead>
+  );
+}
+
 export default function Members({ onMembersChanged }: { onMembersChanged?: () => void }) {
   const { t } = useTranslation();
   const m = useMembers(onMembersChanged);
   const [pendingDelete, setPendingDelete] = useState<Member | null>(null);
-  const [regionLabels, setRegionLabels] = useState<Record<string, string>>({});
-
-  // Stable key of unique visible village codes (filteredMembers is a fresh array
-  // each render, so serialize to a primitive to avoid re-running the effect every
-  // render).
-  const visibleCodesKey = useMemo(() => {
-    const set = new Set<string>();
-    for (const mbr of m.filteredMembers) if (mbr.kode_wilayah) set.add(mbr.kode_wilayah);
-    return [...set].sort().join("|");
-  }, [m.filteredMembers]);
-
-  // Batch-resolve region labels for the visible codes (resolveWilayah is cached).
-  useEffect(() => {
-    const codes = visibleCodesKey ? visibleCodesKey.split("|") : [];
-    const missing = codes.filter((c) => !(c in regionLabels));
-    if (missing.length === 0) return;
-    let cancelled = false;
-    void (async () => {
-      const entries = await Promise.all(
-        missing.map(async (code) => [code, formatWilayahShort(await resolveWilayah(code))] as const),
-      );
-      if (cancelled) return;
-      setRegionLabels((prev) => ({ ...prev, ...Object.fromEntries(entries) }));
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [visibleCodesKey, regionLabels]);
+  const [selectedMember, setSelectedMember] = useState<Member | null>(null);
+  const [sortKey, setSortKey] = useState<SortKey>("id");
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
 
   const statusOptions = [
     { value: "semua", label: t("members.filterAll") },
     { value: "aktif", label: t("members.filterActive") },
     { value: "nonaktif", label: t("members.filterInactive") },
   ];
+
+  const toggleSort = (key: SortKey) => {
+    if (key === sortKey) {
+      setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    } else {
+      setSortKey(key);
+      setSortDir("asc");
+    }
+  };
 
   useEffect(() => {
     m.loadMembersData();
@@ -79,6 +90,30 @@ export default function Members({ onMembersChanged }: { onMembersChanged?: () =>
 
   const totalSimpananMember = (mbr: Member) =>
     (mbr.savings_pokok || 0) + (mbr.savings_wajib || 0) + (mbr.savings_sukarela || 0);
+
+  const displayMembers = useMemo(() => {
+    const dir = sortDir === "asc" ? 1 : -1;
+    return [...m.filteredMembers].sort((a, b) => {
+      let cmp = 0;
+      switch (sortKey) {
+        case "id":
+          cmp =
+            (m.memberSequence[a.id ?? ""] ?? Number.MAX_SAFE_INTEGER) -
+            (m.memberSequence[b.id ?? ""] ?? Number.MAX_SAFE_INTEGER);
+          break;
+        case "name":
+          cmp = a.name.localeCompare(b.name);
+          break;
+        case "simpanan":
+          cmp = totalSimpananMember(a) - totalSimpananMember(b);
+          break;
+        case "outstanding":
+          cmp = a.loan_outstanding - b.loan_outstanding;
+          break;
+      }
+      return cmp * dir;
+    });
+  }, [m.filteredMembers, m.memberSequence, sortKey, sortDir]);
 
   return (
     <div className="space-y-4">
@@ -142,93 +177,55 @@ export default function Members({ onMembersChanged }: { onMembersChanged?: () =>
           <Table>
             <TableHeader>
               <TableRow className="border-border hover:bg-transparent">
-                <TableHead className="text-xxs font-mono text-muted-foreground">
-                  {t("members.tableHeaders.nik")}
-                </TableHead>
-                <TableHead className="text-xxs font-mono text-muted-foreground">
-                  {t("members.tableHeaders.name")}
-                </TableHead>
-                <TableHead className="text-xxs font-mono text-muted-foreground">
-                  {t("members.tableHeaders.gender")}
-                </TableHead>
-                <TableHead className="text-xxs font-mono text-muted-foreground">
-                  {t("members.tableHeaders.status")}
-                </TableHead>
-                <TableHead className="text-xxs font-mono text-muted-foreground">
-                  {t("members.tableHeaders.membership")}
-                </TableHead>
-                <TableHead className="text-xxs font-mono text-muted-foreground">
-                  {t("members.tableHeaders.region")}
-                </TableHead>
-                <TableHead className="text-xxs font-mono text-muted-foreground text-right">
-                  {t("members.tableHeaders.simpanan")}
-                </TableHead>
-                <TableHead className="text-xxs font-mono text-muted-foreground text-right">
-                  {t("members.tableHeaders.outstanding")}
-                </TableHead>
-                <TableHead className="text-xxs font-mono text-muted-foreground text-right w-16">
-                  {t("members.tableHeaders.action")}
-                </TableHead>
+                <SortableHeader
+                  label={t("members.tableHeaders.id")}
+                  active={sortKey === "id"}
+                  dir={sortDir}
+                  className="w-10"
+                  onClick={() => toggleSort("id")}
+                />
+                <SortableHeader
+                  label={t("members.tableHeaders.name")}
+                  active={sortKey === "name"}
+                  dir={sortDir}
+                  onClick={() => toggleSort("name")}
+                />
+                <SortableHeader
+                  label={t("members.tableHeaders.simpanan")}
+                  active={sortKey === "simpanan"}
+                  dir={sortDir}
+                  align="right"
+                  onClick={() => toggleSort("simpanan")}
+                />
+                <SortableHeader
+                  label={t("members.tableHeaders.outstanding")}
+                  active={sortKey === "outstanding"}
+                  dir={sortDir}
+                  align="right"
+                  onClick={() => toggleSort("outstanding")}
+                />
               </TableRow>
             </TableHeader>
             <TableBody>
-              {m.filteredMembers.length === 0 && (
+              {displayMembers.length === 0 && (
                 <TableRow className="border-border">
-                  <TableCell colSpan={9} className="text-center py-8 text-muted-foreground text-xs font-mono">
+                  <TableCell colSpan={4} className="text-center py-8 text-muted-foreground text-xs">
                     {t("members.tableHeaders.noData")}
                   </TableCell>
                 </TableRow>
               )}
-              {m.filteredMembers.map((mbr) => (
-                <TableRow key={mbr.id} className="border-border hover:bg-sidebar-ring">
-                  <TableCell className="text-xxs font-mono text-foreground">{mbr.nik}</TableCell>
+              {displayMembers.map((mbr) => (
+                <TableRow
+                  key={mbr.id}
+                  className="border-border hover:bg-sidebar-ring cursor-pointer"
+                  onClick={() => setSelectedMember(mbr)}
+                >
+                  <TableCell className="text-xxs text-muted-foreground">
+                    {m.memberSequence[mbr.id ?? ""] ?? "-"}
+                  </TableCell>
                   <TableCell className="text-xs text-foreground font-semibold">{mbr.name}</TableCell>
-                  <TableCell className="text-xxs font-mono text-muted-foreground">{mbr.gender}</TableCell>
-                  <TableCell>
-                    <span
-                      className={`text-xxxs font-mono font-bold px-2 py-0.5 rounded ${mbr.status === "aktif" ? "text-success bg-success/10" : "text-muted-foreground bg-muted"}`}
-                    >
-                      {mbr.status.toUpperCase()}
-                    </span>
-                  </TableCell>
-                  <TableCell className="text-xxs font-mono text-foreground">
-                    {mbr.status_keanggotaan
-                      ? t(`members.membership.${mbr.status_keanggotaan}`, { defaultValue: mbr.status_keanggotaan })
-                      : "-"}
-                  </TableCell>
-                  <TableCell className="text-xxs font-mono text-muted-foreground" title={mbr.kode_wilayah || undefined}>
-                    {mbr.kode_wilayah ? (regionLabels[mbr.kode_wilayah] ?? "…") : "-"}
-                  </TableCell>
-                  <TableCell className="text-xxs font-mono text-success text-right">
-                    {fmt(totalSimpananMember(mbr))}
-                  </TableCell>
-                  <TableCell className="text-xxs font-mono text-danger text-right">
-                    {fmt(mbr.loan_outstanding)}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex gap-1 justify-end">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        title={t("common.edit")}
-                        aria-label={t("common.edit")}
-                        className="h-6 w-6 text-muted-foreground hover:text-foreground"
-                        onClick={() => m.openEditMemberModal(mbr)}
-                      >
-                        <PencilSimpleIcon className="h-3 w-3" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        title={t("common.delete")}
-                        aria-label={t("common.delete")}
-                        className="h-6 w-6 text-danger hover:text-danger hover:bg-danger/10"
-                        onClick={() => setPendingDelete(mbr)}
-                      >
-                        <TrashIcon className="h-3 w-3" />
-                      </Button>
-                    </div>
-                  </TableCell>
+                  <TableCell className="text-xxs text-success text-right">{fmt(totalSimpananMember(mbr))}</TableCell>
+                  <TableCell className="text-xxs text-danger text-right">{fmt(mbr.loan_outstanding)}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
@@ -265,6 +262,16 @@ export default function Members({ onMembersChanged }: { onMembersChanged?: () =>
       </Dialog>
 
       <MemberFormDialog m={m} />
+
+      <MemberDetailDialog
+        m={m}
+        member={selectedMember}
+        onClose={() => setSelectedMember(null)}
+        onRequestDelete={(mb) => {
+          setSelectedMember(null);
+          setPendingDelete(mb);
+        }}
+      />
     </div>
   );
 }

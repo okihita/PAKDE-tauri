@@ -179,6 +179,7 @@
       "newThisMonth": "Anggota Baru (Bln Ini)"
     },
     "tableHeaders": {
+      "id": "No.",
       "nik": "NIK",
       "name": "Nama",
       "gender": "Gender",
@@ -189,6 +190,20 @@
       "outstanding": "Outstanding",
       "action": "Aksi",
       "noData": "Tidak ada data anggota."
+    },
+    "detail": {
+      "title": "Detail Anggota",
+      "edit": "Edit",
+      "delete": "Hapus",
+      "joinDate": "Bergabung",
+      "totalSavings": "Total Simpanan",
+      "section": {
+        "personal": "Data Pribadi",
+        "membership": "Keanggotaan",
+        "savings": "Simpanan",
+        "loan": "Pinjaman",
+        "savingsHistory": "Riwayat Simpanan"
+      }
     },
     "membership": {
       "anggotaBiasa": "Anggota Biasa",
