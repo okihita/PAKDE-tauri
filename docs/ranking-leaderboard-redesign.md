@@ -36,7 +36,7 @@ Two-column split — **left = podium + winner profiles, right = ranked list**. T
 <main>  (add max-w-[1120px] mx-auto to the ranking view wrapper)
   ├─ Status / connectivity banner        (unchanged)
   ├─ 3 scope summary cards               (unchanged)
-  └─ grid lg:grid-cols-[minmax(0,42%)_minmax(0,58%)] gap-6
+       └─ grid lg:grid-cols-[42fr_58fr] gap-6
         ├─ LEFT  (42%)  → <Podium />  (NEW)
         └─ RIGHT (58%)  → Ranked list card (upgraded Table)
 ```
@@ -46,7 +46,7 @@ On `lg` and below, fall back to a single column (podium on top, list below).
 **Integration with the existing tabs (resolves the structural question):** keep both existing tab sets exactly as they are today — the metric `Tabs` (health / growth / membership / impact) wraps the scope `Tabs` (kabupaten / provinsi / nasional), and each scope `TabsContent` currently renders `renderTable(items)`. The two-column grid **replaces that single `renderTable` call inside each scope `TabsContent`**. Concretely, inside every `TabsContent` for scope `sc`, render:
 
 ```
-<div className="grid lg:grid-cols-[minmax(0,42%)_minmax(0,58%)] gap-6">
+<div className="grid lg:grid-cols-[42fr_58fr] gap-6">
   <Podium items={boards[sc][metric].items} ourRank={boards[sc][metric].ourRank} scope={sc} metric={metric} />
   {renderTable(boards[sc][metric].items)}   {/* upgraded in §4.3 */}
 </div>
@@ -92,9 +92,10 @@ Stacked (mobile / `< lg`) layout = podium block on top, then the ranked list bel
 ## 4. Implementation Steps
 
 ### 4.1 — Width guard (root cause of "table too big")
-In `Ranking.tsx`, wrap the page body (or change the root `<div className="flex-1 overflow-auto space-y-4">`) so the ranking view is constrained:
-- Add `max-w-[1120px] mx-auto` to the ranking root container.
-This keeps the table from stretching on wide screens and gives the two-column grid a stable reference width.
+In `Ranking.tsx`, the root `<div className="flex-1 overflow-auto space-y-4">` stays as the scroll surface, but its **inner** content is wrapped so the cap is stable and centering never fights the scroll container:
+- Keep `overflow-auto` on the outer root div.
+- Insert an inner wrapper `<div className="max-w-[1120px] mx-auto space-y-4">` as the direct child, moving all existing children (status banner, scope cards, metric+scope tabs) inside it.
+This keeps the table from stretching on wide screens and gives the two-column grid (`lg:grid-cols-[42fr_58fr]`, see §4.3) a stable reference width. (Do **not** put `max-w`+`mx-auto` on the same element as `overflow-auto` — `mx-auto` cannot center under scroll overflow.)
 
 ### 4.2 — New `Podium.tsx` component (left column)
 Props: `items: RankedCoop[]` (the *current scope+metric* leaderboard), `ourRank: number | null` (from `boards[scope][metric].ourRank`), `scope: RankingScope`, `metric: RankingMetric`.
@@ -104,30 +105,28 @@ Props: `items: RankedCoop[]` (the *current scope+metric* leaderboard), `ourRank:
 - Layout: classic **2-1-3** podium — rank 2 (left) / rank 1 (center, tallest) / rank 3 (right).
 - Each podium card:
   - Gold / silver / bronze **gradient ring** (`bg-warning`, `slate-300`, bronze tone).
-  - **Avatar / crest circle**: deterministic monogram derived from `name`, on a tinted circular badge (no new image assets required). Use the **first letter of each distinct word** (e.g. `KUD Sumber Makmur` → `KS`, `KSU Guyub Rukun` → `KG`) so Indonesian prefixes like `KUD`/`KSU`/`Koperasi` don't collide into identical avatars. Cache nothing — it's a pure function of `name`.
+  - **Avatar / crest circle**: deterministic monogram derived from `name`, on a tinted circular badge (no new image assets required). Use the **first two words' initials** (e.g. `KUD Sumber Makmur` → `KS`, `KSU Guyub Rukun` → `KG`) so Indonesian prefixes like `KUD`/`KSU`/`Koperasi` don't collide into identical avatars. Cache nothing — it's a pure function of `name`.
   - `name`, `village`, **animated count-up score** (CSS/keyframe or lightweight `requestAnimationFrame`), RAG chip, trend icon.
   - Subtle **radial glow** behind rank 1.
   - **Micro-animation:** a 1-shot confetti / particle burst on mount. Implement with **pure CSS keyframes** (absolutely-positioned spans translated + faded over ~700ms, then `display:none` via `animationend`), gated behind a single `mounted` state so the effect fires once per mount. No new dependency. If the CSS-only burst proves visually weak, the accepted fallback is a single inline `<canvas>` particle loop with `requestAnimationFrame` and cleanup on unmount — still zero deps.
   - **"Your Position" card** (pinned beneath podium) when `ourRank` is outside top 3:
-  - `total` = `items.length`. `ourScore` = `items.find(i => i.isOurs)?.score ?? 0`. Shows `#ourRank`, `total`, and **"X pts from the podium"** gap computed as `podium[2].score - ourScore` to create stakes/motivation. (When `isOurs` is absent from `items`, hide this card rather than showing a bogus gap.)
+  - `total` = `items.length`. `ourScore` = `items.find(i => i.isOurs)?.score ?? 0`. Shows `#ourRank`, `total`, and **"X pts from the podium"** gap computed as `podium[2].score - ourScore` to create stakes/motivation. **Guard:** only compute the gap when `podium.length >= 3` (a board with fewer than 3 coops must never index `podium[2]`). (When `isOurs` is absent from `items`, hide this card rather than showing a bogus gap.)
 - **Honorable mentions strip:** ranks 4–5 as two slim rows (avatar + name + score bar).
 
 ### 4.3 — Upgrade the ranked list (right column)
 Keep `renderTable` but:
 - Add an **inline score bar** inside the Score cell (`score%` rendered as a horizontal fill bar, e.g. `bg-success` width = `score%`) so gaps are scannable at a glance.
-- Cap visible rows in a **fixed-height scroll area** (top 10 + "see all" expander) so the right column height stays balanced with the podium.
+- Cap visible rows in a **fixed-height scroll area** with `max-h-[460px] overflow-y-auto` (top 10 + "see all" expander) so the right column height balances the podium (top-3 + our-position + 4–5 honorable ≈ same height). The `max-h` value is a starting reference and should be nudged during implementation so the two columns align without leaving the right column short.
 - Add **promotion / relegation bands**: tint the top-3 rows as "Promotion Zone" to add narrative.
 - **Fix the bronze medal bug:** `rank === 3` → bronze tone (e.g. `text-amber-700 bg-amber-700/10`), distinct from gold.
 
 ### 4.4 — Scope-reactivity
 Because the grid lives inside `TabsContent`, switching the **scope** tab unmounts/remounts `Podium` automatically — the confetti fires and the podium re-animates with zero extra wiring. **Also key `Podium` on `metric`** (`key={`${scope}-${metric}`}`) so a metric switch triggers the same re-mount/animation; `boards[scope][metric].items` already drives everything, so no service change is needed.
 
-### 4.5 — Gamification loop tie-in (optional, **new** stub — no Leveling/XP system exists yet)
-> **Reality check:** the repo has **no** Leveling/XP/badge engine today (verified across `src/features/Finance`). This section is therefore an *optional new* micro-feature, not a tie-in to existing infra. If the gamification engine lands later, this is the seam to connect.
+### 4.5 — Gamification loop tie-in (DEFERRED — not in this pass)
+> **Reality check:** the repo has **no** Leveling/XP/badge engine today (verified across `src/features/Finance`). This section is therefore a *future* seam, **not** part of the current implementation. It is documented here so the podium is built with the right extension point, but no toast/badge/state work is done now.
 
-- Track previous `ourRank` per `scope`+`metric` in local component state (`useRef<Record<string, number|null>>`).
-- On scope/metric change, if the new `ourRank` < previous (better) **and** previous is non-null, flash a `ranking.podium.promoted` toast/badge.
-- Keep this entirely inside `Podium.tsx` (or a tiny `useRankProgress` hook) — do **not** modify `useRanking.ts` or `rankingService.ts` for this pass.
+- **Future seam:** when a Leveling/XP engine lands, `Podium` can track previous `ourRank` per `scope`+`metric` (e.g. `useRef<Record<string, number|null>>`) and flash a "promoted" toast when `ourRank` improves. Keep that logic inside `Podium.tsx` (or a `useRankProgress` hook) — do **not** modify `useRanking.ts` or `rankingService.ts`.
 
 ---
 
@@ -165,7 +164,6 @@ No changes to `rankingService.ts` or `useRanking.ts`. i18n: reuse existing `rank
 - `ranking.podium.gapFromPodium` (interpolates `points`)
 - `ranking.podium.honorableMentions`
 - `ranking.podium.promotionZone`
-- `ranking.podium.promoted` (used by §4.5 toast)
 
 ---
 
@@ -174,7 +172,7 @@ No changes to `rankingService.ts` or `useRanking.ts`. i18n: reuse existing `rank
 - [ ] Page width capped (no full-bleed table on wide screens).
 - [ ] Top 3 winners shown in a dedicated podium with avatar, score, RAG, trend, and glow.
 - [ ] "Our coop" shown with a clear gap-to-podium message when outside top 3.
-- [ ] Right-column list has visible score bars and promotion-zone tint; capped/scrollable.
+- [ ] Right-column list has visible score bars and promotion-zone tint; capped/scrollable (`max-h` tuned so it balances the podium height).
 - [ ] Bronze medal renders correctly for rank 3.
 - [ ] Podium re-animates on scope switch.
 - [ ] No new runtime dependencies introduced.
