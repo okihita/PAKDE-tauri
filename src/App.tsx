@@ -30,7 +30,6 @@ import Assets from "@/features/Business/Assets/Assets";
 import Sales from "@/features/Business/Sales/Sales";
 import Development from "@/features/Business/Development/Development";
 import Learn from "@/features/Learn/Learn/Learn";
-import Planners from "@/features/Learn/Planners/Planners";
 import Accounting from "@/features/Finance/Accounting";
 import Feasibility from "@/features/Finance/Feasibility/Feasibility";
 import Ranking from "@/features/Finance/Ranking/Ranking";
@@ -464,7 +463,6 @@ function AppContent() {
           {activeTab === "sales" && <Sales />}
           {activeTab === "development" && <Development onTabChange={setActiveTab} />}
           {activeTab === "learn" && <Learn />}
-          {activeTab === "planners" && <Planners />}
           {activeTab === "anggota" && <Members onMembersChanged={refreshMemberCount} />}
           {activeTab === "kegiatan" && <CreateEvent coopId={coopProfile?.id ?? getActiveCoopId()} />}
           {activeTab === "dampak" && <Dampak />}

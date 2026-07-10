@@ -19,7 +19,6 @@ export const TABS_LEVEL_REQUIREMENTS = {
   ranking: 60,
   development: 70,
   learn: 80,
-  planners: 80,
 } satisfies Record<string, number>;
 
 /** Canonical set of every navigable tab id in the app. */

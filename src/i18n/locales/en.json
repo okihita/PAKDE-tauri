@@ -80,8 +80,7 @@
       "sales": "Sales & Vendor",
       "storeLayout": "Buildings & Layout",
       "development": "Potential",
-      "learn": "Learn & Quiz",
-      "planners": "Planner Collection"
+      "learn": "Learn & Quiz"
     },
     "healthScore": "HEALTH SCORE",
     "rag": "RAG",
@@ -1217,11 +1216,6 @@
     "previous": "Previous",
     "next": "Next",
     "finishLesson": "Finish Lesson"
-  },
-  "planners": {
-    "description": "Printable planner collection to support your cooperative operations.",
-    "pages": "{{n}} pgs",
-    "pdf": "PDF"
   },
   "assets": {
     "description": "Manage the cooperative's fixed assets: buildings, store layout, and operational equipment."

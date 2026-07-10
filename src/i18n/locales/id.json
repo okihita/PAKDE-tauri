@@ -80,8 +80,7 @@
       "sales": "Penjualan & Vendor",
       "storeLayout": "Gedung & Tata Letak",
       "development": "Potensi",
-      "learn": "Belajar & Kuis",
-      "planners": "Koleksi Planner"
+      "learn": "Belajar & Kuis"
     },
     "healthScore": "HEALTH SCORE",
     "rag": "RAG",
@@ -1217,11 +1216,6 @@
     "previous": "Sebelumnya",
     "next": "Selanjutnya",
     "finishLesson": "Selesaikan Pelajaran"
-  },
-  "planners": {
-    "description": "Koleksi planner siap cetak untuk membantu operasional koperasi Anda.",
-    "pages": "{{n}} hlm",
-    "pdf": "PDF"
   },
   "assets": {
     "description": "Kelola aset tetap koperasi: gedung, tata letak toko, dan peralatan operasional."

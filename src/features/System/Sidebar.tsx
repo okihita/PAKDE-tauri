@@ -15,7 +15,6 @@ import {
   HandshakeIcon,
   BuildingsIcon,
   BookOpenIcon,
-  FileTextIcon,
   LockSimple,
   RocketLaunchIcon,
   Coins,
@@ -203,7 +202,6 @@ export default function Sidebar({
       items: [
         { id: "leveling", icon: TrophyIcon, label: t("sidebar.nav.leveling") },
         { id: "learn", icon: BookOpenIcon, label: t("sidebar.nav.learn") },
-        { id: "planners", icon: FileTextIcon, label: t("sidebar.nav.planners") },
       ],
     },
   ];
