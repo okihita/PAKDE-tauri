@@ -523,7 +523,8 @@
   "xp": {
     "verificationRequired": "Verifikasi diperlukan",
     "dailyCapReached": "Batas XP harian tercapai",
-    "awardFailed": "Gagal memberikan XP"
+    "awardFailed": "Gagal memberikan XP",
+    "revertFailed": "Gagal mengembalikan XP"
   },
   "ranking": {
     "title": "Peringkat Koperasi",

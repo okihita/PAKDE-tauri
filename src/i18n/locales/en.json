@@ -523,7 +523,8 @@
   "xp": {
     "verificationRequired": "Verification required",
     "dailyCapReached": "Daily XP cap reached",
-    "awardFailed": "Could not award XP"
+    "awardFailed": "Could not award XP",
+    "revertFailed": "Could not revert XP"
   },
   "ranking": {
     "title": "Cooperative Ranking",

@@ -216,7 +216,12 @@ export function useMembers(onChange?: () => void) {
         try {
           await awardXp(getActiveCoopId(), "member_joined", { memberId: id });
         } catch (e) {
-          toast.error(t(String(e instanceof Error ? e.message : "xp.awardFailed")));
+          // A guard rejection (xp.verificationRequired / xp.dailyCapReached)
+          // is a key and resolves via t(); any other (SQL) error is not,
+          // so log it and show the generic message instead of leaking raw SQL.
+          console.error("awardXp failed:", e);
+          const msg = e instanceof Error && e.message.startsWith("xp.") ? e.message : "xp.awardFailed";
+          toast.error(t(msg));
         }
       } else {
         await membersRepo.update(currentMemberId, columns);
@@ -258,6 +263,7 @@ export function useMembers(onChange?: () => void) {
         await removeMemberXp(getActiveCoopId(), member.id ?? "");
       } catch (e) {
         console.error(e);
+        toast.error(t("xp.revertFailed"));
       }
       loadMembersData();
       onChange?.();

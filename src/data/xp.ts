@@ -58,7 +58,12 @@ async function appendXp(coopId: string, action: string, delta: number, meta?: ob
   let currentTotal = rows[0]?.total ?? 0;
 
   // Reconcile a pre-ledger co-op: seed one baseline event from registry XP.
-  if (currentTotal === 0) {
+  // Gate on the ledger being *truly empty* (zero rows), NOT on the sum
+  // netting to 0 — otherwise an external registry.xp write (re-seed, a
+  // future Settings edit) combined with a net-zero ledger would inject a
+  // phantom baseline and desync the total (review #2).
+  const countRows = await coopDb.select<Array<{ c: number }>>("SELECT COUNT(*) AS c FROM xp_events;");
+  if ((countRows[0]?.c ?? 0) === 0) {
     const reg = await getRegistryDb();
     const existing = await reg.select<Array<{ xp: number }>>("SELECT xp FROM cooperatives WHERE id = ?;", [coopId]);
     const baseline = existing[0]?.xp ?? 0;
@@ -118,10 +123,20 @@ export async function awardXp(coopId: string, action: string, meta?: object): Pr
  * Revert XP when a reversible subject leaves (R3). `member_joined` is
  * `reversible`, so removing a member emits a negative event; the level
  * recomputes from the new total (supports multi-level de-level).
+ *
+ * Guard (review #1): only revert XP that was actually awarded for this
+ * member. Pre-ledger (demo-seeded) members never got a `member_joined`
+ * event, so removing one must NOT subtract XP that was never granted —
+ * otherwise the co-op de-levels incorrectly and the ledger desyncs.
  */
 export async function removeMemberXp(coopId: string, memberId: string): Promise<number | null> {
   const source = XP_SOURCES["member_joined"];
   if (!source?.reversible) return null;
+  const events = await getXpEvents(coopId);
+  const wasAwarded = events.some(
+    (e) => e.action === "member_joined" && e.meta && JSON.parse(e.meta).memberId === memberId,
+  );
+  if (!wasAwarded) return null;
   return appendXp(coopId, "member_removed", -source.xp, { memberId });
 }
 
