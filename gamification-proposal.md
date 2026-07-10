@@ -1,287 +1,175 @@
-# Co-op Leveling & XP — MVP Review and 10/10 Foundation Plan
+# Co-op Leveling & XP — Implementation-Ready Plan (reconciled with the existing system)
 
-> Critical assessment of the proposed MVP gamification mechanics, plus a concrete
-> recommendation for reshaping it into a strong, extensible foundation.
-
-## Proposed Mechanics (as given)
-
-1. New co-ops begin at **Level 0**.
-2. For every **2 members registered**, the co-op increases by **1 level**.
-3. The XP requirement is **1,000 XP per level**.
-4. Adding a single member grants **500 XP**.
+> This document replaces the earlier "MVP review" draft. The original draft
+> assessed a *hypothetical* greenfield MVP and recommended an architecture that,
+> on inspection, **this repo already largely has**. This rewrite reconciles the
+> intent (event-sourced, multi-source, auditable progression) with the system
+> that actually exists, and scopes the concrete work that is still missing.
 
 ---
 
-## 1. Logical Consistency
+## 0. Reconciliation: what already exists vs. what the draft assumed
 
-**Verdict: Internally consistent, but ambiguous on the source of truth.**
+The earlier draft treated leveling as greenfield and recommended making "XP the
+single source of truth" and adding "tiers." Both already exist:
 
-The two leveling statements are numerically identical:
+| Draft recommendation | Reality in this repo | Status |
+|---|---|---|
+| R1 — "XP is the single source of truth" | `getCurrentLevel(xp)` in `src/data/leveling.ts:52` derives the level **only** from `cooperatives.xp`. Member count never drives the level. | ✅ Already true |
+| R5 — "tier structure over the XP axis" | `LevelDef.tier` (1–10) already exists on every level (`src/data/leveling-data.ts:7`). | ✅ Already true |
+| R2 — multi-source XP table | Absent. `cooperatives.xp` is a bare integer, set only by demo seeding (`src/db/seed-demo.ts`) and `Settings.tsx`. No action awards XP. | ❌ Missing |
+| R3 — churn / demotion via events | Absent. No event history; member add/delete in `src/hooks/useMembers.ts` never touches XP. | ❌ Missing |
+| R4 — event-sourced ledger + abuse guards | Absent. `xp` is a stored total with no provenance. | ❌ Missing |
 
-| Members | XP (500 / member) | Level via members (÷2) | Level via XP (÷1,000) |
-|--------:|------------------:|-----------------------:|----------------------:|
-| 0 | 0 | 0 | 0 |
-| 1 | 500 | 0 | 0 |
-| 2 | 1,000 | 1 | 1 |
-| 3 | 1,500 | 1 | 1 |
-| 4 | 2,000 | 2 | 2 |
-| 6 | 3,000 | 3 | 3 |
+**Critical correction to the draft:** it recommended `Level = floor(totalXP / XP_PER_LEVEL)`.
+That formula is **wrong for this app**. The level curve is the existing
+per-level `minXp`/`maxXp` threshold table (`leveling-data.ts`), not a flat
+1,000-XP-per-level scale. The plan below **keeps that curve** and only adds
+*how XP is acquired and audited*.
 
-Because `500 × members ÷ 1,000 = members ÷ 2`, the XP rule is a **pure scalar
-reskin of the member-count rule**. They never conflict — but the spec never
-states which one *authoritatively* drives the level. If a naive implementation
-lets both grant levels independently, you risk **double-counting** (member add →
-level-up *and* XP threshold → level-up). That ambiguity is the single biggest
-consistency defect.
-
-Also ambiguous: "1,000 XP per level" — incremental (1,000 to go from L1→L2) or
-cumulative (1,000 total = "ever leveled")? Only the incremental reading aligns
-with the member rule; the wording should be explicit.
+**Also resolved:** the draft's "Level 0 / unranked" concern is already solved —
+a new co-op starts at `rintisan` (tier 1, `minXp: 0`), never "Level 0".
 
 ---
 
-## 2. Mathematical Balance
+## 1. Target architecture (end state)
 
-- **Flat, linear cost.** Every level always costs exactly 2 members. No
-  early-game acceleration, no late-game friction, no diminishing returns.
-  Acceptable for an MVP, but it means balance is trivially predictable and offers
-  zero tuning surface.
-- **No balance asymmetry.** All progression is gated by one lever at constant
-  weight. There is no notion of "cheaper early levels" or "prestige," so there is
-  nothing to *balance* yet.
-- **Redundancy = zero information.** XP currently carries no signal beyond member
-  count. It is not a separate economy; it cannot be balanced against other actions
-  because no other actions exist.
-
-**Bottom line:** Mathematically sound, but vacuously so — there is no real
-economy to balance.
-
----
-
-## 3. Effectiveness as a Foundation for Advanced Features
-
-This is where the design is weakest as a *foundation*:
-
-1. **Single action only.** The brief says "link in-app actions with leveling,"
-   yet the only XP source is member registration. Any future action (posts,
-   trades, logins, referrals) must be bolted on with no framework for relative
-   weighting.
-2. **No source-of-truth separation.** A clean foundation makes **XP the single
-   authority** and treats member-adds as *one* XP source. The current spec couples
-   level directly to a specific action, which blocks multi-source progression
-   without a rewrite.
-3. **No churn/demotion handling.** If a member leaves, does XP decrease? Does the
-   co-op de-level? Unspecified — and de-leveling is the hardest thing to retrofit.
-4. **No abuse surface defined.** Member-spam to level is unbounded; no
-   verification, caps, streaks, or sinks.
-5. **No caps / prestige / soft goals.** Infinite linear scaling with no milestone
-   structure to hang future features (badges, tiers) on.
-6. **Level 0 start.** A founder alone sits at Level 0, which reads as
-   "unranked / empty" and is poor early motivation.
-
----
-
-## 4. Score
-
-**5.5 / 10 — *Consistent and simple, but architecturally shallow.***
-
-It passes as a throwaway MVP, but as a *foundation* it is fragile: XP is
-redundant with member count, the authoritative level mechanism is unspecified
-(double-count risk), and there is no multi-action, churn, or abuse architecture
-to grow into. The math works; the design does not yet earn its complexity.
-
----
-
-## 5. Recommendation — Path to a 10/10 Foundation
-
-The goal is not to pile on features, but to make the *core* architecturally
-correct so advanced features can be added without rewrites. Six changes:
-
-### R1. Make XP the single source of truth
-Decouple level from member count. Level is derived **only** from accumulated XP.
-Member registration becomes "grant 500 XP," not "grant a level." This removes
-the double-count ambiguity and opens the door to multiple XP sources.
-
-> Level = `floor(totalXP / XP_PER_LEVEL)`, with `XP_PER_LEVEL` as a tunable constant.
-
-### R2. Define the XP source table (extensible by design)
-Introduce a weight table so every in-app action is a first-class XP source. The
-MVP ships with one row; future rows are data, not code changes.
-
-| Action | XP | Notes |
-|--------|---:|-------|
-| Member registers | 500 | The only MVP source |
-| *Future:* Member verifies identity | 200 | |
-| *Future:* First weekly active member | 50 | daily-capped |
-| *Future:* Co-op completes a trade | 100 | |
-
-This directly satisfies "link in-app actions with leveling."
-
-### R3. Specify churn / demotion semantics up front
-Decide and document: **does removing a member subtract XP?** Recommended: XP is
-**monotonic (never decreases)** from legitimate earned actions, but a *removed*
-member's contribution is **reverted** via a negative XP event. This makes
-de-leveling a natural, event-sourced consequence rather than a special case to
-retrofit later. Support multi-level drops in one recompute.
-
-### R4. Add an abuse / integrity surface
-- **Real-member verification gate** before XP is granted (prevents spam joins).
-- Optional **per-co-op daily XP cap** or **per-action cooldown** to bound
-  grindability.
-- **Event sourcing**: every XP change is an append-only event
-  (`member_joined`, `member_removed`, `action_x`), so the ledger is auditable and
-  replayable.
-
-### R5. Introduce milestone structure, not just infinite levels
-Define **tiers** (e.g., Bronze ≤ L5, Silver ≤ L15, Gold ≤ L30) as labels over the
-same XP axis. Tiers give future features (badges, perks, soft caps) a hook without
-altering the level math. Keep the per-level XP cost flat for MVP, but make it a
-constant so curves (e.g., `XP_PER_LEVEL × level`) can be swapped later.
-
-### R6. Fix the starting state
-Start co-ops at **Level 1** (representing the founding member) so the founder is
-never "unranked." Initial state: 1 founder = base XP that already places them at
-Level 1. This improves early motivation and removes the awkward "Level 0" label.
-
----
-
-## 6. Before/After Summary
-
-| Dimension | Current (5.5/10) | After R1–R6 (target 10/10) |
-|-----------|------------------|----------------------------|
-| Level authority | Ambiguous (members vs XP) | XP only (R1) |
-| Action coverage | 1 action | Extensible source table (R2) |
-| Churn handling | Unspecified | Event-sourced revert (R3) |
-| Abuse protection | None | Verification + caps (R4) |
-| Future feature hooks | None | Tiers + tunable curve (R5) |
-| Start state | Level 0 (unranked) | Level 1 (founder) (R6) |
-
-**Core principle:** the MVP should be *simple to implement* but *architected as if
-advanced features already existed* — XP as the single ledger, actions as data,
-events as the source of truth. That is what turns a redundant 5.5 into a durable 10.
-
----
-
-## 7. Phased Implementation (5 Phases)
-
-Each phase is **independently shippable** and **visually + manually verifiable**
-— every behavior has an on-screen representation a human can confirm without
-reading logs or code.
-
-### Phase 1 — XP Ledger & Level 1 Start (R1, R6)
-**Build:** Replace member-count leveling with an XP ledger. `Level = floor(totalXP / XP_PER_LEVEL)`. New co-op starts at **Level 1** with base founder XP.
-**Verify visually:**
-- Create a co-op → UI shows **Level 1** and an XP progress bar (e.g., 0 / 1,000).
-- Add 1 member → bar animates **+500 XP** and shows "500 / 1,000 to Level 2."
-- Add 2nd member → bar fills, co-op flips to **Level 2** with a level-up flash.
-
-### Phase 2 — Extensible Action / XP Source Table (R2)
-**Build:** Introduce the XP source table (data-driven). Ship member-registration row; structure ready for more.
-**Verify visually:**
-- Open an "XP Sources" / activity config view listing `Member registers = 500 XP`.
-- Perform the action → activity feed shows the source name and the exact XP awarded.
-- (Confirm the table is data, not hardcoded, by toggling a value and seeing the awarded XP change.)
-
-### Phase 3 — Event-Sourced Activity Ledger (R4 partial)
-**Build:** Every XP change is an append-only event (`member_joined`, etc.) rendered in a live activity feed.
-**Verify visually:**
-- Each member add appends a new row: `timestamp · member_joined · +500 XP · total 1,500`.
-- Feed is chronological and auditable; replaying events reconstructs the current total.
-- Manual check: sum all feed deltas == displayed total XP.
-
-### Phase 4 — Churn / Demotion Handling (R3)
-**Build:** Removing a member emits a negative XP event; level recomputes (supports multi-level drop).
-**Verify visually:**
-- At Level 2 (1,000 XP), remove a member → feed shows `-500 XP`, bar drops to 500.
-- Remove enough to cross a boundary → co-op visibly **de-levels** (Level 2 → Level 1) with a downgrade indicator.
-- Manual check: total XP == sum of all join/remove events; level matches `floor(total/1000)`.
-
-### Phase 5 — Tiers, Abuse Guards & Caps (R5, R4)
-**Build:** Add tier labels over the XP axis (Bronze/Silver/Gold), a real-member verification gate before XP is granted, and an optional per-co-op daily XP cap.
-**Verify visually:**
-- Cross a tier threshold → a **tier badge** appears/updates next to the level.
-- Attempt to register a non-verified member → XP **not** granted; UI shows "verification required."
-- Hit the daily cap → further actions show "Daily XP cap reached" and bar stays pinned; resets next day (verifiable via clock/manual reset).
-
----
-
-### Phase → Recommendation Traceability
-
-| Phase | Delivers | Rec |
-|-------|----------|-----|
-| 1 | XP authority + Level 1 start | R1, R6 |
-| 2 | Multi-source XP table | R2 |
-| 3 | Event-sourced ledger / feed | R4 |
-| 4 | Churn revert + de-level | R3 |
-| 5 | Tiers + verification + cap | R5, R4 |
-
-Each phase ends in a manually confirmable UI state, so progress is observable at
-every step and no phase ships "invisible" logic.
-
----
-
-## 8. The 10/10 Plan (Consolidated)
-
-The phased work above is the *how*. This section is the *plan* — the target
-architecture, the measurable bar for "10/10," and the rollout that gets us there
-without rewrites.
-
-### 8.1 Target Architecture (end state)
 ```
-                ┌─────────────────────────────────────────┐
-                │            XP EVENT LOG (append-only)    │
-                │  member_joined (+) · member_removed (−)  │
-                │  action_x (+) · verification_gate        │
-                └───────────────────┬─────────────────────┘
-                                    │ sum of deltas
-                                    ▼
-                ┌─────────────────────────────────────────┐
-                │   totalXP  ──►  Level = f(totalXP)        │
-                │   (single source of truth, tunable curve) │
-                └───────────────────┬─────────────────────┘
-                                    │ overlay
-                                    ▼
-                ┌─────────────────────────────────────────┐
-                │   Tiers (Bronze/Silver/Gold) · Badges     │
-                │   Daily caps · Abuse guards               │
-                └─────────────────────────────────────────┘
+member add / remove            (src/hooks/useMembers.ts)
+        │  awardXp(coopId, "member_joined", +N)
+        ▼
+┌──────────────────────────────────────────────────────┐
+│  xp_events  (per-coop DB, append-only)   [NEW]       │
+│  id · coop_id · action · delta · total_after          │
+│  · meta(json) · created_at                            │
+└───────────────────────┬──────────────────────────────┘
+                         │ recompute: SUM(delta)
+                         ▼
+        cooperatives.xp  (registry.db, cached total)    [EXISTING]
+                         │
+                         ▼
+   getCurrentLevel(xp) → LevelDef (tier, quests)        [EXISTING, unchanged]
+                         │
+                         ▼
+   tier badge · activity feed · progress bar            [EXISTING UI + NEW feed]
 ```
-- **XP is the only level authority.** Level is derived solely from `totalXP`.
-- **Actions are data.** Every in-app action is a row in an XP source table, not a
-  hardcoded branch — new actions are config, not code.
-- **Events are the source of truth.** The ledger is replayable and auditable,
-  which is what makes churn/de-leveling correct by construction.
-- **Tiers + guards** ride on top of the same axis; the per-level cost stays a
-  constant that can later become a curve.
 
-### 8.2 Acceptance Criteria — what "10/10" measurably means
+- **XP events live in the per-coop DB** (`coops/<id>.db`), per `coopDb.ts:3`
+  ("All operational per-cooperative data lives in its own `coops/<id>.db`").
+- **`cooperatives.xp` in `registry.db` stays the read path**, so `Dashboard`,
+  `Sidebar`, and `Leveling` UI need no change — it is simply kept in sync as
+  the recomputed `SUM` of events. This is what makes churn/de-level correct by
+  construction (R3) and the ledger replayable/auditable (R4).
+
+---
+
+## 2. Concrete changes (file-by-file)
+
+### A. New module `src/data/xp.ts` (pure, unit-testable)
+- `XP_SOURCES: Record<action, { xp: number; labelEn: string; labelId: string; reversible: boolean }>`
+  — the data-driven source table (R2). Ships `member_joined: 500`; future
+  actions are rows, not code.
+- `awardXp(coopId: string, action: string, meta?: object): Promise<number>`
+  — appends an `xp_events` row, computes `total_after`, writes
+  `cooperatives.xp` in registry, returns the new total.
+- `revertXp(coopId, eventId)` / `removeMemberXp(coopId, memberId)`
+  — negative event (R3); recompute supports multi-level de-level.
+- `getXpEvents(coopId): Promise<XpEvent[]>` — for the activity feed (R4).
+- `getTierBadge(xp: number): { bandEn; bandId; tier }` — maps the current
+  level's `tier` onto named bands **Bronze/Perunggu · Silver/Perak · Gold/Emas**
+  (R5 overlay; does **not** alter `minXp`/`maxXp`).
+
+### B. Schema — per-coop `xp_events` table
+- Add to `initCoopDb` (`src/db/coopDb.ts:106`) via
+  `CREATE TABLE IF NOT EXISTS xp_events (...)`.
+- No `REGISTRY_SCHEMA_VERSION` bump needed — `xp_events` is per-coop and
+  `cooperatives.xp` already exists in the registry schema.
+
+### C. Hook wiring — `src/hooks/useMembers.ts`
+- After successful `membersRepo.insert` (`useMembers.ts:207`) →
+  `awardXp(activeCoopId, "member_joined", { memberId })`.
+- In `deleteMember` (`useMembers.ts:234`), after the delete succeeds →
+  `removeMemberXp(activeCoopId, member.id)` (guarded so a member whose join
+  was already reverted is not double-counted).
+
+### D. UI
+- `Leveling.tsx` / `Dashboard.tsx`: render a tier badge via `getTierBadge(xp)`
+  next to the level label (R5).
+- New **Activity feed** component `src/features/Home/Leveling/XpFeed.tsx`
+  rendering `getXpEvents` — satisfies visual verification for Phases 3/4 and
+  the audit requirement (R4). Each row: `timestamp · action label · ±delta · total`.
+- Verification gate + daily cap (R4/R5) as **flagged constants** in `xp.ts`
+  (`REQUIRE_VERIFICATION`, `DAILY_XP_CAP`), surfaced as toast strings (en/id).
+
+### E. i18n — `src/i18n`
+- Add en/id strings: tier band names (Perunggu/Perak/Emas),
+  "Daily XP cap reached", "Verification required", and activity-feed row
+  labels. Follow the bilingual pattern already used in `leveling-data.ts`.
+
+### F. Tests — add `vitest`
+- No test runner exists (`pnpm check` = lint + `tsc` + prettier only).
+  **Decision: add `vitest`** as a devDependency and a `src/data/xp.test.ts`
+  covering: Σevents == total (A3/A4), level derived solely from `xp` (A1),
+  de-level on revert (A3). The XP math is pure and trivially testable; this is
+  the cheapest way to satisfy acceptance criteria A1–A4. Wire `pnpm test`
+  into CI/`pnpm check` is optional but recommended.
+
+---
+
+## 3. Phased rollout (mapped to existing code)
+
+| Phase | Delivers | Files touched | Acceptance |
+|---|---|---|---|
+| 1 | `xp.ts` + `xp_events` table + `awardXp` wired to member add; Level 1 start already `rintisan` | `xp.ts` (new), `coopDb.ts`, `useMembers.ts`, `vitest` + `xp.test.ts` | A1, A6 |
+| 2 | `XP_SOURCES` data table; feed shows source + amount | `xp.ts`, `XpFeed.tsx` | A2 |
+| 3 | Activity feed renders append-only events; Σ == total | `XpFeed.tsx`, `xp.ts` | A4 |
+| 4 | `removeMemberXp` → negative event + de-level | `useMembers.ts`, `xp.ts` | A3 |
+| 5 | Tier badge + verification gate + daily cap (flagged) | `xp.ts`, `Leveling.tsx`, i18n | A5 |
+
+Each phase ends in a manually confirmable UI state; Phases 1–4 also gain
+automated coverage from `xp.test.ts`.
+
+---
+
+## 4. Acceptance criteria — what "done" measurably means
+
 | # | Criterion | How verified |
 |---|-----------|--------------|
-| A1 | Level is driven only by XP, never by raw member count (no double-count) | Unit test: given N events, level == `f(Σxp)`; member-count function deleted |
-| A2 | ≥2 distinct XP sources exist via the source table | Flip a table value → awarded XP changes; no code edit |
-| A3 | Removing a member reverts XP and can de-level | Phase 4 visual + `Σevents == totalXP` |
-| A4 | Every XP change is an auditable, replayable event | Feed reconstructs total on replay |
-| A5 | Tier badge updates at thresholds; abuse gate blocks unverified XP | Phase 5 visual |
-| A6 | Founder starts at Level 1 (no "unranked" state) | Phase 1 visual |
+| A1 | Level is driven only by `xp`, never by raw member count (no double-count) | `xp.test.ts`: given N events, `getCurrentLevel(Σxp)` matches; member-count path is unused |
+| A2 | ≥2 distinct XP sources exist via the source table | Flip a `XP_SOURCES` value → awarded XP changes; no code edit |
+| A3 | Removing a member reverts XP and can de-level | Phase 4 visual + test: `Σevents == totalXP`; level matches `getCurrentLevel` |
+| A4 | Every XP change is an auditable, replayable event | `XpFeed` reconstructs total on replay; test asserts sum |
+| A5 | Tier badge updates at thresholds; abuse gate blocks unverified XP | Phase 5 visual (flagged gate) |
+| A6 | Founder starts at Level 1 (no "unranked" state) | Already `rintisan` (minXp 0); Phase 1 visual confirms |
 | A7 | Each phase ships a manually verifiable UI state | Per-phase checklist above |
 
-### 8.3 Rollout (maps to Section 7)
-1. **Phase 1** → A1, A6 — ledger + Level 1 start.
-2. **Phase 2** → A2 — source table.
-3. **Phase 3** → A3 (ledger half), A4 — event log + feed.
-4. **Phase 4** → A3 (churn half) — de-level.
-5. **Phase 5** → A5 — tiers, verification, cap.
+A phase is "done" only when its row in §4 is green.
 
-A phase is "done" only when its row in §8.2 is green.
+---
 
-### 8.4 Re-score
-After Phases 1–5 land against the acceptance criteria, the system moves from
-**5.5/10 → 10/10** because:
-- the ambiguous double-count source of truth is eliminated (A1);
-- it is genuinely multi-action and extensible (A2);
-- churn is handled by design, not retrofitted (A3, A4);
-- it has milestone structure and abuse bounds for future features (A5);
-- the awkward Level 0 start is gone (A6);
-- and every step is observable, so quality is provable, not assumed (A7).
+## 5. Decisions locked in (from the earlier open questions)
 
-**10 / 10 — a simple MVP that is architected as if advanced features already existed.**
+1. **Test harness:** add `vitest` + `src/data/xp.test.ts` for A1–A4.
+2. **Verification gate (R4):** ship as a **flagged stub** in Phase 5
+   (`REQUIRE_VERIFICATION` constant; enforcement light, hook present for later
+   hardening). Not blocking.
+3. **Tier bands:** introduce **Bronze/Perunggu · Silver/Perak · Gold/Emas** as
+   a *named overlay* on the existing `tier` field (recommended). The existing
+   `minXp`/`maxXp` curve is untouched.
+
+---
+
+## 6. What was dropped from the original draft
+
+- The "2 members = 1 level / 1,000 XP per level" MVP mechanic — it never
+  matched this codebase and is superseded by the existing 10-level threshold
+  model. `member_joined: 500 XP` is retained as a single `XP_SOURCES` row and
+  composes with that curve.
+- The `floor(totalXP / XP_PER_LEVEL)` formula (R1/R6) — contradicted the
+  existing `minXp`/`maxXp` structure and the "Level 1 start" goal
+  simultaneously. Resolved by keeping the threshold model.
+
+**Net result:** a simple, already-mostly-built MVP that is architected as if
+advanced features already existed — XP as the single ledger, actions as data,
+events as the source of truth, tiers as an overlay. The remaining work is
+event-sourcing + action wiring, not a rewrite.
