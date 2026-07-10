@@ -131,10 +131,12 @@ code. Phases 1–3 also gain automated coverage from `xp.test.ts`.
 | 4 | Tier badge + verification gate + daily cap (flagged) | `xp.ts`, `Leveling.tsx`, i18n | A5 |
 
 ### Phase 1 — XP ledger foundation (A1, A6)
-**Build:** new `src/data/xp.ts` with `awardXp` + `XP_SOURCES`; add the
-`xp_events` table in `initCoopDb`; wire `awardXp("member_joined")` into
-`useMembers.handleMemberFormSubmit` after the insert; keep `cooperatives.xp` as
-the cached total. Add `vitest` + `xp.test.ts`.
+**Build:** new `src/data/xp-core.ts` (pure, dependency-free:
+`XP_SOURCES`, `computeTotal`) + `src/data/xp.ts` (DB I/O: `awardXp`,
+`getXpEvents`); add the `xp_events` table in `initCoopDb` (bump
+`COOP_SCHEMA_VERSION` 5→6); wire `awardXp("member_joined")` into
+`useMembers.handleMemberFormSubmit` after the insert; keep `cooperatives.xp`
+as the cached total. Add `vitest` + `xp.test.ts` (pure core only).
 **Manually verifiable:**
 - Open/create a co-op → UI shows **Level 1 (`rintisan`)**, progress bar at `xp / next threshold`.
 - Add 1 member → `cooperatives.xp` increases by 5; the level bar advances; no "Level 0" state ever appears.

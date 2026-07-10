@@ -196,12 +196,19 @@ function AppContent() {
   }, [appState, coopProfile?.id]);
 
   const refreshMemberCount = useCallback(async () => {
+    const id = coopProfile?.id || getActiveCoopId();
     try {
-      setMemberCount(await getMemberCount(getActiveCoopId()));
+      setMemberCount(await getMemberCount(id));
+      // Member add now awards XP via the ledger, so refresh the profile so the
+      // Dashboard/Sidebar level + progress bar reflect the new `xp`.
+      const profile = await getCooperativeById(id);
+      if (profile) {
+        setCoopProfile((prev) => (prev?.id === profile.id ? { ...prev, ...profile } : profile));
+      }
     } catch (e) {
       console.error(e);
     }
-  }, []);
+  }, [coopProfile?.id]);
 
   // Boot resume: if a cooperative was previously active, skip the title screen
   // and drop the user straight back into their session. Demo coop → auto-login

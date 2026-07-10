@@ -1,6 +1,8 @@
 import { useState, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { createRepository, newId } from "@/db";
+import { getActiveCoopId } from "@/db/active-coop";
+import { awardXp } from "@/data/xp";
 import type { Member, Simpanan } from "@/types";
 import { useToast } from "@/hooks/useToast";
 
@@ -205,6 +207,8 @@ export function useMembers(onChange?: () => void) {
 
       if (memberFormType === "add") {
         await membersRepo.insert(id, columns);
+        // Award XP via the event ledger; keeps `cooperatives.xp` in sync.
+        await awardXp(getActiveCoopId(), "member_joined", { memberId: id });
       } else {
         await membersRepo.update(currentMemberId, columns);
         // Replace this member's ledger rows with the edited set.
