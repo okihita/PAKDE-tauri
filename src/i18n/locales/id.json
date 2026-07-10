@@ -517,7 +517,13 @@
     "active": "AKTIF",
     "xpActivity": "Aktivitas XP",
     "xpBaseline": "Saldo awal",
-    "xpEmpty": "Belum ada aktivitas XP."
+    "xpEmpty": "Belum ada aktivitas XP.",
+    "xpMemberRemoved": "Anggota dihapus"
+  },
+  "xp": {
+    "verificationRequired": "Verifikasi diperlukan",
+    "dailyCapReached": "Batas XP harian tercapai",
+    "awardFailed": "Gagal memberikan XP"
   },
   "ranking": {
     "title": "Peringkat Koperasi",

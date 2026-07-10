@@ -517,7 +517,13 @@
     "active": "ACTIVE",
     "xpActivity": "XP Activity",
     "xpBaseline": "Starting balance",
-    "xpEmpty": "No XP activity yet."
+    "xpEmpty": "No XP activity yet.",
+    "xpMemberRemoved": "Member removed"
+  },
+  "xp": {
+    "verificationRequired": "Verification required",
+    "dailyCapReached": "Daily XP cap reached",
+    "awardFailed": "Could not award XP"
   },
   "ranking": {
     "title": "Cooperative Ranking",

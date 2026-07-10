@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { LEVELS, getLevelProgress, getCurrentLevel, type LevelDef } from "@/data/leveling";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { getActiveCoopId } from "@/db/active-coop";
+import { getTierBand } from "@/data/xp-core";
 import XpFeed from "./XpFeed";
 import {
   UsersIcon,
@@ -159,6 +160,7 @@ export default function Leveling({ xp = 0 }: Props) {
   const { t, i18n } = useTranslation();
   const isId = i18n.language.startsWith("id");
   const currentLevel = getCurrentLevel(xp);
+  const band = getTierBand(currentLevel.tier);
 
   return (
     <div className="flex-1 overflow-auto p-6 space-y-6">
@@ -169,6 +171,9 @@ export default function Leveling({ xp = 0 }: Props) {
         </div>
         <div>
           <h1 className="text-sm font-bold text-foreground">{isId ? "Leveling Koperasi" : "Cooperative Leveling"}</h1>
+          <span className={`text-xxxs font-mono font-bold px-2 py-0.5 rounded-full border ${band.cls}`}>
+            {isId ? band.id : band.en}
+          </span>
           <p className="text-xxs text-muted-foreground">
             {isId
               ? "Selesaikan quest untuk naik level dan tingkatkan kesehatan koperasi"
