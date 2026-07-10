@@ -14,12 +14,14 @@ export async function updateCooperative(id: string, data: Partial<CooperativePro
 
 export async function deleteCooperative(id: string): Promise<void> {
   const db = await getRegistryDb();
+  // Drop the cached connection FIRST. The SQL plugin (rusqlite) holds a file
+  // lock on Windows (os error 32), so the .db must be closed before it can be
+  // deleted — otherwise remove() fails with "file is in use by another process".
+  await invalidateCoopDb(id);
   // Operational data lives in its own file — delete it directly (children too).
   const dataDir = await appDataDir();
   const coopFile = await join(dataDir, "coops", `${id}.db`);
   if (await exists(coopFile)) await remove(coopFile);
-  // Drop any cached connection so nothing writes to the deleted file.
-  await invalidateCoopDb(id);
   // Coop-scoped event attachment files live under <dataDir>/<id>/events/...
   const coopFolder = await join(dataDir, id);
   if (await exists(coopFolder)) await remove(coopFolder, { recursive: true });

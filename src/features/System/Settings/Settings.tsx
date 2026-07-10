@@ -10,6 +10,8 @@ import { useIconSettings } from "@/components/IconContext";
 import type { CooperativeProfile } from "@/types";
 import { updateCooperative, deleteCooperative } from "./settingsDb";
 import { isDemoCooperative, seedDemoCooperativeAtLevel, type DemoLevel } from "@/db/seed-demo";
+import { invalidateAllCoopDbs } from "@/db/coopDb";
+import { closeRegistryDb } from "@/db/registry";
 import { appDataDir, join } from "@tauri-apps/api/path";
 import { remove, exists } from "@tauri-apps/plugin-fs";
 import {
@@ -103,6 +105,10 @@ export default function Settings({
     }
     setResetting(true);
     try {
+      // Close all open SQL connections first — rusqlite holds file locks on
+      // Windows (os error 32), so the db files must be released before removal.
+      await invalidateAllCoopDbs();
+      await closeRegistryDb();
       const dataDir = await appDataDir();
       // Wipe the registry and every cooperative's data file.
       const registryPath = await join(dataDir, "registry.db");

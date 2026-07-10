@@ -89,6 +89,15 @@ export async function invalidateCoopDb(coopId: string): Promise<void> {
 }
 
 /**
+ * Close (and drop) every cached per-cooperative connection. Used before
+ * deleting the whole `coops/` directory (factory reset) so the files aren't
+ * locked by rusqlite on Windows (os error 32).
+ */
+export async function invalidateAllCoopDbs(): Promise<void> {
+  await Promise.all([...coopPromises.keys()].map((id) => invalidateCoopDb(id)));
+}
+
+/**
  * Create (if absent) the per-cooperative schema. The default-admin
  * backfill is intentionally NOT done here — it would bypass the "create your
  * own admin" onboarding. The safety-net backfill runs once per launch in

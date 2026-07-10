@@ -23,6 +23,19 @@ export async function getRegistryDb(): Promise<Database> {
   return registryPromise;
 }
 
+/** Close and drop the cached registry connection. Call before deleting registry.db. */
+export async function closeRegistryDb(): Promise<void> {
+  const p = registryPromise;
+  registryPromise = null;
+  if (!p) return;
+  try {
+    const db = await p;
+    await (db as unknown as { close?: (db: string) => Promise<unknown> }).close?.(REGISTRY_DB);
+  } catch {
+    // Pool may already be gone — nothing to do.
+  }
+}
+
 export const REGISTRY_SCHEMA_VERSION = 1;
 
 export async function initRegistryDb(): Promise<void> {

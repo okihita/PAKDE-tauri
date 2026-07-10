@@ -1,6 +1,6 @@
 [package]
 name = "pakde-tauri"
-version = "0.7.0"
+version = "0.7.1"
 description = "PAKDE - Cooperative management app"
 authors = ["okihita"]
 edition = "2021"
