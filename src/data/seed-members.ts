@@ -146,6 +146,9 @@ export async function seedMockMembers(): Promise<number> {
     rt: string;
     rw: string;
     hamlet: string;
+    kode_wilayah: string;
+    status_keanggotaan: string;
+    registered_at: string;
     status: "aktif" | "nonaktif";
     savings_pokok: number;
     savings_wajib: number;
@@ -184,6 +187,9 @@ export async function seedMockMembers(): Promise<number> {
       rt: pad(rand(1, 5), 2),
       rw: pad(rand(1, 3), 2),
       hamlet: pick(VILLAGES),
+      kode_wilayah: `35.${pad(rand(1, 28), 2)}.${pad(rand(1, 99), 2)}.${pad(rand(1, 999), 3)}`,
+      status_keanggotaan: "anggota_biasa",
+      registered_at: `${2024 - rand(0, 3)}-${pad(rand(1, 12), 2)}-${pad(rand(1, 28), 2)}`,
       status: Math.random() > 0.1 ? "aktif" : "nonaktif",
       savings_pokok: savingsPokok,
       savings_wajib: savingsWajib,
@@ -197,9 +203,10 @@ export async function seedMockMembers(): Promise<number> {
   for (const m of members) {
     await db.execute(
       `INSERT INTO members (id, nik, name, place_of_birth, date_of_birth, gender,
-        occupation, education, rt, rw, hamlet, status, savings_pokok, savings_wajib,
+        occupation, education, rt, rw, hamlet, kode_wilayah, status_keanggotaan,
+        registered_at, status, savings_pokok, savings_wajib,
         savings_sukarela, loan_total, loan_outstanding, loan_status)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         m.id,
         m.nik,
@@ -212,6 +219,9 @@ export async function seedMockMembers(): Promise<number> {
         m.rt,
         m.rw,
         m.hamlet,
+        m.kode_wilayah,
+        m.status_keanggotaan,
+        m.registered_at,
         m.status,
         m.savings_pokok,
         m.savings_wajib,
@@ -221,6 +231,21 @@ export async function seedMockMembers(): Promise<number> {
         m.loan_status,
       ],
     );
+
+    // Mirror into the simpanan_anggota ledger (one row per savings type).
+    const deposits: Array<[string, number, string]> = [
+      ["pokok", m.savings_pokok, "lunas"],
+      ["wajib", m.savings_wajib, "lunas"],
+      ["sukarela", m.savings_sukarela, "lunas"],
+    ];
+    for (const [jenis, jumlah, status] of deposits) {
+      if (!jumlah) continue;
+      await db.execute(
+        `INSERT INTO simpanan_anggota (simpanan_ref, anggota_ref, jenis_simpanan, periode_pembayaran, jumlah_simpanan, status, dibayar_pada)
+         VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        [`svn-${m.id}-${jenis}`, m.id, jenis, m.registered_at.slice(0, 7), jumlah, status, m.registered_at],
+      );
+    }
   }
 
   return members.length;

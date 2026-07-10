@@ -355,9 +355,22 @@ async function seedDemoMembers(db: Awaited<ReturnType<typeof getCoopDb>>, tier: 
     const savingsPokok = 50_000 + ((i * 17) % 46) * 10_000; // 50k–500k
     const savingsWajib = ((i * 29) % 51) * 50_000 + Math.floor(berjalanDays / 30) * 5_000; // varies + monthly accrual
     await db.execute(
-      `INSERT INTO members (id, nik, name, status, registered_at, savings_pokok, savings_wajib)
-       VALUES (?, ?, ?, 'aktif', datetime('now'), ?, ?)`,
+      `INSERT INTO members (id, nik, name, status, registered_at, kode_wilayah, status_keanggotaan, savings_pokok, savings_wajib)
+       VALUES (?, ?, ?, 'aktif', datetime('now'), '35.01.01.001', 'anggota_biasa', ?, ?)`,
       [id, nik, name, savingsPokok, savingsWajib],
     );
+
+    // Mirror principal + mandatory savings into the simpanan_anggota ledger.
+    const ym = new Date().toISOString().slice(0, 7);
+    for (const [jenis, jumlah] of [
+      ["pokok", savingsPokok],
+      ["wajib", savingsWajib],
+    ] as const) {
+      await db.execute(
+        `INSERT INTO simpanan_anggota (simpanan_ref, anggota_ref, jenis_simpanan, periode_pembayaran, jumlah_simpanan, status, dibayar_pada)
+         VALUES (?, ?, ?, ?, ?, 'lunas', datetime('now'))`,
+        [`svn-${id}-${jenis}`, id, jenis, ym, jumlah],
+      );
+    }
   }
 }

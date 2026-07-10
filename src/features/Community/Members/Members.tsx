@@ -5,11 +5,22 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useMembers } from "@/hooks/useMembers";
+import { useMembers, type MemberInsights } from "@/hooks/useMembers";
 import { seedMockMembers } from "@/data/seed-members";
 import { useEffect, useState } from "react";
+import type { Member } from "@/types";
+import MemberFormDialog from "./MemberFormDialog";
+
+function InsightTile({ label, value, sub, danger }: { label: string; value: string; sub?: string; danger?: boolean }) {
+  return (
+    <div className="rounded-xl bg-card border border-border p-3 space-y-1">
+      <p className="text-xxxs font-bold uppercase tracking-wider text-muted-foreground">{label}</p>
+      <p className={`text-lg font-bold ${danger ? "text-danger" : "text-foreground"}`}>{value}</p>
+      {sub && <p className="text-xxxs text-muted-foreground font-mono">{sub}</p>}
+    </div>
+  );
+}
 
 export default function Members({ onMembersChanged }: { onMembersChanged?: () => void }) {
   const { t } = useTranslation();
@@ -38,8 +49,32 @@ export default function Members({ onMembersChanged }: { onMembersChanged?: () =>
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const fmt = (n: number) => `Rp ${Math.round(n).toLocaleString()}`;
+  const i: MemberInsights = m.insights;
+
+  const totalSimpananMember = (mbr: Member) =>
+    (mbr.savings_pokok || 0) + (mbr.savings_wajib || 0) + (mbr.savings_sukarela || 0);
+
   return (
     <div className="space-y-4">
+      {/* ── Insight tiles (manager cockpit) ── */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+        <InsightTile
+          label={t("members.insights.totalMembers")}
+          value={String(i.totalMembers)}
+          sub={`${i.activeMembers} aktif · ${i.inactiveMembers} nonaktif`}
+        />
+        <InsightTile label={t("members.insights.totalSimpanan")} value={fmt(i.totalSimpanan)} />
+        <InsightTile label={t("members.insights.piutang")} value={fmt(i.totalPiutang)} danger={i.totalPiutang > 0} />
+        <InsightTile
+          label={t("members.insights.simpananPending")}
+          value={String(i.simpananPending)}
+          danger={i.simpananPending > 0}
+        />
+        <InsightTile label={t("members.insights.newThisMonth")} value={String(i.newThisMonth)} />
+        <InsightTile label={t("members.title")} value={fmt(i.totalSimpanan + i.totalPiutang)} sub="Aset kelolaan" />
+      </div>
+
       <Card className="bg-card border-border">
         <CardHeader className="flex flex-row items-center justify-between pb-2">
           <CardTitle className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
@@ -101,11 +136,14 @@ export default function Members({ onMembersChanged }: { onMembersChanged?: () =>
                 <TableHead className="text-xxs font-mono text-muted-foreground">
                   {t("members.tableHeaders.status")}
                 </TableHead>
-                <TableHead className="text-xxs font-mono text-muted-foreground text-right">
-                  {t("members.tableHeaders.pokok")}
+                <TableHead className="text-xxs font-mono text-muted-foreground">
+                  {t("members.tableHeaders.membership")}
+                </TableHead>
+                <TableHead className="text-xxs font-mono text-muted-foreground">
+                  {t("members.tableHeaders.region")}
                 </TableHead>
                 <TableHead className="text-xxs font-mono text-muted-foreground text-right">
-                  {t("members.tableHeaders.wajib")}
+                  {t("members.tableHeaders.simpanan")}
                 </TableHead>
                 <TableHead className="text-xxs font-mono text-muted-foreground text-right">
                   {t("members.tableHeaders.outstanding")}
@@ -118,7 +156,7 @@ export default function Members({ onMembersChanged }: { onMembersChanged?: () =>
             <TableBody>
               {m.filteredMembers.length === 0 && (
                 <TableRow className="border-border">
-                  <TableCell colSpan={8} className="text-center py-8 text-muted-foreground text-xs font-mono">
+                  <TableCell colSpan={9} className="text-center py-8 text-muted-foreground text-xs font-mono">
                     {t("members.tableHeaders.noData")}
                   </TableCell>
                 </TableRow>
@@ -135,14 +173,17 @@ export default function Members({ onMembersChanged }: { onMembersChanged?: () =>
                       {mbr.status.toUpperCase()}
                     </span>
                   </TableCell>
-                  <TableCell className="text-xxs font-mono text-success text-right">
-                    Rp {mbr.savings_pokok.toLocaleString()}
+                  <TableCell className="text-xxs font-mono text-foreground">
+                    {t(`members.form.simpanan.${mbr.status_keanggotaan ?? "jenisPokok"}`, {
+                      defaultValue: mbr.status_keanggotaan ?? "-",
+                    })}
                   </TableCell>
+                  <TableCell className="text-xxs font-mono text-muted-foreground">{mbr.kode_wilayah || "-"}</TableCell>
                   <TableCell className="text-xxs font-mono text-success text-right">
-                    Rp {mbr.savings_wajib.toLocaleString()}
+                    {fmt(totalSimpananMember(mbr))}
                   </TableCell>
                   <TableCell className="text-xxs font-mono text-danger text-right">
-                    Rp {mbr.loan_outstanding.toLocaleString()}
+                    {fmt(mbr.loan_outstanding)}
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex gap-1 justify-end">
@@ -171,233 +212,7 @@ export default function Members({ onMembersChanged }: { onMembersChanged?: () =>
         </CardContent>
       </Card>
 
-      {/* Member Form Modal */}
-      <Dialog open={m.showMemberModal} onOpenChange={m.setShowMemberModal}>
-        <DialogContent className="bg-card border-border text-foreground max-w-lg">
-          <form onSubmit={m.handleMemberFormSubmit}>
-            <DialogHeader>
-              <DialogTitle className="text-sm font-bold text-slate-200">
-                {m.memberFormType === "add" ? t("members.form.titleAdd") : t("members.form.titleEdit")}
-              </DialogTitle>
-            </DialogHeader>
-            <div className="grid grid-cols-2 gap-3 py-4 text-xs">
-              <div className="space-y-1">
-                <label className="text-muted-foreground font-mono text-xxxs uppercase">
-                  {t("members.form.labels.nik")}
-                </label>
-                <Input
-                  value={m.memberFormValues.nik}
-                  onChange={(e) => m.setMemberFormValues({ ...m.memberFormValues, nik: e.target.value })}
-                  className="bg-input border-border text-xs h-8"
-                  maxLength={16}
-                />
-              </div>
-              <div className="space-y-1">
-                <label className="text-muted-foreground font-mono text-xxxs uppercase">
-                  {t("members.form.labels.name")}
-                </label>
-                <Input
-                  value={m.memberFormValues.name}
-                  onChange={(e) => m.setMemberFormValues({ ...m.memberFormValues, name: e.target.value })}
-                  className="bg-input border-border text-xs h-8"
-                />
-              </div>
-              <div className="space-y-1">
-                <label className="text-muted-foreground font-mono text-xxxs uppercase">
-                  {t("members.form.labels.gender")}
-                </label>
-                <Select
-                  value={m.memberFormValues.gender}
-                  onValueChange={(val) => m.setMemberFormValues({ ...m.memberFormValues, gender: val as "L" | "P" })}
-                >
-                  <SelectTrigger className="w-full bg-input border-border text-xs h-8">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className="bg-card border-border text-foreground text-xs">
-                    <SelectItem value="L">{t("common.male")}</SelectItem>
-                    <SelectItem value="P">{t("common.female")}</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-1">
-                <label className="text-muted-foreground font-mono text-xxxs uppercase">
-                  {t("members.form.labels.placeOfBirth")}
-                </label>
-                <Input
-                  value={m.memberFormValues.place_of_birth}
-                  onChange={(e) => m.setMemberFormValues({ ...m.memberFormValues, place_of_birth: e.target.value })}
-                  className="bg-input border-border text-xs h-8"
-                />
-              </div>
-              <div className="space-y-1">
-                <label className="text-muted-foreground font-mono text-xxxs uppercase">
-                  {t("members.form.labels.dateOfBirth")}
-                </label>
-                <Input
-                  type="date"
-                  value={m.memberFormValues.date_of_birth}
-                  onChange={(e) => m.setMemberFormValues({ ...m.memberFormValues, date_of_birth: e.target.value })}
-                  className="bg-input border-border text-xs h-8"
-                />
-              </div>
-              <div className="space-y-1">
-                <label className="text-muted-foreground font-mono text-xxxs uppercase">
-                  {t("members.form.labels.occupation")}
-                </label>
-                <Input
-                  value={m.memberFormValues.occupation}
-                  onChange={(e) => m.setMemberFormValues({ ...m.memberFormValues, occupation: e.target.value })}
-                  className="bg-input border-border text-xs h-8"
-                />
-              </div>
-              <div className="space-y-1">
-                <label className="text-muted-foreground font-mono text-xxxs uppercase">
-                  {t("members.form.labels.education")}
-                </label>
-                <Input
-                  value={m.memberFormValues.education}
-                  onChange={(e) => m.setMemberFormValues({ ...m.memberFormValues, education: e.target.value })}
-                  className="bg-input border-border text-xs h-8"
-                />
-              </div>
-              <div className="space-y-1">
-                <label className="text-muted-foreground font-mono text-xxxs uppercase">
-                  {t("members.form.labels.rtRw")}
-                </label>
-                <div className="flex gap-2">
-                  <Input
-                    placeholder={t("members.form.labels.rt")}
-                    value={m.memberFormValues.rt}
-                    onChange={(e) => m.setMemberFormValues({ ...m.memberFormValues, rt: e.target.value })}
-                    className="bg-input border-border text-xs h-8 w-16"
-                  />
-                  <Input
-                    placeholder={t("members.form.labels.rw")}
-                    value={m.memberFormValues.rw}
-                    onChange={(e) => m.setMemberFormValues({ ...m.memberFormValues, rw: e.target.value })}
-                    className="bg-input border-border text-xs h-8 w-16"
-                  />
-                </div>
-              </div>
-              <div className="space-y-1">
-                <label className="text-muted-foreground font-mono text-xxxs uppercase">
-                  {t("members.form.labels.hamlet")}
-                </label>
-                <Input
-                  value={m.memberFormValues.hamlet}
-                  onChange={(e) => m.setMemberFormValues({ ...m.memberFormValues, hamlet: e.target.value })}
-                  className="bg-input border-border text-xs h-8"
-                />
-              </div>
-              <div className="space-y-1">
-                <label className="text-muted-foreground font-mono text-xxxs uppercase">
-                  {t("members.form.labels.memberStatus")}
-                </label>
-                <Select
-                  value={m.memberFormValues.status}
-                  onValueChange={(val) =>
-                    m.setMemberFormValues({ ...m.memberFormValues, status: val as "aktif" | "nonaktif" })
-                  }
-                >
-                  <SelectTrigger className="w-full bg-input border-border text-xs h-8">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className="bg-card border-border text-foreground text-xs">
-                    <SelectItem value="aktif">{t("members.filterActive")}</SelectItem>
-                    <SelectItem value="nonaktif">{t("members.filterInactive")}</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-1">
-                <label className="text-muted-foreground font-mono text-xxxs uppercase">
-                  {t("members.form.labels.savingsPokok")}
-                </label>
-                <Input
-                  type="number"
-                  value={m.memberFormValues.savings_pokok}
-                  onChange={(e) =>
-                    m.setMemberFormValues({ ...m.memberFormValues, savings_pokok: Number(e.target.value) })
-                  }
-                  className="bg-input border-border text-xs h-8"
-                />
-              </div>
-              <div className="space-y-1">
-                <label className="text-muted-foreground font-mono text-xxxs uppercase">
-                  {t("members.form.labels.savingsWajib")}
-                </label>
-                <Input
-                  type="number"
-                  value={m.memberFormValues.savings_wajib}
-                  onChange={(e) =>
-                    m.setMemberFormValues({ ...m.memberFormValues, savings_wajib: Number(e.target.value) })
-                  }
-                  className="bg-input border-border text-xs h-8"
-                />
-              </div>
-              <div className="space-y-1">
-                <label className="text-muted-foreground font-mono text-xxxs uppercase">
-                  {t("members.form.labels.savingsSukarela")}
-                </label>
-                <Input
-                  type="number"
-                  value={m.memberFormValues.savings_sukarela}
-                  onChange={(e) =>
-                    m.setMemberFormValues({ ...m.memberFormValues, savings_sukarela: Number(e.target.value) })
-                  }
-                  className="bg-input border-border text-xs h-8"
-                />
-              </div>
-              <div className="space-y-1">
-                <label className="text-muted-foreground font-mono text-xxxs uppercase">
-                  {t("members.form.labels.totalLoan")}
-                </label>
-                <Input
-                  type="number"
-                  value={m.memberFormValues.loan_total}
-                  onChange={(e) => m.setMemberFormValues({ ...m.memberFormValues, loan_total: Number(e.target.value) })}
-                  className="bg-input border-border text-xs h-8"
-                />
-              </div>
-              <div className="space-y-1">
-                <label className="text-muted-foreground font-mono text-xxxs uppercase">
-                  {t("members.form.labels.outstandingLoan")}
-                </label>
-                <Input
-                  type="number"
-                  value={m.memberFormValues.loan_outstanding}
-                  onChange={(e) =>
-                    m.setMemberFormValues({ ...m.memberFormValues, loan_outstanding: Number(e.target.value) })
-                  }
-                  className="bg-input border-border text-xs h-8"
-                />
-              </div>
-              <div className="space-y-1">
-                <label className="text-muted-foreground font-mono text-xxxs uppercase">
-                  {t("members.form.labels.loanStatus")}
-                </label>
-                <Input
-                  value={m.memberFormValues.loan_status}
-                  onChange={(e) => m.setMemberFormValues({ ...m.memberFormValues, loan_status: e.target.value })}
-                  className="bg-input border-border text-xs h-8"
-                />
-              </div>
-            </div>
-            <DialogFooter>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => m.setShowMemberModal(false)}
-                className="text-xs border-border"
-              >
-                {t("members.form.cancel")}
-              </Button>
-              <Button type="submit" className="bg-brand hover:bg-brand text-brand-foreground font-bold text-xs">
-                {m.memberFormType === "add" ? t("members.form.saveAdd") : t("members.form.saveEdit")}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
+      <MemberFormDialog m={m} />
     </div>
   );
 }

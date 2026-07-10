@@ -24,6 +24,10 @@ export interface Member {
   rt: string;
   rw: string;
   hamlet: string;
+  /** Regional/village linkage (live: anggota_koperasi.kode_wilayah). */
+  kode_wilayah?: string;
+  /** Membership class (live: status_keanggotaan), distinct from account status. */
+  status_keanggotaan?: "anggota_biasa" | "calon_anggota" | "anggota_luar_biasa" | "anggota_kehormatan";
   status: "aktif" | "nonaktif";
   savings_pokok: number;
   savings_wajib: number;
@@ -31,6 +35,22 @@ export interface Member {
   loan_total: number;
   loan_outstanding: number;
   loan_status: string;
+  /** Registration date (live: tanggal_terdaftar). */
+  registered_at?: string;
+}
+
+export type SimpananJenis = "pokok" | "wajib" | "sukarela";
+export type SimpananStatus = "lunas" | "belum" | "terlambat";
+
+/** Savings deposit ledger row (live: simpanan_anggota). */
+export interface Simpanan {
+  simpanan_ref?: string;
+  anggota_ref: string;
+  jenis_simpanan: SimpananJenis;
+  periode_pembayaran?: string;
+  jumlah_simpanan: number;
+  status: SimpananStatus;
+  dibayar_pada?: string;
 }
 
 export interface CoaAccount {

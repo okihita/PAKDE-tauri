@@ -14,7 +14,7 @@ import { mkdir } from "@tauri-apps/plugin-fs";
 import { getActiveCoopId } from "./active-coop";
 
 const COOPS_DIR = "coops";
-const COOP_SCHEMA_VERSION = 4;
+const COOP_SCHEMA_VERSION = 5;
 
 let coopDirEnsured: Promise<void> | null = null;
 const coopPromises = new Map<string, Promise<Database>>();
@@ -109,6 +109,9 @@ export async function initCoopDb(coopId: string): Promise<void> {
         name TEXT NOT NULL, place_of_birth TEXT, date_of_birth TEXT,
         gender TEXT CHECK(gender IN ('L','P')), occupation TEXT, education TEXT,
         rt TEXT, rw TEXT, hamlet TEXT,
+        kode_wilayah TEXT,
+        status_keanggotaan TEXT DEFAULT 'anggota_biasa'
+          CHECK(status_keanggotaan IN ('anggota_biasa','calon_anggota','anggota_luar_biasa','anggota_kehormatan')),
         status TEXT DEFAULT 'aktif' CHECK(status IN ('aktif','nonaktif')),
         savings_pokok REAL DEFAULT 0, savings_wajib REAL DEFAULT 0, savings_sukarela REAL DEFAULT 0,
         loan_total REAL DEFAULT 0, loan_outstanding REAL DEFAULT 0, loan_status TEXT,
@@ -116,6 +119,26 @@ export async function initCoopDb(coopId: string): Promise<void> {
         updated_at TEXT DEFAULT (datetime('now')), sync_status TEXT DEFAULT 'pending'
       );
     `);
+
+    // ── simpanan_anggota (savings ledger, mirrors live hackathon_2026 data) ──
+    // Live source: `simpanan_anggota` (372k rows) — one row per deposit with
+    // payment period, amount, payment status, and paid-at timestamp. This is the
+    // richest financial-inclusion fact table; the members.* savings_* columns are
+    // kept as a denormalized rollup for fast display / cross-feature reads.
+    await db.execute(`
+      CREATE TABLE IF NOT EXISTS simpanan_anggota (
+        simpanan_ref TEXT PRIMARY KEY,
+        anggota_ref TEXT NOT NULL,
+        jenis_simpanan TEXT NOT NULL CHECK(jenis_simpanan IN ('pokok','wajib','sukarela')),
+        periode_pembayaran TEXT,
+        jumlah_simpanan REAL DEFAULT 0,
+        status TEXT DEFAULT 'lunas' CHECK(status IN ('lunas','belum','terlambat')),
+        dibayar_pada TEXT,
+        created_at TEXT DEFAULT (datetime('now')),
+        FOREIGN KEY (anggota_ref) REFERENCES members(id) ON DELETE CASCADE
+      );
+    `);
+    await db.execute(`CREATE INDEX IF NOT EXISTS idx_simpanan_anggota_anggota ON simpanan_anggota(anggota_ref);`);
 
     // ── chart of accounts (PK is just code within this coop) ──
     await db.execute(`
@@ -314,6 +337,25 @@ export async function initCoopDb(coopId: string): Promise<void> {
 
     // ── events: add description column for coops created before v4 ──
     await db.execute(`ALTER TABLE events ADD COLUMN description TEXT;`);
+
+    // ── members: align with live hackathon_2026 anggota_koperasi ──
+    await db.execute(`ALTER TABLE members ADD COLUMN kode_wilayah TEXT;`);
+    await db.execute(`ALTER TABLE members ADD COLUMN status_keanggotaan TEXT DEFAULT 'anggota_biasa';`);
+
+    // ── simpanan_anggota ledger (absent before v5) ──
+    await db.execute(`
+      CREATE TABLE IF NOT EXISTS simpanan_anggota (
+        simpanan_ref TEXT PRIMARY KEY,
+        anggota_ref TEXT NOT NULL,
+        jenis_simpanan TEXT NOT NULL CHECK(jenis_simpanan IN ('pokok','wajib','sukarela')),
+        periode_pembayaran TEXT,
+        jumlah_simpanan REAL DEFAULT 0,
+        status TEXT DEFAULT 'lunas' CHECK(status IN ('lunas','belum','terlambat')),
+        dibayar_pada TEXT,
+        created_at TEXT DEFAULT (datetime('now')),
+        FOREIGN KEY (anggota_ref) REFERENCES members(id) ON DELETE CASCADE
+      );
+    `);
 
     await db.execute("INSERT OR REPLACE INTO _schema_meta (key, value) VALUES ('schema_version', ?);", [
       String(COOP_SCHEMA_VERSION),
