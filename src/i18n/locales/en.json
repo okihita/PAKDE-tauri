@@ -72,6 +72,7 @@
       "dampak": "Social Impact",
       "accounting": "Accounting",
       "feasibility": "Financial Feasibility",
+      "hibah": "Grants",
       "sync": "Data Synchronization",
       "settings": "Settings",
       "units": "Business Units",
@@ -1415,5 +1416,8 @@
       "available": "Update available",
       "check": "Check for updates"
     }
+  },
+  "hibah": {
+    "placeholder": "Phase 1 placeholder."
   }
 }

@@ -32,6 +32,7 @@ import Development from "@/features/Business/Development/Development";
 import Learn from "@/features/Learn/Learn/Learn";
 import Accounting from "@/features/Finance/Accounting";
 import Feasibility from "@/features/Finance/Feasibility/Feasibility";
+import Hibah from "@/features/Finance/Hibah/Hibah";
 import Ranking from "@/features/Finance/Ranking/Ranking";
 import { useRanking } from "@/features/Finance/Ranking/useRanking";
 import CreateEvent from "@/features/Community/CreateEvent/CreateEvent";
@@ -478,6 +479,7 @@ function AppContent() {
             />
           )}
           {activeTab === "feasibility" && <Feasibility />}
+          {activeTab === "hibah" && <Hibah />}
           {activeTab === "sync" && <Sync />}
           {activeTab === "settings" && (
             <Settings

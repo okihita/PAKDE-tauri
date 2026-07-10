@@ -18,6 +18,7 @@ import {
   LockSimple,
   RocketLaunchIcon,
   Coins,
+  HandCoins,
 } from "@phosphor-icons/react";
 import { getCurrentLevel, getLevelProgress } from "@/data/leveling";
 import {
@@ -193,6 +194,7 @@ export default function Sidebar({
         { id: "statistics", icon: ChartBarIcon, label: t("sidebar.nav.statistics") },
         { id: "accounting", icon: Note, label: t("sidebar.nav.accounting") },
         { id: "feasibility", icon: TrendUpIcon, label: t("sidebar.nav.feasibility") },
+        { id: "hibah", icon: HandCoins, label: t("sidebar.nav.hibah") },
       ],
     },
     {

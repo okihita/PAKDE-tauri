@@ -15,6 +15,7 @@ export const TABS_LEVEL_REQUIREMENTS = {
   statistics: 30,
   feasibility: 40,
   dampak: 50,
+  hibah: 0,
   leveling: 60,
   ranking: 60,
   development: 70,
