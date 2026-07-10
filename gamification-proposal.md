@@ -153,17 +153,23 @@ stubs as rows); new `XpFeed.tsx` rendering `getXpEvents`
 - Manual check: **sum of all feed deltas == displayed total XP**.
 
 ### Phase 3 — Churn / de-level (A3)
-**Build:** `removeMemberXp` emits a negative event; level recomputes (multi-level
-drop supported).
+**Build:** `removeMemberXp` emits a negative `member_removed` event
+(`-XP_SOURCES.member_joined.xp`); level recomputes (multi-level
+drop supported). Wired into `useMembers.deleteMember` (guarded so a
+ledger write failure never masks a successful member deletion).
 **Manually verifiable:**
 - At a level with accumulated XP, remove a member → feed shows **−5 XP**, bar drops.
-- Remove enough to cross a threshold → co-op visibly **de-levels** with a downgrade indicator.
+- Remove enough to cross a threshold → co-op visibly **de-levels**.
 - Manual check: `Σevents == totalXP`; `getCurrentLevel(totalXP)` matches the level shown.
 
 ### Phase 4 — Tiers, abuse guards & caps (A5)
-**Build:** `getTierBadge(xp)` overlay (Bronze/Perunggu · Silver/Perak ·
-Gold/Emas); flagged `REQUIRE_VERIFICATION` + `DAILY_XP_CAP` constants
-surfaced as toasts (en/id).
+**Build:** `getTierBand(tier)` overlay on the existing `tier` (1–10):
+**Bronze/Perunggu** (tiers 1–3) · **Silver/Perak** (4–6) ·
+**Gold/Emas** (7–10). Flagged `REQUIRE_VERIFICATION` and
+`DAILY_XP_CAP` (default OFF / `0`) enforced in `awardXp`; a
+rejection surfaces as a toast (`xp.verificationRequired` /
+`xp.dailyCapReached`, en/id) — flip a flag to exercise the gate.
+The tier band renders as a pill in the Leveling header.
 **Manually verifiable:**
 - Cross a tier threshold → a **tier badge** appears/updates next to the level.
 - With verification required, attempt to award XP → XP **not** granted; UI shows "Verification required."
