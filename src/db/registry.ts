@@ -36,7 +36,20 @@ export async function closeRegistryDb(): Promise<void> {
   }
 }
 
-export const REGISTRY_SCHEMA_VERSION = 1;
+export const REGISTRY_SCHEMA_VERSION = 2;
+
+/**
+ * Idempotently add a column. SQLite's `ALTER TABLE ... ADD COLUMN` has no
+ * `IF NOT EXISTS`, so guard with `PRAGMA table_info` before altering. This lets
+ * the migration run on existing installs where `CREATE TABLE IF NOT EXISTS` is
+ * a no-op and would otherwise skip the new column.
+ */
+async function addColumnIfAbsent(db: Database, table: string, column: string, definition: string): Promise<void> {
+  const cols = await db.select<Array<{ name: string }>>(`PRAGMA table_info(${table});`);
+  if (!cols.some((c) => c.name === column)) {
+    await db.execute(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition};`);
+  }
+}
 
 export async function initRegistryDb(): Promise<void> {
   const db = await getRegistryDb();
@@ -48,10 +61,12 @@ export async function initRegistryDb(): Promise<void> {
   const currentVersion = meta.length ? Number(meta[0].value) : 0;
 
   if (currentVersion < REGISTRY_SCHEMA_VERSION) {
+    // Fresh installs get `village_code` directly from CREATE TABLE.
     await db.execute(`
       CREATE TABLE IF NOT EXISTS cooperatives (
         id TEXT PRIMARY KEY, name TEXT NOT NULL, legal_id TEXT, status TEXT DEFAULT 'aktif',
         address TEXT, village TEXT, district TEXT, regency TEXT NOT NULL, province TEXT NOT NULL,
+        village_code TEXT,
         postal_code TEXT, phone TEXT, email TEXT, level TEXT DEFAULT 'desa',
         parent_id TEXT, parent_name TEXT, business_units TEXT, officers TEXT,
         logo_path TEXT, rag_status TEXT DEFAULT 'green', health_score REAL DEFAULT 100,
@@ -61,6 +76,8 @@ export async function initRegistryDb(): Promise<void> {
         created_at TEXT DEFAULT (datetime('now')), updated_at TEXT DEFAULT (datetime('now'))
       );
     `);
+    // Existing installs (where the CREATE above was a no-op) get it via ALTER.
+    await addColumnIfAbsent(db, "cooperatives", "village_code", "TEXT");
     await db.execute("INSERT OR REPLACE INTO _schema_meta (key, value) VALUES ('schema_version', ?);", [
       String(REGISTRY_SCHEMA_VERSION),
     ]);

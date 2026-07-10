@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { createRepository, newId } from "@/db";
 import { getActiveCoopId } from "@/db/active-coop";
 import { awardXp, removeMemberXp } from "@/data/xp";
+import { isValidNik } from "@/data/nik";
 import type { Member, Simpanan } from "@/types";
 import { useToast } from "@/hooks/useToast";
 
@@ -77,6 +78,8 @@ export function useMembers(onChange?: () => void) {
   const [memberFormValues, setMemberFormValues] = useState<Member>(MEMBER_DEFAULT);
   const [simpananRows, setSimpananRows] = useState<Simpanan[]>([]);
   const [insights, setInsights] = useState<MemberInsights>(EMPTY_INSIGHTS);
+  // Incremented on a duplicate-NIK submit so the form can re-roll its auto-gen seq.
+  const [nikConflictNonce, setNikConflictNonce] = useState(0);
 
   const loadInsights = useCallback(async (list: Member[]) => {
     const totalSimpanan = list.reduce(
@@ -173,12 +176,22 @@ export function useMembers(onChange?: () => void) {
 
   const handleMemberFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (memberFormValues.nik.length !== 16) {
+    // New members must have a structurally valid NIK. Existing members keep the
+    // lighter 16-digit check so a legacy/imported NIK doesn't block unrelated edits.
+    const nikOk = memberFormType === "add" ? isValidNik(memberFormValues.nik) : memberFormValues.nik.length === 16;
+    if (!nikOk) {
       toast.error(t("toast.nikInvalid"));
       return;
     }
     if (!memberFormValues.name.trim()) {
       toast.error(t("toast.nameRequired"));
+      return;
+    }
+    // A member's location is a real village code; the region picker must resolve
+    // to a village. Guards against a stale/blank code when the picker is left
+    // mid-selection (only province/regency chosen).
+    if (!memberFormValues.kode_wilayah?.trim()) {
+      toast.error(t("toast.regionRequired"));
       return;
     }
     try {
@@ -245,7 +258,15 @@ export function useMembers(onChange?: () => void) {
       loadMembersData();
       onChange?.();
     } catch (err) {
-      toast.error(t("toast.memberSaveFailed", { error: err instanceof Error ? err.message : String(err) }));
+      const msg = err instanceof Error ? err.message : String(err);
+      // SQLite UNIQUE violation on members.nik → friendly duplicate message.
+      if (/unique/i.test(msg) && /nik/i.test(msg)) {
+        // Bump the nonce so the form can re-roll its auto-generated NIK sequence.
+        setNikConflictNonce((n) => n + 1);
+        toast.error(t("toast.nikDuplicate"));
+      } else {
+        toast.error(t("toast.memberSaveFailed", { error: msg }));
+      }
     }
   };
 
@@ -291,6 +312,7 @@ export function useMembers(onChange?: () => void) {
     memberFormType,
     memberFormValues,
     setMemberFormValues,
+    nikConflictNonce,
     simpananRows,
     addSimpananRow,
     updateSimpananRow,

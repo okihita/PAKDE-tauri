@@ -56,8 +56,8 @@ export async function searchVillages(
             d.nama AS district_nama,
             r.nama AS regency_nama
      FROM wilayah w
-     JOIN wilayah d ON d.kode = substr(w.kode, 1, 6)
-     JOIN wilayah r ON r.kode = substr(w.kode, 1, 4)
+     JOIN wilayah d ON d.kode = substr(w.kode, 1, 8)
+     JOIN wilayah r ON r.kode = substr(w.kode, 1, 5)
      WHERE w.level = 4 AND w.nama LIKE ?
      ORDER BY w.nama, r.nama, d.nama
      LIMIT 50`,

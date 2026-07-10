@@ -1,6 +1,18 @@
 // Generates mock Indonesian cooperative members for testing.
 import { getCoopDb } from "@/db";
-import { DEMO_COOP_UUID } from "@/db/seed-demo";
+import { getActiveCoopId } from "@/db/active-coop";
+import { getCooperativeById } from "@/features/System/ProfileSelect/cooperativeDb";
+import { generateNik } from "@/data/nik";
+
+/** Fallback real village code (Widoro, Pacitan) for coops with a NULL village_code. */
+const FALLBACK_VILLAGE_CODE = "35.01.01.2001";
+
+/**
+ * NIK sequence offset for mock members. Keeps their NIKs disjoint from the
+ * deterministic demo members (seq 1..50) so seeding into the demo coop can't
+ * hit a `members.nik` UNIQUE collision.
+ */
+const SEED_SEQ_OFFSET = 5000;
 
 const FIRST_NAMES_MALE = [
   "Sutrisno",
@@ -127,9 +139,15 @@ function pad(n: number, width: number): string {
   return String(n).padStart(width, "0");
 }
 
-/** Seed 50 mock members into the database. */
+/** Seed 50 mock members into the currently active cooperative's database. */
 export async function seedMockMembers(): Promise<number> {
-  const db = await getCoopDb(DEMO_COOP_UUID);
+  const coopId = getActiveCoopId();
+  if (!coopId) throw new Error("No active cooperative selected.");
+  const db = await getCoopDb(coopId);
+
+  // Every seeded member lives in the coop's real village (fallback if NULL).
+  const coop = await getCooperativeById(coopId);
+  const villageCode = coop?.village_code?.trim() || FALLBACK_VILLAGE_CODE;
 
   // Clear existing test members (those with id starting with "seed-")
   await db.execute("DELETE FROM members WHERE id LIKE 'seed-%'");
@@ -177,17 +195,22 @@ export async function seedMockMembers(): Promise<number> {
 
     members.push({
       id: `seed-${pad(i, 3)}`,
-      nik: `35${pad(rand(1, 99), 2)}${pad(rand(100000, 999999), 6)}${pad(i, 4)}`,
+      nik: generateNik(
+        villageCode,
+        `${birthYear}-${pad(birthMonth, 2)}-${pad(birthDay, 2)}`,
+        gender,
+        i + SEED_SEQ_OFFSET,
+      ),
       name: `${firstName} ${lastName}`,
       place_of_birth: pick(["Mojokerto", "Jombang", "Kediri", "Surabaya", "Malang", "Nganjuk"]),
       date_of_birth: `${birthYear}-${pad(birthMonth, 2)}-${pad(birthDay, 2)}`,
       gender,
       occupation: pick(OCCUPATIONS),
       education: pick(EDUCATIONS),
-      rt: pad(rand(1, 5), 2),
-      rw: pad(rand(1, 3), 2),
+      rt: pad(rand(1, 5), 3),
+      rw: pad(rand(1, 3), 3),
       hamlet: pick(VILLAGES),
-      kode_wilayah: `35.${pad(rand(1, 28), 2)}.${pad(rand(1, 99), 2)}.${pad(rand(1, 999), 3)}`,
+      kode_wilayah: villageCode,
       status_keanggotaan: "anggota_biasa",
       registered_at: `${2024 - rand(0, 3)}-${pad(rand(1, 12), 2)}-${pad(rand(1, 28), 2)}`,
       status: Math.random() > 0.1 ? "aktif" : "nonaktif",

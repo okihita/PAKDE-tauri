@@ -54,6 +54,7 @@ export default function CreateProfileDialog({ open, onOpenChange, onProfileCreat
     district: "",
     regency: "",
     province: "",
+    villageCode: "",
     postalCode: "",
     phone: "",
     email: "",
@@ -93,6 +94,7 @@ export default function CreateProfileDialog({ open, onOpenChange, onProfileCreat
         district: formData.district,
         regency: formData.regency,
         province: formData.province,
+        villageCode: formData.villageCode,
         postalCode: formData.postalCode,
         phone: formData.phone,
         email: formData.email,
@@ -165,6 +167,7 @@ export default function CreateProfileDialog({ open, onOpenChange, onProfileCreat
                       regency: region.regency_name,
                       district: region.district_name,
                       village: region.village_name,
+                      villageCode: region.village_code,
                     });
                   }}
                 />
