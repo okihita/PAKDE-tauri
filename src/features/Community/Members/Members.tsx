@@ -1,6 +1,6 @@
 import "./Members.css";
 import { useTranslation } from "react-i18next";
-import { MagnifyingGlassIcon, PlusIcon, TrashIcon, PencilSimpleIcon, Plant } from "@phosphor-icons/react";
+import { MagnifyingGlassIcon, PlusIcon, TrashIcon, PencilSimpleIcon } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -15,8 +15,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useMembers, type MemberInsights } from "@/hooks/useMembers";
-import { useToast } from "@/hooks/useToast";
-import { seedMockMembers } from "@/data/seed-members";
 import { resolveWilayah, formatWilayahShort } from "@/db/wilayahLookup";
 import { useEffect, useMemo, useState } from "react";
 import type { Member } from "@/types";
@@ -35,8 +33,6 @@ function InsightTile({ label, value, sub, danger }: { label: string; value: stri
 export default function Members({ onMembersChanged }: { onMembersChanged?: () => void }) {
   const { t } = useTranslation();
   const m = useMembers(onMembersChanged);
-  const toast = useToast();
-  const [seeding, setSeeding] = useState(false);
   const [pendingDelete, setPendingDelete] = useState<Member | null>(null);
   const [regionLabels, setRegionLabels] = useState<Record<string, string>>({});
 
@@ -72,19 +68,6 @@ export default function Members({ onMembersChanged }: { onMembersChanged?: () =>
     { value: "aktif", label: t("members.filterActive") },
     { value: "nonaktif", label: t("members.filterInactive") },
   ];
-
-  const handleSeed = async () => {
-    setSeeding(true);
-    try {
-      await seedMockMembers();
-      await m.loadMembersData();
-      onMembersChanged?.();
-    } catch (err) {
-      toast.error(t("toast.seedFailed", { error: err instanceof Error ? err.message : String(err) }));
-    } finally {
-      setSeeding(false);
-    }
-  };
 
   useEffect(() => {
     m.loadMembersData();
@@ -123,13 +106,6 @@ export default function Members({ onMembersChanged }: { onMembersChanged?: () =>
             {t("members.title")}
           </CardTitle>
           <div className="flex items-center gap-2">
-            <Button
-              onClick={handleSeed}
-              disabled={seeding}
-              className="bg-warning/20 hover:bg-warning/30 text-warning font-bold text-xs h-8 border border-warning/20"
-            >
-              <Plant className="h-3 w-3 mr-1" /> {seeding ? "..." : t("members.seedButton")}
-            </Button>
             <Button
               onClick={m.openAddMemberModal}
               className="bg-brand hover:bg-brand text-brand-foreground font-bold text-xs h-8"

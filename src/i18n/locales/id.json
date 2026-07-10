@@ -163,7 +163,6 @@
   "members": {
     "title": "Database Anggota",
     "addButton": "Tambah Anggota",
-    "seedButton": "Isi Data Contoh",
     "deleteTitle": "Hapus Anggota",
     "deleteConfirm": "Yakin ingin menghapus anggota \"{{name}}\"? Tindakan ini tidak dapat dibatalkan dan akan menghapus seluruh riwayat simpanannya.",
     "searchPlaceholder": "Cari NIK atau Nama Anggota...",
@@ -1286,7 +1285,6 @@
     "nikInvalid": "Error: NIK harus 16 digit.",
     "nikDuplicate": "Error: NIK sudah terdaftar untuk anggota lain.",
     "regionRequired": "Error: Pilih wilayah (desa) anggota terlebih dahulu.",
-    "seedFailed": "Gagal membuat data contoh: {{error}}",
     "nameRequired": "Error: Nama harus diisi.",
     "memberDeleteBlocked": "Error: Tidak dapat menghapus anggota dengan pinjaman aktif.",
     "memberDeleteConfirm": "Apakah Anda yakin ingin menghapus anggota {{name}}?",

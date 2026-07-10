@@ -163,7 +163,6 @@
   "members": {
     "title": "Member Database",
     "addButton": "Add Member",
-    "seedButton": "Load Sample Data",
     "deleteTitle": "Delete Member",
     "deleteConfirm": "Delete member \"{{name}}\"? This cannot be undone and will remove all of their savings history.",
     "searchPlaceholder": "Search NIK or Member Name...",
@@ -1286,7 +1285,6 @@
     "nikInvalid": "Error: NIK must be 16 digits.",
     "nikDuplicate": "Error: NIK is already registered to another member.",
     "regionRequired": "Error: Please select the member's region (village) first.",
-    "seedFailed": "Failed to generate sample data: {{error}}",
     "nameRequired": "Error: Name is required.",
     "memberDeleteBlocked": "Error: Cannot delete member with active loans.",
     "memberDeleteConfirm": "Are you sure you want to delete member {{name}}?",
