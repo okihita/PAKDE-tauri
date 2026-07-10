@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { StarIcon, TrendDownIcon, TrendUpIcon, MinusIcon } from "@phosphor-icons/react";
 import { Card, CardContent } from "@/components/ui/card";
 import type { RankedCoop, RankingMetric, RankingScope } from "./rankingService";
+import LaurelWreath from "./LaurelWreath";
 
 interface Props {
   items: RankedCoop[];
@@ -139,8 +140,9 @@ function PodiumCard({ coop, position }: { coop: RankedCoop; position: 1 | 2 | 3 
   const order = position === 2 ? "order-1" : position === 1 ? "order-2" : "order-3";
   return (
     <div className={`podium-card relative flex flex-col items-center justify-end ${order}`}>
+      {position === 1 && <LaurelWreath className="text-emerald-500/80 drop-shadow-[0_1px_2px_rgba(0,0,0,0.25)]" />}
       <div
-        className={`flex w-full ${height} flex-col items-center justify-center gap-1 rounded-xl bg-linear-to-br ${m.ring} p-[2px] shadow-lg`}
+        className={`relative z-10 flex w-full ${height} flex-col items-center justify-center gap-1 rounded-xl bg-linear-to-br ${m.ring} p-[2px] shadow-lg`}
       >
         <div className="flex h-full w-full flex-col items-center justify-center gap-0.5 rounded-[10px] bg-card px-2">
           <span className={`text-base ${m.text}`}>{m.label}</span>
