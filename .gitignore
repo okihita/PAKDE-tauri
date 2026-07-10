@@ -35,3 +35,6 @@ hackathon_data/
 *.db-wal
 *.db-shm
 
+# Local planning folder (agent scratch space — never commit)
+.kilo/
+
