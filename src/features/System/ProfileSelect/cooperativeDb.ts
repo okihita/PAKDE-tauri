@@ -106,11 +106,16 @@ export async function getActiveEwsAlerts(cooperativeId: string): Promise<EwsAler
   return db.select<EwsAlert[]>("SELECT * FROM ews_alerts WHERE is_active = 1");
 }
 
-/** Total member savings (pokok + wajib + sukarela) across the cooperative. */
-export async function getTotalSavings(cooperativeId: string): Promise<number> {
+/** Cooperative net worth (Assets − Liabilities) from the chart of accounts. */
+export async function getNetWorth(cooperativeId: string): Promise<number> {
   const db = await getCoopDb(cooperativeId);
-  const rows = await db.select<Array<{ total: number }>>(
-    "SELECT COALESCE(SUM(savings_pokok + savings_wajib + savings_sukarela), 0) AS total FROM members",
+  const rows = await db.select<Array<{ assets: number; liabilities: number }>>(
+    `SELECT
+       COALESCE(SUM(CASE WHEN type = 'aset' THEN balance ELSE 0 END), 0) AS assets,
+       COALESCE(SUM(CASE WHEN type = 'kewajiban' THEN balance ELSE 0 END), 0) AS liabilities
+     FROM coa_accounts`,
   );
-  return rows[0]?.total ?? 0;
+  const r = rows[0];
+  if (!r) return 0;
+  return r.assets - r.liabilities;
 }

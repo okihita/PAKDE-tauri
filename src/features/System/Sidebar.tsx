@@ -27,7 +27,14 @@ import {
   Coins,
 } from "@phosphor-icons/react";
 import { getCurrentLevel } from "@/data/leveling";
-import { isTabUnlocked, TABS_LEVEL_REQUIREMENTS, type TabId } from "@/features/System/moduleUnlock";
+import {
+  isTabUnlocked,
+  getUnlockRequirementLabel,
+  TABS_LEVEL_REQUIREMENTS,
+  type TabId,
+} from "@/features/System/moduleUnlock";
+import { UNIT_ICONS, UNIT_CONFIG } from "@/features/System/ProfileSelect/unitIcons";
+import { QuickStat } from "./QuickStat";
 import type { RankingStatus } from "@/features/Finance/Ranking/useRanking";
 import type { CooperativeProfile, EwsAlert } from "@/types";
 
@@ -37,7 +44,7 @@ interface SidebarProps {
   coopProfile: CooperativeProfile | null;
   ewsAlerts: EwsAlert[];
   memberCount: number;
-  totalSavings: number;
+  netWorth: number;
   currentUser: { name: string; role: string } | null;
   appTheme: "dark" | "light";
   onThemeToggle: () => void;
@@ -58,29 +65,6 @@ interface NavGroupDef {
   label: string;
   accent: Accent;
   items: NavItemDef[];
-}
-
-/** Compact label + value tile for the cooperative profile card. */
-function QuickStat({
-  icon: Icon,
-  label,
-  value,
-  className,
-}: {
-  icon: ComponentType<{ className?: string }>;
-  label: string;
-  value: string;
-  className?: string;
-}) {
-  return (
-    <div className={cn("flex flex-col gap-0.5 rounded-lg bg-secondary/40 px-2 py-1.5 min-w-0", className)}>
-      <span className="flex items-center gap-1 text-xxxs text-muted-foreground truncate">
-        <Icon className="h-3 w-3 shrink-0" />
-        {label}
-      </span>
-      <span className="text-xxs font-bold text-foreground font-mono truncate">{value}</span>
-    </div>
-  );
 }
 
 type Accent = "sky" | "brand" | "violet" | "warning" | "amber";
@@ -104,7 +88,7 @@ export default function Sidebar({
   coopProfile,
   ewsAlerts,
   memberCount,
-  totalSavings,
+  netWorth,
   currentUser,
   appTheme,
   onThemeToggle,
@@ -123,15 +107,66 @@ export default function Sidebar({
   const ragBand = resolveRag(coopProfile?.rag_status, healthScore);
   const rag = ragMeta(ragBand);
 
-  // Count of active business units from the cooperative profile (registry).
-  const unitCount = useMemo(() => {
+  // Active business unit IDs from the cooperative profile (registry).
+  const unitIds = useMemo(() => {
     try {
       const arr = JSON.parse(coopProfile?.business_units || "[]");
-      return Array.isArray(arr) ? arr.length : 0;
+      return Array.isArray(arr) ? arr : [];
     } catch {
-      return 0;
+      return [];
     }
   }, [coopProfile]);
+
+  // Tabs the quick-stat tiles can navigate to (gated by progression xp).
+  const acctUnlocked = isTabUnlocked("accounting", xp);
+
+  // Business-unit icons (falls back to Buildings for custom units).
+  const unitValue = (() => {
+    if (unitIds.length === 0) return <span className="text-muted-foreground">—</span>;
+    const shown = unitIds.slice(0, 4);
+    return (
+      <span className="flex items-center gap-1">
+        {shown.map((id) => {
+          const Ico = UNIT_ICONS[id] ?? BuildingsIcon;
+          const name = UNIT_CONFIG[id]?.label ?? id;
+          return (
+            <span key={id} title={name} className="inline-flex">
+              <Ico className="h-3.5 w-3.5 text-foreground" />
+            </span>
+          );
+        })}
+        {unitIds.length > 4 && <span className="text-xxxs font-mono text-muted-foreground">+{unitIds.length - 4}</span>}
+      </span>
+    );
+  })();
+
+  // Net worth tile value (lock when accounting is still gated).
+  const netWorthValue = acctUnlocked ? (
+    formatCompactRupiah(netWorth)
+  ) : (
+    <LockSimple className="h-3.5 w-3.5 text-muted-foreground" />
+  );
+
+  // Ranking tile value: live rank + freshness dot, or a lock when gated.
+  const rankingStatusDot = cn(
+    "h-1.5 w-1.5 rounded-full",
+    rankingStatus === "live"
+      ? "bg-success"
+      : rankingStatus === "stale"
+        ? "bg-warning"
+        : rankingStatus === "offline"
+          ? "bg-muted-foreground"
+          : "bg-info animate-pulse",
+  );
+  const rankingValue =
+    rankingUnlocked && rankingRank != null ? (
+      <span className="flex items-center gap-1">
+        #{rankingRank}
+        <span className={rankingStatusDot} />
+      </span>
+    ) : (
+      <LockSimple className="h-3.5 w-3.5 text-muted-foreground" />
+    );
 
   const [logoFailed, setLogoFailed] = useState(false);
   const coopInitials = (coopProfile?.name ?? "?")
@@ -312,15 +347,45 @@ export default function Sidebar({
               </div>
             )}
 
-            {/* ── Quick stats — members · units · savings ── */}
+            {/* ── Quick stats — clickable cooperative scorecard ── */}
             <div className="grid grid-cols-2 gap-2 pt-1">
-              <QuickStat icon={UsersIcon} label={t("sidebar.statMembers")} value={memberCount.toString()} />
-              <QuickStat icon={BuildingsIcon} label={t("sidebar.statUnits")} value={unitCount.toString()} />
+              <QuickStat
+                icon={UsersIcon}
+                label={t("sidebar.statMembers")}
+                value={memberCount.toString()}
+                onClick={() => onTabChange("anggota")}
+                title={t("sidebar.goTo", { tab: t("sidebar.nav.anggota") })}
+              />
+              <QuickStat
+                icon={BuildingsIcon}
+                label={t("sidebar.statUnits")}
+                value={unitValue}
+                onClick={() => onTabChange("units")}
+                title={t("sidebar.goTo", { tab: t("sidebar.nav.units") })}
+              />
               <QuickStat
                 icon={Coins}
-                label={t("sidebar.statSavings")}
-                value={formatCompactRupiah(totalSavings)}
-                className="col-span-2"
+                label={t("sidebar.statNetWorth")}
+                value={netWorthValue}
+                onClick={acctUnlocked ? () => onTabChange("accounting") : undefined}
+                disabled={!acctUnlocked}
+                title={
+                  acctUnlocked
+                    ? t("sidebar.goTo", { tab: t("sidebar.nav.accounting") })
+                    : (getUnlockRequirementLabel("accounting") ?? undefined)
+                }
+              />
+              <QuickStat
+                icon={TrophyIcon}
+                label={t("sidebar.statRanking")}
+                value={rankingValue}
+                onClick={rankingUnlocked ? () => onTabChange("ranking") : undefined}
+                disabled={!rankingUnlocked}
+                title={
+                  rankingUnlocked
+                    ? t("sidebar.goTo", { tab: t("ranking.beaconTitle") })
+                    : (getUnlockRequirementLabel("ranking") ?? undefined)
+                }
               />
             </div>
           </div>
@@ -338,35 +403,6 @@ export default function Sidebar({
           {/* Meta control bar */}
           <div className="flex items-center justify-between gap-1 rounded-lg bg-secondary/40 px-1.5 py-1 mx-1">
             <div className="flex items-center gap-0.5">
-              <button
-                onClick={() => rankingUnlocked && onTabChange("ranking")}
-                disabled={!rankingUnlocked}
-                className={cn(
-                  "flex items-center gap-1 px-1.5 py-1 rounded-lg transition-colors shrink-0",
-                  rankingUnlocked
-                    ? "hover:bg-sidebar-ring text-muted-foreground hover:text-warning cursor-pointer"
-                    : "text-muted-foreground/40 cursor-not-allowed",
-                )}
-                title={rankingUnlocked ? t("ranking.beaconTitle") : t("ranking.beaconLocked")}
-              >
-                <TrophyIcon className="h-3.5 w-3.5" />
-                {rankingUnlocked && rankingRank != null && (
-                  <span className="text-xxxs font-mono font-bold leading-none">{`#${rankingRank}`}</span>
-                )}
-                {!rankingUnlocked && <LockSimple className="h-2.5 w-2.5" />}
-                <span
-                  className={cn(
-                    "h-1.5 w-1.5 rounded-full",
-                    rankingStatus === "live"
-                      ? "bg-success"
-                      : rankingStatus === "stale"
-                        ? "bg-warning"
-                        : rankingStatus === "offline"
-                          ? "bg-muted-foreground"
-                          : "bg-info animate-pulse",
-                  )}
-                />
-              </button>
               <button
                 onClick={() => onTabChange("sync")}
                 className="p-1.5 rounded-lg hover:bg-sidebar-ring transition-colors shrink-0 text-muted-foreground hover:text-info"

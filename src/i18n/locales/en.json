@@ -86,7 +86,9 @@
     "ragRatingSehat": "Healthy",
     "statMembers": "Members",
     "statUnits": "Units",
-    "statSavings": "Savings",
+    "statNetWorth": "Net Worth",
+    "statRanking": "Ranking",
+    "goTo": "Open {{tab}}",
     "systemNormal": "System Normal",
     "criticalAlerts_one": "{{count}} Critical Alert",
     "criticalAlerts_other": "{{count}} Critical Alerts"

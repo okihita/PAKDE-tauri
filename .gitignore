@@ -26,3 +26,6 @@ dist-ssr
 # Tauri/Rust build artifacts
 src-tauri/target/
 
+# Exported database dumps (contains PII — do not commit)
+hackathon_data/
+

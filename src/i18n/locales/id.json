@@ -86,7 +86,9 @@
     "ragRatingSehat": "Sehat",
     "statMembers": "Anggota",
     "statUnits": "Unit Usaha",
-    "statSavings": "Simpanan",
+    "statNetWorth": "Nilai Bersih",
+    "statRanking": "Peringkat",
+    "goTo": "Buka {{tab}}",
     "systemNormal": "Sistem Normal",
     "criticalAlerts_one": "{{count}} Critical Alert",
     "criticalAlerts_other": "{{count}} Critical Alerts"
