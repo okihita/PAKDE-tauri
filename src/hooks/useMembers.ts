@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { createRepository, newId } from "@/db";
 import { getActiveCoopId } from "@/db/active-coop";
 import { awardXp, removeMemberXp } from "@/data/xp";
+import { isValidNik } from "@/data/nik";
 import type { Member, Simpanan } from "@/types";
 import { useToast } from "@/hooks/useToast";
 
@@ -173,7 +174,7 @@ export function useMembers(onChange?: () => void) {
 
   const handleMemberFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (memberFormValues.nik.length !== 16) {
+    if (!isValidNik(memberFormValues.nik)) {
       toast.error(t("toast.nikInvalid"));
       return;
     }
@@ -245,7 +246,13 @@ export function useMembers(onChange?: () => void) {
       loadMembersData();
       onChange?.();
     } catch (err) {
-      toast.error(t("toast.memberSaveFailed", { error: err instanceof Error ? err.message : String(err) }));
+      const msg = err instanceof Error ? err.message : String(err);
+      // SQLite UNIQUE violation on members.nik → friendly duplicate message.
+      if (/unique/i.test(msg) && /nik/i.test(msg)) {
+        toast.error(t("toast.nikDuplicate"));
+      } else {
+        toast.error(t("toast.memberSaveFailed", { error: msg }));
+      }
     }
   };
 

@@ -15,6 +15,17 @@ interface RegionValue {
 
 interface Props {
   onChange: (value: RegionValue) => void;
+  /**
+   * Pre-selected rows (each needs `kode` + `nama`) to seed the pickers, e.g. when
+   * editing an existing member. Full `WilayahRow`s are required so both the
+   * displayed query and cascading searches initialize correctly.
+   */
+  initial?: {
+    province?: WilayahRow | null;
+    regency?: WilayahRow | null;
+    district?: WilayahRow | null;
+    village?: WilayahRow | null;
+  };
 }
 
 const L_PROVINSI = "Provinsi";
@@ -25,11 +36,11 @@ const L_SEARCH = "Ketik untuk mencari...";
 const L_SELECT_PROV = "Pilih provinsi terlebih dahulu";
 const L_SELECT_KAB = "Pilih kabupaten/kota terlebih dahulu";
 
-export default function RegionPicker({ onChange }: Props) {
-  const [province, setProvince] = useState<WilayahRow | null>(null);
-  const [regency, setRegency] = useState<WilayahRow | null>(null);
-  const [district, setDistrict] = useState<WilayahRow | null>(null);
-  const [village, setVillage] = useState<WilayahRow | null>(null);
+export default function RegionPicker({ onChange, initial }: Props) {
+  const [province, setProvince] = useState<WilayahRow | null>(initial?.province ?? null);
+  const [regency, setRegency] = useState<WilayahRow | null>(initial?.regency ?? null);
+  const [district, setDistrict] = useState<WilayahRow | null>(initial?.district ?? null);
+  const [village, setVillage] = useState<WilayahRow | null>(initial?.village ?? null);
 
   const emit = (p: WilayahRow | null, r: WilayahRow | null, d: WilayahRow | null, v: WilayahRow | null) => {
     onChange({
@@ -88,6 +99,7 @@ export default function RegionPicker({ onChange }: Props) {
         placeholder={regency ? L_SEARCH : L_SELECT_KAB}
       />
       <ComboboxField
+        key={`vil-${village?.kode ?? "none"}`}
         label={L_DESA}
         onSearch={(q) => searchVillages(district?.kode ?? null, q)}
         selected={village}
