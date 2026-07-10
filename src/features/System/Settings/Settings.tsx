@@ -4,7 +4,6 @@ import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { useUpdater } from "@/hooks/useUpdater";
 import { useToast } from "@/hooks/useToast";
 import { useIconSettings } from "@/components/IconContext";
 import type { CooperativeProfile } from "@/types";
@@ -88,7 +87,6 @@ export default function Settings({
 }: Props) {
   const { t, i18n } = useTranslation();
   const [lang, setLang] = useState(i18n.language);
-  const u = useUpdater();
   const toast = useToast();
   const { settings: iconSettings, setWeight } = useIconSettings();
   const [resetConfirm, setResetConfirm] = useState(false);
@@ -412,46 +410,6 @@ export default function Settings({
           </Card>
         </div>
       </div>
-
-      {/* ── Updater (full width) ── */}
-      <Card className="bg-card border-border">
-        <CardHeader>
-          <CardTitle className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-            {t("settings.updater.title")}
-          </CardTitle>
-          <CardDescription className="text-xxs text-muted-foreground">
-            {t("settings.updater.description")}
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4 pt-2 text-xs">
-          <Button
-            onClick={u.checkUpdateCenter}
-            disabled={u.isUpdateChecking}
-            className="w-full bg-brand hover:bg-brand text-brand-foreground font-bold text-xs h-9"
-          >
-            {u.isUpdateChecking ? t("settings.updater.checking") : t("settings.updater.checkButton")}
-          </Button>
-          {u.updateStatusText && (
-            <span className="text-success text-xs font-mono font-semibold block text-center">{u.updateStatusText}</span>
-          )}
-          {u.downloadContentLength > 0 && (
-            <div className="space-y-2 font-mono text-xxs">
-              <div className="flex justify-between text-muted-foreground">
-                <span>
-                  {`${t("settings.updater.progress")}: ${(u.downloadedBytes / 1024 / 1024).toFixed(2)} MB / ${(u.downloadContentLength / 1024 / 1024).toFixed(2)} MB`}
-                </span>
-                <span className="font-bold text-success">{u.downloadProgress}%</span>
-              </div>
-              <div className="w-full bg-input rounded-full h-1.5 border border-border overflow-hidden">
-                <div
-                  className="bg-brand h-full transition-all duration-300"
-                  style={{ width: `${u.downloadProgress}%` }}
-                />
-              </div>
-            </div>
-          )}
-        </CardContent>
-      </Card>
 
       {/* ── Danger Zone ── */}
       <Card className="bg-card border-destructive/20">

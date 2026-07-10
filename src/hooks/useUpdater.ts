@@ -1,25 +1,62 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { check } from "@tauri-apps/plugin-updater";
+import { check, type Update } from "@tauri-apps/plugin-updater";
 import { relaunch } from "@tauri-apps/plugin-process";
 
-export function useUpdater() {
+export interface UpdaterApi {
+  downloadProgress: number;
+  downloadContentLength: number;
+  downloadedBytes: number;
+  updateStatusText: string;
+  isUpdateChecking: boolean;
+  updateAvailable: boolean;
+  checkForUpdateAvailable: () => Promise<boolean>;
+  startUpdate: () => Promise<void>;
+  checkUpdateCenter: () => Promise<void>;
+}
+
+export function useUpdater(): UpdaterApi {
   const { t } = useTranslation();
   const [downloadProgress, setDownloadProgress] = useState(0);
   const [downloadContentLength, setDownloadContentLength] = useState(0);
   const [downloadedBytes, setDownloadedBytes] = useState(0);
   const [updateStatusText, setUpdateStatusText] = useState("");
   const [isUpdateChecking, setIsUpdateChecking] = useState(false);
+  const [updateAvailable, setUpdateAvailable] = useState(false);
+  // Remembers the update object discovered by the silent boot check so the
+  // install step can skip a second network round-trip.
+  const updateRef = useRef<Update | null>(null);
 
-  const checkUpdateCenter = async () => {
+  /** Silent availability probe — does NOT download. Used on app boot. */
+  const checkForUpdateAvailable = async (): Promise<boolean> => {
+    try {
+      const update = await check();
+      if (update) {
+        updateRef.current = update;
+        setUpdateAvailable(true);
+        return true;
+      }
+    } catch (e) {
+      console.error("[updater] silent check failed:", e);
+    }
+    return false;
+  };
+
+  /**
+   * Full flow: download + install + relaunch. Reuses the update object from a
+   * prior silent check; otherwise performs a fresh `check()` first.
+   */
+  const startUpdate = async () => {
     setIsUpdateChecking(true);
     setUpdateStatusText(t("settings.updater.checkingRilis"));
     setDownloadProgress(0);
     setDownloadContentLength(0);
     setDownloadedBytes(0);
     try {
-      const update = await check();
+      const update = updateRef.current ?? (await check());
       if (update) {
+        updateRef.current = update;
+        setUpdateAvailable(true);
         setUpdateStatusText(t("settings.updater.downloading", { version: update.version }));
         let bytesDownloaded = 0,
           size = 0;
@@ -63,6 +100,10 @@ export function useUpdater() {
     downloadedBytes,
     updateStatusText,
     isUpdateChecking,
-    checkUpdateCenter,
+    updateAvailable,
+    checkForUpdateAvailable,
+    startUpdate,
+    // Back-compat alias for Settings.tsx
+    checkUpdateCenter: startUpdate,
   };
 }

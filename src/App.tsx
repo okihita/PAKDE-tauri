@@ -38,6 +38,7 @@ import Dampak from "@/features/Community/Dampak/Dampak";
 import Sync from "@/features/System/Sync/Sync";
 import Settings from "@/features/System/Settings/Settings";
 import ProfileSelect from "@/features/System/ProfileSelect/ProfileSelect";
+import { useUpdater } from "@/hooks/useUpdater";
 import CreateUserProfile from "@/features/System/ProfileSelect/CreateUserProfile";
 import UserSignIn from "@/features/System/ProfileSelect/UserSignIn";
 
@@ -87,6 +88,10 @@ function AppContent() {
   const [netWorth, setNetWorth] = useState(0);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [showQuitConfirm, setShowQuitConfirm] = useState(false);
+
+  // Update lifecycle — owned at the app root so the title screen can surface an
+  // "Update available" banner and a manual check button without a login gate.
+  const updater = useUpdater();
 
   // Sync font-size setting to <html> and persist
   useEffect(() => {
@@ -203,6 +208,9 @@ function AppContent() {
   // straight to main; real coop → PIN prompt (security gate stays). First run
   // or missing/unresolvable id → normal title screen.
   useEffect(() => {
+    // Silent update probe on boot — populates the "Update available" banner on
+    // the title screen. Non-blocking; failures are logged and ignored.
+    void updater.checkForUpdateAvailable();
     (async () => {
       const savedId = localStorage.getItem("pakde-active-profile-id");
       if (!savedId) return;
@@ -223,9 +231,9 @@ function AppContent() {
         console.error(e);
       }
     })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Module gating guard: wrap setActiveTab to redirect locked tabs
   const guardedSetActiveTab = useCallback(
     (tab: typeof activeTab) => {
       const score = coopProfile?.xp ?? 0;
@@ -285,6 +293,7 @@ function AppContent() {
         {titleBar}
         <div className="flex-1 overflow-hidden relative">
           <ProfileSelect
+            updater={updater}
             onDbError={(msg) => {
               setDbErrorMessage(msg);
               setAppState("db_error");

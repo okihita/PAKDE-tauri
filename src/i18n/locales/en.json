@@ -1337,6 +1337,10 @@
     "freshStartDivider": "or start fresh",
     "freshStartHeading": "Start New Demo",
     "freshStartWarning": "Starting fresh will erase all saved demo progress.",
-    "briefingReseedWarning": "Your existing demo will be deleted. All data and progress will be lost."
+    "briefingReseedWarning": "Your existing demo will be deleted. All data and progress will be lost.",
+    "update": {
+      "available": "Update available",
+      "check": "Check for updates"
+    }
   }
 }

@@ -13,6 +13,7 @@ import {
   Buildings,
   CircleNotch,
   ArrowLeft,
+  ArrowCircleUp,
 } from "@phosphor-icons/react";
 import type { CooperativeProfile } from "@/types";
 import { initDb } from "@/db";
@@ -27,6 +28,7 @@ import { DEMO_TIERS } from "./demoTiers";
 import CampaignBriefingDialog from "./CampaignBriefingDialog";
 import DirectionalTransition, { type SwapDir } from "./DirectionalTransition";
 import { seedDemoCooperativeAtLevel, isDemoSeeded, type DemoLevel } from "@/db/seed-demo";
+import type { UpdaterApi } from "@/hooks/useUpdater";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tooltip } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
@@ -52,9 +54,10 @@ const JOIN_ACTION = "Cari Koperasi";
 interface ProfileSelectProps {
   onProfileSelect: (profile: CooperativeProfile) => void;
   onDbError: (message: string) => void;
+  updater: UpdaterApi;
 }
 
-export default function ProfileSelect({ onProfileSelect, onDbError }: ProfileSelectProps) {
+export default function ProfileSelect({ onProfileSelect, onDbError, updater }: ProfileSelectProps) {
   const { t } = useTranslation();
   const [devResult, setDevResult] = useState<{ open: boolean; ok: boolean; message: string }>({
     open: false,
@@ -614,8 +617,47 @@ export default function ProfileSelect({ onProfileSelect, onDbError }: ProfileSel
       </div>
 
       {/* Bottom: Footer */}
-      <div className="relative z-10 flex flex-col items-center pb-8 space-y-0.5 animate-in fade-in duration-500">
+      <div className="relative z-10 flex flex-col items-center pb-8 space-y-1.5 animate-in fade-in duration-500">
         <span className="text-xxs text-slate-500">{t("splash.version")}</span>
+
+        {/* Update entry — visible on the title screen (no login required) */}
+        <div className="flex flex-col items-center gap-1.5">
+          {updater.updateAvailable && !updater.isUpdateChecking && (
+            <button
+              onClick={() => void updater.startUpdate()}
+              className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1 text-xxs font-bold bg-brand/15 border border-brand/40 text-brand hover:bg-brand/25 transition-colors backdrop-blur-md focus:outline-none focus:ring-2 focus:ring-brand/50"
+            >
+              <ArrowCircleUp className="h-3.5 w-3.5" weight="fill" />
+              {t("profileSelect.update.available")}
+            </button>
+          )}
+          {!updater.updateAvailable && !updater.isUpdateChecking && (
+            <button
+              onClick={() => void updater.startUpdate()}
+              className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xxs font-bold bg-slate-900/80 border border-slate-800 text-slate-500 hover:text-slate-300 hover:border-slate-700 transition-colors backdrop-blur-md focus:outline-none focus:ring-2 focus:ring-slate-600/50"
+              title={t("profileSelect.update.check")}
+            >
+              <ArrowCircleUp className="h-3.5 w-3.5" />
+              {t("profileSelect.update.check")}
+            </button>
+          )}
+          {updater.isUpdateChecking && (
+            <div className="w-56 max-w-[80vw] space-y-1">
+              <span className="block text-center text-xxs font-mono font-semibold text-success">
+                {updater.updateStatusText}
+              </span>
+              {updater.downloadContentLength > 0 && (
+                <div className="w-full bg-slate-900/80 rounded-full h-1 border border-slate-800 overflow-hidden">
+                  <div
+                    className="bg-brand h-full transition-all duration-300"
+                    style={{ width: `${updater.downloadProgress}%` }}
+                  />
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
         <div className="flex items-center gap-2">
           <img src="/logo_kemenkop.svg" alt={t("profileSelect.footerKemenkopAlt")} className="h-6 w-auto opacity-70" />
           <span className="text-xxs text-slate-600">{FOOTER_COPYRIGHT}</span>

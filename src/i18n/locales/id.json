@@ -1337,6 +1337,10 @@
     "freshStartDivider": "atau mulai ulang",
     "freshStartHeading": "Mulai Demo Baru",
     "freshStartWarning": "Memulai ulang akan menghapus semua progres demo yang tersimpan.",
-    "briefingReseedWarning": "Demo yang sudah ada akan dihapus. Semua data dan progres akan hilang."
+    "briefingReseedWarning": "Demo yang sudah ada akan dihapus. Semua data dan progres akan hilang.",
+    "update": {
+      "available": "Pembaruan tersedia",
+      "check": "Periksa pembaruan"
+    }
   }
 }
