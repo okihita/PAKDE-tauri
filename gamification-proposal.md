@@ -67,7 +67,8 @@ member add / remove            (src/hooks/useMembers.ts)
 
 ### A. New module `src/data/xp.ts` (pure, unit-testable)
 - `XP_SOURCES: Record<action, { xp: number; labelEn: string; labelId: string; reversible: boolean }>`
-  — the data-driven source table (R2). Ships `member_joined: 500`; future
+   — the data-driven source table (R2). Ships `member_joined: 5` (scaled to
+  the existing 0–100 xp curve; see §6); future
   actions are rows, not code.
 - `awardXp(coopId: string, action: string, meta?: object): Promise<number>`
   — appends an `xp_events` row, computes `total_after`, writes
@@ -136,24 +137,24 @@ code. Phases 1–3 also gain automated coverage from `xp.test.ts`.
 the cached total. Add `vitest` + `xp.test.ts`.
 **Manually verifiable:**
 - Open/create a co-op → UI shows **Level 1 (`rintisan`)**, progress bar at `xp / next threshold`.
-- Add 1 member → `cooperatives.xp` increases by 500; the level bar advances; no "Level 0" state ever appears.
-- Inspect the DB/feed → one `member_joined` event row exists with `delta = 500` and correct `total_after`.
+- Add 1 member → `cooperatives.xp` increases by 5; the level bar advances; no "Level 0" state ever appears.
+- Inspect the DB/feed → one `member_joined` event row exists with `delta = 5` and correct `total_after`.
 - Manual check: `getCurrentLevel(xp)` matches the level shown on screen.
 
 ### Phase 2 — Extensible sources + Activity feed (A2, A4)
-**Build:** ship the full `XP_SOURCES` table (`member_joined = 500`, future
+**Build:** ship the full `XP_SOURCES` table (`member_joined = 5`, future
 stubs as rows); new `XpFeed.tsx` rendering `getXpEvents`
 (`timestamp · action label · ±delta · running total`).
 **Manually verifiable:**
-- Activity feed lists the `member_joined` event with its exact XP (+500) and the running total.
-- Flip a `XP_SOURCES` value (e.g. `500 → 750`) and add a member → feed shows **+750**; no code edit beyond the table row.
+- Activity feed lists the `member_joined` event with its exact XP (+5) and the running total.
+- Flip a `XP_SOURCES` value (e.g. `5 → 7`) and add a member → feed shows **+7**; no code edit beyond the table row.
 - Manual check: **sum of all feed deltas == displayed total XP**.
 
 ### Phase 3 — Churn / de-level (A3)
 **Build:** `removeMemberXp` emits a negative event; level recomputes (multi-level
 drop supported).
 **Manually verifiable:**
-- At a level with accumulated XP, remove a member → feed shows **−500 XP**, bar drops.
+- At a level with accumulated XP, remove a member → feed shows **−5 XP**, bar drops.
 - Remove enough to cross a threshold → co-op visibly **de-levels** with a downgrade indicator.
 - Manual check: `Σevents == totalXP`; `getCurrentLevel(totalXP)` matches the level shown.
 
@@ -200,7 +201,8 @@ A phase is "done" only when its row in §4 is green.
 
 - The "2 members = 1 level / 1,000 XP per level" MVP mechanic — it never
   matched this codebase and is superseded by the existing 10-level threshold
-  model. `member_joined: 500 XP` is retained as a single `XP_SOURCES` row and
+  model. `member_joined: 5 XP` (scaled to the existing 0–100 curve) is retained
+  as a single `XP_SOURCES` row and
   composes with that curve.
 - The `floor(totalXP / XP_PER_LEVEL)` formula (R1/R6) — contradicted the
   existing `minXp`/`maxXp` structure and the "Level 1 start" goal
