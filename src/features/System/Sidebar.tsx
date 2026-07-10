@@ -1,6 +1,7 @@
-import { useState, type ComponentType } from "react";
+import { useState, useMemo, type ComponentType } from "react";
 import { useTranslation } from "react-i18next";
-import { cn } from "@/lib/utils";
+import { cn, formatCompactRupiah } from "@/lib/utils";
+import { resolveRag, ragMeta } from "@/lib/rag";
 import {
   SquaresFour,
   UsersIcon,
@@ -23,6 +24,7 @@ import {
   SignOut,
   LockSimple,
   RocketLaunchIcon,
+  Coins,
 } from "@phosphor-icons/react";
 import { getCurrentLevel } from "@/data/leveling";
 import { isTabUnlocked, TABS_LEVEL_REQUIREMENTS, type TabId } from "@/features/System/moduleUnlock";
@@ -35,6 +37,7 @@ interface SidebarProps {
   coopProfile: CooperativeProfile | null;
   ewsAlerts: EwsAlert[];
   memberCount: number;
+  totalSavings: number;
   currentUser: { name: string; role: string } | null;
   appTheme: "dark" | "light";
   onThemeToggle: () => void;
@@ -55,6 +58,27 @@ interface NavGroupDef {
   label: string;
   accent: Accent;
   items: NavItemDef[];
+}
+
+/** Compact label + value tile for the cooperative profile card. */
+function QuickStat({
+  icon: Icon,
+  label,
+  value,
+}: {
+  icon: ComponentType<{ className?: string }>;
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="flex flex-col gap-0.5 rounded-lg bg-secondary/40 px-2 py-1.5 min-w-0">
+      <span className="flex items-center gap-1 text-xxxs text-muted-foreground truncate">
+        <Icon className="h-3 w-3 shrink-0" />
+        {label}
+      </span>
+      <span className="text-xxs font-bold text-foreground font-mono truncate">{value}</span>
+    </div>
+  );
 }
 
 type Accent = "sky" | "brand" | "violet" | "warning" | "amber";
@@ -78,6 +102,7 @@ export default function Sidebar({
   coopProfile,
   ewsAlerts,
   memberCount,
+  totalSavings,
   currentUser,
   appTheme,
   onThemeToggle,
@@ -91,6 +116,20 @@ export default function Sidebar({
   const healthScore = coopProfile?.health_score ?? 0;
   const xp = coopProfile?.xp ?? 0;
   const currentLevel = getCurrentLevel(xp);
+
+  // Operational health → RAG band (single source of truth, translation-aware).
+  const ragBand = resolveRag(coopProfile?.rag_status, healthScore);
+  const rag = ragMeta(ragBand);
+
+  // Count of active business units from the cooperative profile (registry).
+  const unitCount = useMemo(() => {
+    try {
+      const arr = JSON.parse(coopProfile?.business_units || "[]");
+      return Array.isArray(arr) ? arr.length : 0;
+    } catch {
+      return 0;
+    }
+  }, [coopProfile]);
 
   const [logoFailed, setLogoFailed] = useState(false);
   const coopInitials = (coopProfile?.name ?? "?")
@@ -251,23 +290,31 @@ export default function Sidebar({
               </div>
             )}
 
-            {/* ── Vitals — health score ── */}
+            {/* ── Vitals — RAG-aware health score ── */}
             {healthScore > 0 && (
               <div className="space-y-1">
                 <div className="flex justify-between text-xxxs font-mono">
                   <span className="text-muted-foreground">{t("sidebar.healthScore")}</span>
-                  <span className="text-success font-bold">{healthScore}%</span>
+                  <span className={`font-bold ${rag.textClass}`}>{healthScore}%</span>
                 </div>
                 <div className="h-1.5 rounded-full bg-secondary overflow-hidden">
-                  <div className="h-full rounded-full bg-brand" style={{ width: `${healthScore}%` }} />
+                  <div
+                    className={`h-full rounded-full ${rag.barClass} transition-all duration-500`}
+                    style={{ width: `${healthScore}%` }}
+                  />
+                </div>
+                <div className={`flex items-center gap-1 text-xxs font-semibold ${rag.textClass}`}>
+                  <span className={`h-1.5 w-1.5 rounded-full ${rag.dotClass}`} />
+                  {t(rag.ratingKey)}
                 </div>
               </div>
             )}
 
-            {/* ── Meta — member count ── */}
-            <div className="flex items-center gap-1 text-xxs text-muted-foreground">
-              <UsersIcon className="h-3 w-3 shrink-0" />
-              <span>{memberCount}</span>
+            {/* ── Quick stats — members · units · savings ── */}
+            <div className="grid grid-cols-3 gap-2 pt-1">
+              <QuickStat icon={UsersIcon} label={t("sidebar.statMembers")} value={memberCount.toString()} />
+              <QuickStat icon={BuildingsIcon} label={t("sidebar.statUnits")} value={unitCount.toString()} />
+              <QuickStat icon={Coins} label={t("sidebar.statSavings")} value={formatCompactRupiah(totalSavings)} />
             </div>
           </div>
 

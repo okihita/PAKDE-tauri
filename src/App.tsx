@@ -5,6 +5,7 @@ import {
   getCooperativeById,
   getMemberCount,
   getActiveEwsAlerts,
+  getTotalSavings,
 } from "@/features/System/ProfileSelect/cooperativeDb";
 import { getUsersByCooperativeId } from "@/features/System/ProfileSelect/userDb";
 import { isTabUnlocked, type TabId } from "@/features/System/moduleUnlock";
@@ -81,6 +82,7 @@ function AppContent() {
   const [coopProfile, setCoopProfile] = useState<CooperativeProfile | null>(null);
   const [ewsAlerts, setEwsAlerts] = useState<EwsAlert[]>([]);
   const [memberCount, setMemberCount] = useState(0);
+  const [totalSavings, setTotalSavings] = useState(0);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [showQuitConfirm, setShowQuitConfirm] = useState(false);
 
@@ -167,6 +169,7 @@ function AppContent() {
 
           setMemberCount(await getMemberCount(activeId));
           setEwsAlerts(await getActiveEwsAlerts(activeId));
+          setTotalSavings(await getTotalSavings(activeId));
         } else {
           const profiles = await listCooperatives();
           if (profiles.length > 0) {
@@ -393,6 +396,7 @@ function AppContent() {
           coopProfile={coopProfile}
           ewsAlerts={ewsAlerts}
           memberCount={memberCount}
+          totalSavings={totalSavings}
           currentUser={currentUser}
           appTheme={appTheme}
           onThemeToggle={() => setAppTheme((t) => (t === "dark" ? "light" : "dark"))}

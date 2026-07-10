@@ -105,3 +105,12 @@ export async function getActiveEwsAlerts(cooperativeId: string): Promise<EwsAler
   const db = await getCoopDb(cooperativeId);
   return db.select<EwsAlert[]>("SELECT * FROM ews_alerts WHERE is_active = 1");
 }
+
+/** Total member savings (pokok + wajib + sukarela) across the cooperative. */
+export async function getTotalSavings(cooperativeId: string): Promise<number> {
+  const db = await getCoopDb(cooperativeId);
+  const rows = await db.select<Array<{ total: number }>>(
+    "SELECT COALESCE(SUM(savings_pokok + savings_wajib + savings_sukarela), 0) AS total FROM members",
+  );
+  return rows[0]?.total ?? 0;
+}
