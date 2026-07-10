@@ -124,6 +124,27 @@
     "bunga": "Interest",
     "penyusutan": "Depreciation"
   },
+  "statistics": {
+    "title": "Financial Summary",
+    "healthGauge": "Health Score",
+    "healthSehat": "Your cooperative is in Healthy condition",
+    "healthCukup": "Fair condition — room for improvement",
+    "healthKurang": "Needs urgent attention — review reports",
+    "healthDescSehat": "Finances are stable, risk is low. Maintain performance and keep growing.",
+    "healthDescCukup": "Some areas need improvement. Focus on expense efficiency and member participation.",
+    "healthDescKurang": "There are issues that need immediate attention. Review expenses, receivables, and member participation.",
+    "totalSimpanan": "Total Savings",
+    "simpananMembers": "from {{n}} members",
+    "hasilBersih": "Net Result",
+    "hasilBersihDesc": "Income minus expenses",
+    "alertsActive": "Attention",
+    "alertsNone": "All indicators safe — no active warnings.",
+    "actionTitle": "What To Do",
+    "actionSehat": "Monitor cash flow and plan new business unit development.",
+    "actionCukup": "Reduce operational costs and increase member participation in savings & loans.",
+    "actionKurang": "Immediately cut expenses, collect overdue receivables, and hold a board meeting.",
+    "memberTrendUp": "+{{n}} this year"
+  },
   "beranda": {
     "welcome": "Welcome",
     "greeting": "Good {{time}}, {{name}}",

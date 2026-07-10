@@ -124,6 +124,27 @@
     "bunga": "Bunga",
     "penyusutan": "Penyusutan"
   },
+  "statistics": {
+    "title": "Ringkasan Keuangan",
+    "healthGauge": "Skor Kesehatan",
+    "healthSehat": "Koperasi Anda dalam kondisi Sehat",
+    "healthCukup": "Kondisi Cukup — ada ruang untuk perbaikan",
+    "healthKurang": "Perlu perhatian segera — tinjau laporan",
+    "healthDescSehat": "Keuangan stabil, risiko rendah. Pertahankan kinerja dan terus kembangkan.",
+    "healthDescCukup": "Beberapa area perlu ditingkatkan. Fokus pada efisiensi beban dan partisipasi anggota.",
+    "healthDescKurang": "Ada masalah yang harus segera ditangani. Tinjau beban, piutang, dan partisipasi anggota.",
+    "totalSimpanan": "Total Simpanan",
+    "simpananMembers": "dari {{n}} anggota",
+    "hasilBersih": "Hasil Bersih",
+    "hasilBersihDesc": "Pendapatan dikurangi beban",
+    "alertsActive": "Perhatian",
+    "alertsNone": "Semua indikator aman — tidak ada peringatan aktif.",
+    "actionTitle": "Yang Perlu Dilakukan",
+    "actionSehat": "Pantau terus arus kas dan rencanakan pengembangan unit usaha baru.",
+    "actionCukup": "Kurangi beban operasional dan tingkatkan partisipasi anggota dalam simpan pinjam.",
+    "actionKurang": "Segera lakukan efisiensi beban, tagih piutang tertunggak, dan adakan rapat pengurus.",
+    "memberTrendUp": "+{{n}} tahun ini"
+  },
   "beranda": {
     "welcome": "Selamat Datang",
     "greeting": "Selamat {{time}}, {{name}}",
