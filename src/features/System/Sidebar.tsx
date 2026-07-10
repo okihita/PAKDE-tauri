@@ -324,6 +324,7 @@ export default function Sidebar({
               >
                 <span className="text-xxs font-black uppercase tracking-wider shrink-0">{`Lv.${currentLevel.tier}`}</span>
                 <span className="text-xxs font-semibold truncate">{currentLevel.labelId}</span>
+                <span className="text-xxs font-mono shrink-0 opacity-80">{`XP ${xp}`}</span>
               </div>
             )}
 

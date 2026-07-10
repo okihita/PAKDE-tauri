@@ -12,6 +12,8 @@
     "continue": "Lanjutkan",
     "back": "Kembali",
     "close": "Tutup",
+    "copy": "Salin",
+    "copied": "Tersalin",
     "add": "Tambah",
     "remove": "Hapus",
     "update": "Update",
@@ -512,7 +514,17 @@
   },
   "leveling": {
     "level": "Level {{n}}",
-    "active": "AKTIF"
+    "active": "AKTIF",
+    "xpActivity": "Aktivitas XP",
+    "xpBaseline": "Saldo awal",
+    "xpEmpty": "Belum ada aktivitas XP.",
+    "xpMemberRemoved": "Anggota dihapus"
+  },
+  "xp": {
+    "verificationRequired": "Verifikasi diperlukan",
+    "dailyCapReached": "Batas XP harian tercapai",
+    "awardFailed": "Gagal memberikan XP",
+    "revertFailed": "Gagal mengembalikan XP"
   },
   "ranking": {
     "title": "Peringkat Koperasi",

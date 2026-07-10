@@ -1,10 +1,15 @@
 import { useState, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { createRepository, newId } from "@/db";
+import { getActiveCoopId } from "@/db/active-coop";
+import { awardXp, removeMemberXp } from "@/data/xp";
 import type { Member, Simpanan } from "@/types";
 import { useToast } from "@/hooks/useToast";
 
-const membersRepo = createRepository<Member>("members");
+// `members` has no `created_at` column (it uses `registered_at`), so the
+// repository must not auto-stamp one — otherwise INSERT fails with
+// "no such column: created_at".
+const membersRepo = createRepository<Member>("members", { createdAt: false });
 const simpananRepo = createRepository<Simpanan>("simpanan_anggota");
 
 const today = () => new Date().toISOString().slice(0, 10);
@@ -205,6 +210,19 @@ export function useMembers(onChange?: () => void) {
 
       if (memberFormType === "add") {
         await membersRepo.insert(id, columns);
+        // Award XP via the event ledger; keeps `cooperatives.xp` in sync.
+        // A guard rejection (e.g. verification/cap, R4) must NOT roll
+        // back the member insert — surface it as its own toast.
+        try {
+          await awardXp(getActiveCoopId(), "member_joined", { memberId: id });
+        } catch (e) {
+          // A guard rejection (xp.verificationRequired / xp.dailyCapReached)
+          // is a key and resolves via t(); any other (SQL) error is not,
+          // so log it and show the generic message instead of leaking raw SQL.
+          console.error("awardXp failed:", e);
+          const msg = e instanceof Error && e.message.startsWith("xp.") ? e.message : "xp.awardFailed";
+          toast.error(t(msg));
+        }
       } else {
         await membersRepo.update(currentMemberId, columns);
         // Replace this member's ledger rows with the edited set.
@@ -239,6 +257,14 @@ export function useMembers(onChange?: () => void) {
     try {
       await simpananRepo.execute("DELETE FROM simpanan_anggota WHERE anggota_ref = ?", [member.id ?? ""]);
       await membersRepo.remove(member.id ?? "");
+      // Revert XP via a negative ledger event (R3); failure here
+      // must not mask a successful member deletion.
+      try {
+        await removeMemberXp(getActiveCoopId(), member.id ?? "");
+      } catch (e) {
+        console.error(e);
+        toast.error(t("xp.revertFailed"));
+      }
       loadMembersData();
       onChange?.();
     } catch (err) {

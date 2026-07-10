@@ -250,7 +250,7 @@ export default function MemberFormDialog({ m }: { m: MembersHook }) {
                         onChange={() => m.setMemberFormValues({ ...fv, loan_status: opt })}
                         className="accent-brand"
                       />
-                      {t(`members.form.loanStatusOptions.${opt}`)}
+                      {t(`members.form.labels.loanStatusOptions.${opt}`)}
                     </label>
                   );
                 })}

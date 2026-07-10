@@ -5,7 +5,8 @@ import { useToast } from "@/hooks/useToast";
 import type { InventoryItem, SalesTransaction, SalesTransactionItem, Member } from "@/types";
 
 const inventoryRepo = createRepository<InventoryItem>("inventory_items");
-const membersRepo = createRepository<Member>("members");
+// `members` has no `created_at` column (it uses `registered_at`).
+const membersRepo = createRepository<Member>("members", { createdAt: false });
 const categoriesRepo = createRepository<{ id: string; name: string; icon: string }>("categories");
 const salesRepo = createRepository<SalesTransaction>("sales_transactions");
 const transactionItemsRepo = createRepository<SalesTransactionItem>("sales_transaction_items");

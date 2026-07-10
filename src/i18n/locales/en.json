@@ -12,6 +12,8 @@
     "continue": "Continue",
     "back": "Back",
     "close": "Close",
+    "copy": "Copy",
+    "copied": "Copied",
     "add": "Add",
     "remove": "Remove",
     "update": "Update",
@@ -512,7 +514,17 @@
   },
   "leveling": {
     "level": "Level {{n}}",
-    "active": "ACTIVE"
+    "active": "ACTIVE",
+    "xpActivity": "XP Activity",
+    "xpBaseline": "Starting balance",
+    "xpEmpty": "No XP activity yet.",
+    "xpMemberRemoved": "Member removed"
+  },
+  "xp": {
+    "verificationRequired": "Verification required",
+    "dailyCapReached": "Daily XP cap reached",
+    "awardFailed": "Could not award XP",
+    "revertFailed": "Could not revert XP"
   },
   "ranking": {
     "title": "Cooperative Ranking",

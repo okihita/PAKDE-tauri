@@ -29,3 +29,9 @@ src-tauri/target/
 # Exported database dumps (contains PII — do not commit)
 hackathon_data/
 
+# SQLite WAL/SHM transient files (created when a .sqlite db is opened)
+*.sqlite-wal
+*.sqlite-shm
+*.db-wal
+*.db-shm
+
