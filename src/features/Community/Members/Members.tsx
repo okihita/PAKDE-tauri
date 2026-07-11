@@ -19,6 +19,7 @@ import { useEffect, useMemo, useState } from "react";
 import type { Member } from "@/types";
 import MemberFormDialog from "./MemberFormDialog";
 import MemberDetailDialog from "./MemberDetailDialog";
+import LevelUpDialog from "./LevelUpDialog";
 import { getCoopDb } from "@/db";
 
 function InsightTile({ label, value, sub, danger }: { label: string; value: string; sub?: string; danger?: boolean }) {
@@ -105,9 +106,9 @@ function PaginationBar({
   );
 }
 
-export default function Members({ onMembersChanged }: { onMembersChanged?: () => void }) {
+export default function Members({ onMembersChanged, xp = 0 }: { onMembersChanged?: () => void; xp?: number }) {
   const { t } = useTranslation();
-  const m = useMembers(onMembersChanged);
+  const m = useMembers(onMembersChanged, xp);
   const [pendingDelete, setPendingDelete] = useState<Member | null>(null);
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
   const [sortKey, setSortKey] = useState<SortKey>("id");
@@ -464,6 +465,8 @@ export default function Members({ onMembersChanged }: { onMembersChanged?: () =>
           setPendingDelete(mb);
         }}
       />
+
+      <LevelUpDialog levelUp={m.levelUp} onClose={m.clearLevelUp} />
     </div>
   );
 }

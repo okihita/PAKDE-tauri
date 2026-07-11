@@ -1,106 +1,107 @@
-# Plan: Consolidate `pengurus` as members (Board / Struktur Pengurus)
+# Level-Up Popup – Plan (Revised v2)
 
 ## Problem
-A koperasi's `pengurus` (ketua/sekretaris/bendahara) and `pengawas` **must be drawn from
-its anggota** — they are members holding a position, not separate people. Today the app has
-three disconnected notions of "pengurus":
+When a user adds a member, XP increases (+5 per member via `awardXp`). If the
+new total crosses a level threshold, nothing signals the user. The level change
+is silent.
 
-1. `members.status_keanggotaan` — membership class; has no "pengurus" concept.
-2. `local_users.role IN ('admin','operator','pengawas')` — *app auth*, not coop org.
-3. `CooperativeProfile.officers` — a free-text JSON string, unlinked to any member.
+## Goal
+When adding a member causes the cooperative to reach a higher tier, show a
+celebratory dialog:
 
-Goal (confirmed with user): a **real feature** that models the board as positions referencing
-`members.id`, replacing the free-text `officers`, and surfaces it in the Dashboard/Leveling
-readiness signal ("Struktur pengurus minimal 3 orang").
+> "Koperasi Anda sekarang sudah masuk tier X – Label. Menu Leaderboard terbuka
+> jika ada sinkron online."
 
-## Approach (elegant, minimal-blast-radius)
-Single source of truth = a new `pengurus` table where each row is `member_id` + `jabatan`
-+ `periode`. No person PII is duplicated. The `local_users` auth table is intentionally left
-alone (different concern). The `officers` free-text field is retired.
+## Architecture
 
-### 1. Schema — `src/db/coopDb.ts`
-Add (idempotent `CREATE TABLE IF NOT EXISTS`, placed alongside the `equipment` block so
-existing coops pick it up on next launch without a version migration):
-```sql
-CREATE TABLE IF NOT EXISTS pengurus (
-  id TEXT PRIMARY KEY,
-  member_id TEXT NOT NULL,
-  jabatan TEXT NOT NULL CHECK(jabatan IN ('ketua','sekretaris','bendahara','pengawas')),
-  periode TEXT,
-  status TEXT DEFAULT 'aktif' CHECK(status IN ('aktif','nonaktif')),
-  created_at TEXT DEFAULT (datetime('now')),
-  updated_at TEXT DEFAULT (datetime('now')),
-  FOREIGN KEY (member_id) REFERENCES members(id) ON DELETE CASCADE
-);
-CREATE INDEX IF NOT EXISTS idx_pengurus_member ON pengurus(member_id);
+### Detection point
+`useMembers.ts` → `handleMemberFormSubmit` → inside the `try` block after
+`awardXp()` succeeds. `awardXp()` returns `Promise<number>` (the new XP total).
+We compare `getCurrentLevel(oldXp).tier` against `getCurrentLevel(newXp).tier`.
+
+### Stale XP problem (review feedback #2)
+`handleMemberFormSubmit` is a plain closure, not wrapped in `useCallback`. If
+two rapid submits happen before `refreshMemberCount` propagates in App.tsx,
+the second submit sees a stale `coopProfile.xp`.
+
+**Fix:** Instead of passing `currentXp` as a prop, use a `useRef` inside
+`useMembers` that is synced with the latest XP via an effect. On submit, read
+the ref for `oldXp`. This eliminates the stale-closure race.
+
+Actually **simpler fix:** Since `awardXp` writes the new total to the registry
+DB (`cooperatives.xp`), we can simply re-read it after the award: the old XP is
+whatever was last persisted, and `awardXp` also returns the new total after
+applying its own delta. But for `oldXp`, we still need to know the XP *before*
+this specific award. The simplest safe approach:
+
+- Add an `xpRef` in `useMembers` synced from a new parameter `xpSignal: number`
+- On `awardXp` success, compare `getCurrentLevel(xpRef.current).tier < getCurrentLevel(newTotal).tier`
+
+### Level-up state
+Return `levelUp: LevelDef | null` (full `LevelDef` object, per review
+feedback #4 & suggestion #1). This lets the dialog access `tier`, `labelEn`,
+`labelId`, `color`, `bgClass` for styling.
+
+### Detection scope (review feedback #6)
+Only triggered in the `add` branch (not on edit). `removeMemberXp` does NOT
+trigger a level-down dialog (per spec).
+
+### Error path (review feedback #3)
+Level-up detection is ONLY inside the `try` block, after `awardXp` succeeds:
+
+```ts
+if (memberFormType === "add") {
+  await membersRepo.insert(id, columns);
+  try {
+    const newTotalXp = await awardXp(...);
+    // ── level-up detection here ──
+    const oldLevel = getCurrentLevel(xpRef.current).tier;
+    const newLevel = getCurrentLevel(newTotalXp).tier;
+    if (newLevel > oldLevel) {
+      setLevelUp(getCurrentLevel(newTotalXp));
+    }
+  } catch (e) {
+    // existing error handling; levelUp stays null
+  }
+}
 ```
 
-### 2. Types — `src/types/index.ts`
-- Add `export type Jabatan = "ketua" | "sekretaris" | "bendahara" | "pengawas";`
-- Add `Pengurus` interface (`id?`, `member_id`, `jabatan`, `periode?`, `status`).
-- **Retire `officers`** from `CooperativeProfile` (deprecation per user): remove the field
-  from the TS type and every *write* path. The legacy `officers` column in the registry DB
-  is left in place (no destructive `DROP COLUMN` migration) but no longer written/read.
+### Extracted helper (review suggestion #3)
+Add to `src/data/leveling.ts`:
+```ts
+export function detectLevelUp(oldXp: number, newXp: number): LevelDef | null {
+  const oldLevel = getCurrentLevel(oldXp);
+  const newLevel = getCurrentLevel(newXp);
+  return newLevel.tier > oldLevel.tier ? newLevel : null;
+}
+```
 
-### 3. Remove `officers` write paths
-- `src/db/registry.ts` — remove `officers` from the `INSERT` column/value list in
-  `createCooperative` (leave the column itself; new rows simply omit it).
-- `src/features/System/ProfileSelect/cooperativeDb.ts` — stop building `officersJson`; drop
-  from the INSERT.
-- `src/features/System/Settings/Settings.tsx` — stop passing `officers` in `updateCooperative`.
-- `src/db/seed-demo.ts` — stop seeding the `officers` JSON; instead seed `pengurus` rows for
-  the demo coop (ketua/sekretaris/bendahara referencing 3 seeded active members).
+### UI Dialog
+Rendered in `Members.tsx`, same Radix Dialog pattern as the delete-confirmation
+dialog. Props: `open`, `levelUp: LevelDef | null`, `onClose`.
 
-### 4. Hook — `src/hooks/usePengurus.ts` (new)
-Mirror `useMembers` pattern:
-- `pengurusRepo = createRepository<Pengurus>("pengurus", { createdAt: false })`.
-- `loadPengurus()` → returns rows `JOIN members` for `name`/`nik` of the assigned member.
-- `addPengurus`, `updatePengurus`, `removePengurus`, `countActivePengurus()`.
-- Guard: a member can hold only one active jabatan (prevent double-assign).
+## Files to change
 
-### 5. UI — `src/features/Community/Pengurus/`
-- `Pengurus.tsx` — page grouped by jabatan (Ketua / Sekretaris / Bendahara / Pengawas),
-  each card shows assigned member name + periode, with edit/remove. "Tambah Pengurus"
-  button opens the form. Header shows a readiness chip:
-  `Struktur: {n}/3 terisi` (green check when `n >= 3`, mirroring the Leveling governance
-  quest "Struktur pengurus minimal 3 orang").
-- `PengurusFormDialog.tsx` — pick an **active member** (Select from `members` where
-  `status='aktif'`) + `jabatan` + `periode`. Reuses `Dialog`, `Select`, `Input`, `Button`.
+| File | Change |
+|------|--------|
+| `src/data/leveling.ts` | Add `detectLevelUp(oldXp, newXp)` helper |
+| `src/hooks/useMembers.ts` | Add `xpRef` synced from `xpSignal` param; capture `newTotalXp` from `awardXp`; detect level-up in try block; return `levelUp` / `clearLevelUp` |
+| `src/features/Community/Members/Members.tsx` | Accept `xp` prop; pass to `useMembers`; render `LevelUpDialog` |
+| `src/App.tsx` | Pass `coopProfile?.xp ?? 0` as `xp` prop to `<Members>` |
+| `src/i18n/locales/id.json` | Add `levelUp` keys |
+| `src/i18n/locales/en.json` | Add `levelUp` keys |
 
-### 6. Navigation wiring
-- `src/features/System/moduleUnlock.ts` — add `pengurus: 0` to `TABS_LEVEL_REQUIREMENTS`
-  (auto-included in `TabId`).
-- `src/features/System/Sidebar.tsx` — add nav item in the `komunitas` group:
-  `{ id: "pengurus", icon: <UserSwitch/>, label: t("sidebar.nav.pengurus") }`.
-- `src/App.tsx` — `import Pengurus`, render `{activeTab === "pengurus" && <Pengurus
-  onPengurusChanged={...} />}`.
-
-### 7. Dashboard / readiness linkage
-- `Pengurus.tsx` readiness chip (above) is the primary live signal.
-- `src/features/Home/Dashboard/Dashboard.tsx` — on load/refresh, read
-  `countActivePengurus()`; if `>= 3`, auto-mark the Rintisan `q3` task
-  ("Siapkan struktur pengurus…") done (idempotent, doesn't fight manual toggles of other
-  tasks). This is the lightweight stand-in for the Leveling governance quest, which is not
-  yet rendered in the UI (`leveling-data.ts` quests are currently display-only).
-
-### 8. i18n — `src/i18n/locales/{id,en}.json`
-- `sidebar.nav.pengurus`
-- `pengurus.*`: `title`, `subtitle`, `add`, `jabatan`, `jabatanLabels`
-  (ketua/sekretaris/bendahara/pengawas), `selectMember`, `periode`, `empty`,
-  `readiness` (`Struktur: {n}/3`), `readinessDone`, `removeConfirm`, `saved`, `exists`.
-
-## Files touched
-- NEW: `src/db` (schema), `src/hooks/usePengurus.ts`,
-  `src/features/Community/Pengurus/Pengurus.tsx`, `.../PengurusFormDialog.tsx`
-- EDIT: `src/db/coopDb.ts`, `src/types/index.ts`, `src/db/registry.ts`,
-  `src/features/System/ProfileSelect/cooperativeDb.ts`, `src/features/System/Settings/Settings.tsx`,
-  `src/db/seed-demo.ts`, `src/features/System/moduleUnlock.ts`,
-  `src/features/System/Sidebar.tsx`, `src/App.tsx`,
-  `src/features/Home/Dashboard/Dashboard.tsx`, `src/i18n/locales/{id,en}.json`
+## Edge cases
+- **De-level on member removal:** Not addressed (spec only covers member add).
+- **Multi-tier skip:** Single member add = 5 XP, tier thresholds spaced 10 XP
+  apart. Single add can cross at most one threshold. `oldTier < newTier` works.
+- **XP > 100:** `getCurrentLevel` returns last matching level (tier 10).
+  No overflow issues.
+- **awardXp throws:** Detection is inside the `try`; `levelUp` stays null.
 
 ## Verification
-- `pnpm check` (lint + tsc + prettier) passes.
-- `pnpm build` succeeds.
-- Manual: open demo coop → Pengurus tab shows 3 seeded officers; add/remove works; assigning
-  an already-assigned member is blocked; Dashboard Rintisan q3 auto-completes at ≥3; removing
-  below 3 reverts the chip to incomplete.
+1. Add member crossing a tier boundary → popup appears
+2. Add member NOT crossing a tier → no popup
+3. Edit a member → no popup
+4. Close popup → `levelUp` clears
+5. Two rapid adds → ref-based XP stays current; second add detects correctly

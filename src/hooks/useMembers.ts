@@ -1,9 +1,10 @@
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { createRepository, newId, getCoopDb, addColumnIfAbsent } from "@/db";
 import { getActiveCoopId } from "@/db/active-coop";
 import { awardXp, removeMemberXp } from "@/data/xp";
 import { isValidNik } from "@/data/nik";
+import { detectLevelUp, type LevelDef } from "@/data/leveling";
 import type { Jabatan, Member, Simpanan } from "@/types";
 import { useToast } from "@/hooks/useToast";
 import { getMemberJabatanMap, setMemberJabatan } from "@/hooks/usePengurus";
@@ -71,7 +72,7 @@ const EMPTY_INSIGHTS: MemberInsights = {
   newThisMonth: 0,
 };
 
-export function useMembers(onChange?: () => void) {
+export function useMembers(onChange?: () => void, xpSignal = 0) {
   const { t } = useTranslation();
   const toast = useToast();
 
@@ -98,6 +99,13 @@ export function useMembers(onChange?: () => void) {
   const [nikConflictNonce, setNikConflictNonce] = useState(0);
   const [page, setPage] = useState(1);
   const pageSize = 20;
+  // Level-up popup: set when a member add crosses a tier threshold.
+  const [levelUp, setLevelUp] = useState<LevelDef | null>(null);
+  // Ref to keep the pre-award XP current even when the parent hasn't re-fetched.
+  const xpRef = useRef(xpSignal);
+  useEffect(() => {
+    xpRef.current = xpSignal;
+  }, [xpSignal]);
 
   const loadInsights = useCallback(async (list: Member[]) => {
     const totalSimpanan = list.reduce(
@@ -250,7 +258,10 @@ export function useMembers(onChange?: () => void) {
         // A failure here must NOT roll back the member insert — surface it
         // as its own toast.
         try {
-          await awardXp(getActiveCoopId(), "member_joined", { memberId: id });
+          const newTotalXp = await awardXp(getActiveCoopId(), "member_joined", { memberId: id });
+          // Detect level-up (only inside the try; awardXp must have succeeded).
+          const discovered = detectLevelUp(xpRef.current, newTotalXp);
+          if (discovered) setLevelUp(discovered);
         } catch (e) {
           // A thrown key (e.g. unknown action) resolves via t(); any other
           // (SQL) error does not, so log it and show the generic message
@@ -398,5 +409,7 @@ export function useMembers(onChange?: () => void) {
     setPage,
     pageSize,
     totalPages,
+    levelUp,
+    clearLevelUp: () => setLevelUp(null),
   };
 }

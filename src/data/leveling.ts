@@ -64,3 +64,10 @@ export function getLevelById(id: LevelId): LevelDef | undefined {
 export function getLevelByTier(tier: number): LevelDef | undefined {
   return LEVELS.find((l) => l.tier === tier);
 }
+
+/** Detect if XP crossed a level threshold upward. Returns the new level, or null. */
+export function detectLevelUp(oldXp: number, newXp: number): LevelDef | null {
+  const oldLevel = getCurrentLevel(oldXp);
+  const newLevel = getCurrentLevel(newXp);
+  return newLevel.tier > oldLevel.tier ? newLevel : null;
+}
