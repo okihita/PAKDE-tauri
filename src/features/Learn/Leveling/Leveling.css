@@ -5,24 +5,30 @@
   position: relative;
   isolation: isolate;
   min-height: 32rem;
-  background: var(--banner);
+  color: #fff;
+  background: var(--banner-outline, #d4af37);
   clip-path: var(--banner-shape);
   transition:
     transform 0.2s ease,
     filter 0.2s ease;
 }
 
-.banner:hover {
-  transform: translateY(-4px);
-  filter: drop-shadow(0 8px 18px color-mix(in srgb, var(--banner) 40%, transparent));
-}
-
-/* Card field sits 3px inside the shape → reads as a colored border */
+/* Colored fill inset 3px inside the outline → reads as a bordered banner */
 .banner__field {
   position: absolute;
   inset: 3px;
   z-index: -1;
   clip-path: var(--banner-shape);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--banner) 82%, #000 18%),
+    color-mix(in srgb, var(--banner) 62%, #000 38%)
+  );
+}
+
+.banner:hover {
+  transform: translateY(-4px);
+  filter: drop-shadow(0 8px 18px color-mix(in srgb, var(--banner) 40%, transparent));
 }
 
 /* Top mounting finial */
@@ -38,15 +44,15 @@
   top: 0;
   width: 2px;
   height: 0.5rem;
-  background: var(--banner);
+  background: rgba(255, 255, 255, 0.7);
 }
 
 .banner__finial-ring {
   width: 0.7rem;
   height: 0.7rem;
   border-radius: 9999px;
-  border: 2px solid var(--banner);
-  background: var(--card);
+  border: 2px solid rgba(255, 255, 255, 0.7);
+  background: color-mix(in srgb, var(--banner) 72%, #000 28%);
   margin-top: 0.35rem;
 }
 
@@ -55,7 +61,6 @@
   display: flex;
   justify-content: center;
   padding: 0.5rem 0.75rem 0.75rem;
-  background: color-mix(in srgb, var(--banner) 16%, var(--card));
 }
 
 .banner__emblem {
@@ -65,9 +70,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--card);
-  border: 2px solid var(--banner);
-  box-shadow: 0 2px 8px color-mix(in srgb, var(--banner) 35%, transparent);
+  background: #fff;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
 }
 
 /* Body */
@@ -88,7 +92,7 @@
 .banner__tier {
   font-size: 0.95rem;
   font-weight: 800;
-  color: var(--foreground);
+  color: #fff;
   letter-spacing: 0.01em;
 }
 
@@ -97,8 +101,8 @@
   font-family: var(--font-mono, monospace);
   font-weight: 700;
   text-transform: uppercase;
-  color: var(--banner);
-  border: 1px solid var(--banner);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.7);
   border-radius: 9999px;
   padding: 0.05rem 0.35rem;
 }
@@ -110,6 +114,8 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.04em;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.18);
   border-radius: 9999px;
   padding: 0.15rem 0.6rem;
 }
@@ -118,7 +124,12 @@
   font-size: 0.65rem;
   line-height: 1.25;
   text-align: center;
-  color: var(--muted-foreground);
+  color: rgba(255, 255, 255, 0.85);
+  min-height: 3.25rem; /* reserve 4 lines so the XP bar aligns across banners */
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .banner__progress {
@@ -128,14 +139,16 @@
 .banner__actions {
   margin-top: 0.25rem;
   padding-top: 0.5rem;
-  border-top: 1px dashed color-mix(in srgb, var(--banner) 35%, var(--border));
+  border-top: 1px dashed rgba(255, 255, 255, 0.35);
 }
 
 /* States */
 .banner--current {
+  --banner-outline: #fde047;
   filter: drop-shadow(0 6px 16px color-mix(in srgb, var(--banner) 45%, transparent));
 }
 
 .banner--locked {
-  opacity: 0.6;
+  opacity: 0.7;
+  filter: grayscale(0.7) brightness(0.8);
 }

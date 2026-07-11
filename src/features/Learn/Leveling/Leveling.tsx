@@ -37,10 +37,15 @@ function LevelCard({
   return (
     <div
       className={`banner w-44 shrink-0 snap-start ${isCurrent ? "banner--current" : ""} ${!isUnlocked ? "banner--locked" : ""}`}
-      style={{ ["--banner" as string]: level.color } as React.CSSProperties}
+      style={
+        {
+          ["--banner"]: level.color,
+          ["--banner-outline"]: isUnlocked ? "#d4af37" : "#374151",
+        } as React.CSSProperties
+      }
     >
-      {/* Colored field behind the card = the banner's border */}
-      <div className="banner__field bg-card" />
+      {/* Color fill — sits 3px inside the gold outline */}
+      <div className="banner__field" />
 
       {/* Top finial — the ring the banner hangs from */}
       <div className="banner__finial">
@@ -66,27 +71,22 @@ function LevelCard({
           {isCurrent && <span className="banner__active">{t("leveling.active")}</span>}
         </div>
 
-        <span
-          className="banner__label"
-          style={{ color: "var(--banner)", background: "color-mix(in srgb, var(--banner) 14%, transparent)" }}
-        >
-          {label}
-        </span>
+        <span className="banner__label">{label}</span>
 
         <p className="banner__desc">{desc}</p>
 
         {/* XP progress */}
         <div className="banner__progress">
           <div className="flex justify-between text-xxxs font-mono mb-1">
-            <span className="text-muted-foreground">
+            <span className="text-white/80">
               XP {earned}/{maxXp}
             </span>
-            <span style={{ color: "var(--banner)" }}>{percent}%</span>
+            <span className="text-white font-bold">{percent}%</span>
           </div>
-          <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+          <div className="h-1.5 bg-white/25 rounded-full overflow-hidden">
             <div
-              className="h-full rounded-full transition-all duration-500"
-              style={{ width: `${isUnlocked ? percent : 0}%`, background: "var(--banner)" }}
+              className="h-full rounded-full bg-white transition-all duration-500"
+              style={{ width: `${isUnlocked ? percent : 0}%` }}
             />
           </div>
         </div>
@@ -94,17 +94,15 @@ function LevelCard({
         {/* Always-visible XP actions */}
         <div className="banner__actions">
           <div className="flex items-center gap-1.5 mb-1.5">
-            <StarIcon className="h-3 w-3" style={{ color: "var(--banner)" }} />
-            <span className="text-xxxs font-mono font-bold uppercase tracking-wider text-muted-foreground">
+            <StarIcon className="h-3 w-3 text-white" />
+            <span className="text-xxxs font-mono font-bold uppercase tracking-wider text-white/80">
               {t("leveling.earnXp")}
             </span>
           </div>
           <ul className="space-y-1">
             {XP_ACTIONS.map((a, i) => (
-              <li key={i} className="flex items-center gap-2 text-xxs text-muted-foreground">
-                <span className="font-mono font-bold shrink-0" style={{ color: "var(--banner)" }}>
-                  +{a.xp}
-                </span>
+              <li key={i} className="flex items-center gap-2 text-xxs text-white/85">
+                <span className="font-mono font-bold shrink-0 text-white">+{a.xp}</span>
                 <span className="leading-tight">{isId ? a.labelId : a.labelEn}</span>
               </li>
             ))}
