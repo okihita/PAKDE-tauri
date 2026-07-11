@@ -11,8 +11,8 @@ interface Props {
   xp?: number;
 }
 
-/** Static framework abbreviations for the ERL anchor panel (same in en/id). */
-const ERL_LABELS = { erl: "ERL", irl: "IRL", trlMrl: "TRL·MRL", cmm: "CMM" } as const;
+/** Static framework abbreviations for the ERL panel (same in en/id). */
+const ERL_BADGE = { erl: "ERL", irl: "IRL", trlMrl: "TRL·MRL", cmm: "CMM" } as const;
 
 function LevelCard({
   level,
@@ -33,7 +33,6 @@ function LevelCard({
   const isUnlocked = xp >= level.minXp;
   const currentLevel = getCurrentLevel(xp);
   const isCurrent = currentLevel.id === level.id;
-  const erl = getErlForTier(level.tier);
 
   return (
     <div
@@ -98,31 +97,6 @@ function LevelCard({
               style={{ width: `${isUnlocked ? percent : 0}%` }}
             />
           </div>
-        </div>
-
-        {/* ERL knowledge base — how this tier maps to ERL 1–9 & anchor frameworks */}
-        <div className="banner__erl">
-          <div className="banner__erl-head">
-            <span className="banner__erl-badge">
-              {ERL_LABELS.erl} {erl.level}
-            </span>
-            <span className="banner__erl-name">{isId ? erl.nameId : erl.nameEn}</span>
-          </div>
-          <ul className="banner__erl-anchors">
-            <li>
-              <span className="banner__erl-key">{ERL_LABELS.irl}</span>
-              <span className="banner__erl-val">{erl.irl}</span>
-            </li>
-            <li>
-              <span className="banner__erl-key">{ERL_LABELS.trlMrl}</span>
-              <span className="banner__erl-val">{erl.trlMrl}</span>
-            </li>
-            <li>
-              <span className="banner__erl-key">{ERL_LABELS.cmm}</span>
-              <span className="banner__erl-val">{erl.cmm}</span>
-            </li>
-          </ul>
-          <p className="banner__erl-desc">{isId ? erl.descId : erl.descEn}</p>
         </div>
       </div>
     </div>
@@ -202,6 +176,58 @@ export default function Leveling({ xp = 0 }: Props) {
         {LEVELS.map((level: LevelDef) => (
           <LevelCard key={level.id} level={level} lang={i18n.language} t={t} xp={xp} />
         ))}
+      </div>
+
+      {/* ERL knowledge base — how each PAKDE tier maps to ERL 1–9 & anchor frameworks */}
+      <div className="bg-card border-border text-foreground rounded-xl border p-4">
+        <div className="flex items-center gap-2 mb-1">
+          <span className="text-xs font-bold text-foreground">
+            {isId ? "Tingkat Kesiapan Ekonomi (ERL 1–9)" : "Economic Readiness Level (ERL 1–9)"}
+          </span>
+        </div>
+        <p className="text-xxs text-muted-foreground mb-3">
+          {isId
+            ? "Setiap level PAKDE diselaraskan dengan kerangka internasional: IRL, TRL·MRL, dan CMM."
+            : "Each PAKDE tier is anchored to international frameworks: IRL, TRL·MRL, and CMM."}
+        </p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+          {LEVELS.map((level: LevelDef) => {
+            const erl = getErlForTier(level.tier);
+            const label = isId ? level.labelId : level.labelEn;
+            return (
+              <div
+                key={level.id}
+                className={`rounded-lg border border-border p-2.5 flex flex-col gap-1 ${
+                  getCurrentLevel(xp).id === level.id ? "ring-1 ring-brand/40 bg-brand/5" : ""
+                }`}
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className="text-xxs font-mono font-bold text-muted-foreground shrink-0">
+                      {t("leveling.level", { n: level.tier })}
+                    </span>
+                    <span className="text-xs font-bold text-foreground truncate">{label}</span>
+                  </div>
+                  <span className="text-xxxs font-mono font-bold px-2 py-0.5 rounded-full bg-warning/10 text-warning shrink-0">
+                    {ERL_BADGE.erl} {erl.level}
+                  </span>
+                </div>
+                <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-xxxs font-mono text-muted-foreground">
+                  <span>
+                    {ERL_BADGE.irl} <span className="text-foreground font-bold">{erl.irl}</span>
+                  </span>
+                  <span>
+                    {ERL_BADGE.trlMrl} <span className="text-foreground font-bold">{erl.trlMrl}</span>
+                  </span>
+                  <span>
+                    {ERL_BADGE.cmm} <span className="text-foreground font-bold">{erl.cmm}</span>
+                  </span>
+                </div>
+                <p className="text-xxs text-muted-foreground leading-snug">{isId ? erl.descId : erl.descEn}</p>
+              </div>
+            );
+          })}
+        </div>
       </div>
 
       {/* XP event ledger (Phase 2) */}
