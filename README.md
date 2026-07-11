@@ -17,7 +17,7 @@ Get up and running with PAKDE immediately:
 1. **Download the installer:**
    * **[Download for Windows (.exe)](https://github.com/okihita/PAKDE-tauri/releases/download/v1.0.0/PAKDE_1.0.0_x64-setup.exe)**
    * **[Download for macOS (.dmg)](https://github.com/okihita/PAKDE-tauri/releases/download/v1.0.0/PAKDE_1.0.0_universal.dmg)**
-2. **Follow the setup instructions:** Check the [INSTALLATION.md](INSTALLATION.md) for OS-specific steps (such as macOS Gatekeeper workarounds) and building from source.
+2. **Follow the setup instructions:** Check the [INSTALLATION.md](docs/INSTALLATION.md) for OS-specific steps (such as macOS Gatekeeper workarounds) and building from source.
 
 ---
 
@@ -220,4 +220,4 @@ Seluruh aturan hukum koperasi di Indonesia telah diintegrasikan langsung ke dala
 *   **[Download for macOS (.dmg)](https://github.com/okihita/PAKDE-tauri/releases/download/v1.0.0/PAKDE_1.0.0_universal.dmg)**
 *   For other targets or versions, see the [GitHub Releases](https://github.com/okihita/PAKDE-tauri/releases) page.
 
-Please refer to [INSTALLATION.md](INSTALLATION.md) for full Windows, macOS, and Linux setup instructions, Gatekeeper workarounds, and guidance on running the development environment from source.
+Please refer to [INSTALLATION.md](docs/INSTALLATION.md) for full Windows, macOS, and Linux setup instructions, Gatekeeper workarounds, and guidance on running the development environment from source.

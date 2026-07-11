@@ -1,4 +1,4 @@
-// ── Client-side crypto (zero-knowledge, matches ARCHITECTURE.md §9) ──
+// ── Client-side crypto (zero-knowledge, matches docs/ARCHITECTURE.md §9) ──
 //
 // AES-256-GCM for confidentiality+integrity, PBKDF2(SHA-256) for key
 // derivation from a user passphrase. All via the browser Web Crypto API —
