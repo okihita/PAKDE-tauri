@@ -190,7 +190,7 @@ export default function Leveling({ xp = 0 }: Props) {
       </div>
 
       {/* Level banners — single horizontal row, scrollable */}
-      <div className="leveling-scroll -mx-6 px-6 pt-6 pb-6 flex gap-4 overflow-x-scroll snap-x snap-mandatory">
+      <div className="leveling-scroll pt-6 pb-6 flex gap-4 overflow-x-scroll snap-x snap-mandatory">
         {LEVELS.map((level: LevelDef) => (
           <LevelCard key={level.id} level={level} lang={i18n.language} t={t} xp={xp} />
         ))}
