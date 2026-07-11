@@ -9,7 +9,6 @@ import {
   TrendUpIcon,
   ChartBarIcon,
   TrophyIcon,
-  ArrowsClockwise,
   CalendarPlus,
   WarehouseIcon,
   HandshakeIcon,
@@ -380,16 +379,7 @@ export default function Sidebar({
             </div>
           </div>
 
-          {/* Sync control (session/settings/theme/profile moved to top bar) */}
-          <div className="flex items-center justify-end px-1">
-            <button
-              onClick={() => onTabChange("sync")}
-              className="p-1.5 rounded-lg hover:bg-sidebar-ring transition-colors shrink-0 text-muted-foreground hover:text-info"
-              title={t("sidebar.nav.sync")}
-            >
-              <ArrowsClockwise className="h-3.5 w-3.5" />
-            </button>
-          </div>
+          {/* Sync control moved to the TopBar (next to the user profile) */}
         </div>
 
         {/* ── Navigation ── */}

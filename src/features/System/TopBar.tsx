@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import { Gear, SunIcon, MoonIcon, UserCheck, SignOut, XCircle } from "@phosphor-icons/react";
+import { Gear, SunIcon, MoonIcon, UserCheck, SignOut, XCircle, CloudCheck } from "@phosphor-icons/react";
 import type { TabId } from "@/features/System/moduleUnlock";
 
 interface TopBarProps {
@@ -75,6 +75,10 @@ export default function TopBar({
           <p className="text-xxs text-muted-foreground truncate max-w-[140px]">{currentUser?.role}</p>
         </div>
       </div>
+
+      <button onClick={() => onNavigate("sync")} className={`${ctrlBtn} hover:text-info`} title={t("sidebar.nav.sync")}>
+        <CloudCheck className="h-4 w-4" />
+      </button>
     </div>
   );
 }
