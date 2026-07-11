@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { LEVELS, getLevelProgress, getCurrentLevel, type LevelDef } from "@/data/leveling";
 import { getActiveCoopId } from "@/db/active-coop";
 import { getTierBand } from "@/data/xp-core";
-import { getErlForTier } from "@/data/readiness";
+import { getErlForTier, ERL_FRAMEWORKS, ERL_INTRO, ERL_CONVERGENCE } from "@/data/readiness";
 import XpFeed from "./XpFeed";
 import { TrophyIcon, LockIcon } from "@phosphor-icons/react";
 
@@ -185,11 +185,29 @@ export default function Leveling({ xp = 0 }: Props) {
             {isId ? "Tingkat Kesiapan Ekonomi (ERL 1–9)" : "Economic Readiness Level (ERL 1–9)"}
           </span>
         </div>
-        <p className="text-xxs text-muted-foreground mb-3">
-          {isId
-            ? "Setiap level PAKDE diselaraskan dengan kerangka internasional: IRL, TRL·MRL, dan CMM."
-            : "Each PAKDE tier is anchored to international frameworks: IRL, TRL·MRL, and CMM."}
-        </p>
+        <p className="text-xxs text-muted-foreground mb-3">{isId ? ERL_INTRO.id : ERL_INTRO.en}</p>
+
+        {/* Anchor framework legend — what each framework is & why we use it */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-3">
+          {ERL_FRAMEWORKS.map((fw) => (
+            <div key={fw.key} className="rounded-lg border border-border p-2.5 flex flex-col gap-1">
+              <div className="flex items-baseline gap-2">
+                <span className="text-xs font-mono font-bold text-warning shrink-0">{fw.abbr}</span>
+                <span className="text-xxs font-semibold text-foreground leading-tight">
+                  {isId ? fw.fullId : fw.fullEn}
+                </span>
+              </div>
+              <p className="text-xxs text-muted-foreground leading-snug">{isId ? fw.descId : fw.descEn}</p>
+              <p className="text-xxs leading-snug border-l-2 border-warning/40 pl-2 text-muted-foreground">
+                {isId ? fw.whyId : fw.whyEn}
+              </p>
+            </div>
+          ))}
+        </div>
+
+        <p className="text-xxs text-muted-foreground mb-3 italic">{isId ? ERL_CONVERGENCE.id : ERL_CONVERGENCE.en}</p>
+
+        {/* Per-tier mapping */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
           {LEVELS.map((level: LevelDef) => {
             const erl = getErlForTier(level.tier);
