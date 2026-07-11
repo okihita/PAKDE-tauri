@@ -1,4 +1,4 @@
-import { useState, useMemo, type ComponentType } from "react";
+import { useMemo, type ComponentType } from "react";
 import { useTranslation } from "react-i18next";
 import { cn, formatCompactRupiah } from "@/lib/utils";
 import { resolveRag, ragMeta } from "@/lib/rag";
@@ -18,7 +18,9 @@ import {
   RocketLaunchIcon,
   Coins,
   HandCoins,
+  PencilSimple,
 } from "@phosphor-icons/react";
+import { CoopEmblem } from "./CoopEmblem";
 import { getCurrentLevel, getLevelProgress } from "@/data/leveling";
 import {
   isTabUnlocked,
@@ -40,6 +42,7 @@ interface SidebarProps {
   rankingStatus: RankingStatus;
   rankingRank: number | null;
   rankingUnlocked: boolean;
+  onOpenProfile: () => void;
 }
 
 interface NavItemDef {
@@ -79,6 +82,7 @@ export default function Sidebar({
   rankingStatus,
   rankingRank,
   rankingUnlocked,
+  onOpenProfile,
 }: SidebarProps) {
   const { t } = useTranslation();
   const healthScore = coopProfile?.health_score ?? 0;
@@ -149,15 +153,6 @@ export default function Sidebar({
     ) : (
       <LockSimple className="h-3.5 w-3.5 text-muted-foreground" />
     );
-
-  const [logoFailed, setLogoFailed] = useState(false);
-  const coopInitials = (coopProfile?.name ?? "?")
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((w) => w[0] ?? "")
-    .join("")
-    .toUpperCase();
 
   // The array order inside each group IS the display order. Decoupled from
   // unlock thresholds on purpose: changing a tab's gating level must never
@@ -273,68 +268,67 @@ export default function Sidebar({
     <aside className="w-72 border-r border-border bg-sidebar flex flex-col print:hidden">
       <div className="flex flex-col flex-1 min-h-0">
         {/* ── Guild Header ── */}
-        <div className="px-3 pt-4 pb-3 border-b border-border space-y-3">
-          <div className="rounded-xl bg-card border border-border p-4 space-y-3">
-            {/* ── Identity: emblem + name (wraps, never cut off) ── */}
-            <div className="flex items-center gap-3">
-              <div className="w-11 h-11 rounded-xl bg-success/15 ring-1 ring-brand/30 flex items-center justify-center shrink-0 overflow-hidden">
-                {coopProfile?.logo_path && !logoFailed ? (
-                  <img
-                    src={coopProfile.logo_path}
-                    alt={coopProfile.name}
-                    className="h-full w-full object-cover"
-                    onError={() => setLogoFailed(true)}
-                  />
-                ) : (
-                  <span className="text-sm font-black text-success">{coopInitials}</span>
-                )}
-              </div>
-              <div className="min-w-0 flex-1">
-                <h2 className="text-sm font-bold text-foreground leading-tight break-words">
-                  {coopProfile?.name ?? "..."}
-                </h2>
-              </div>
-            </div>
-
-            {/* ── Level — single-row pill with progress bar ── */}
-            {currentLevel &&
-              (() => {
-                const prog = getLevelProgress(currentLevel, xp);
-                return (
-                  <div
-                    className={`flex items-center gap-2 rounded-lg px-2.5 py-1.5 border border-current/20 ${currentLevel.bgClass} ${currentLevel.textClass}`}
-                  >
-                    <span className="text-xxs font-black uppercase tracking-wider shrink-0">{`Lv.${currentLevel.tier}`}</span>
-                    <div className="h-3 flex-1 rounded-full bg-secondary/50 overflow-hidden relative">
-                      <div
-                        className="absolute inset-0 h-full rounded-full bg-current/25 transition-all duration-500"
-                        style={{ width: `${prog.percent}%` }}
-                      />
-                      <span className="absolute inset-0 flex items-center justify-center text-xxxs font-mono font-bold">
-                        {prog.xp}/{prog.maxXp}
-                      </span>
-                    </div>
-                  </div>
-                );
-              })()}
-
-            {/* ── Health — single-row RAG pill ── */}
-            {healthScore > 0 && (
-              <div className="flex items-center gap-2 rounded-lg px-2.5 py-1.5 bg-secondary/40 border border-border">
-                <span className={`h-1.5 w-1.5 rounded-full shrink-0 ${rag.dotClass}`} />
-                <span className={`text-xxs font-semibold truncate ${rag.textClass}`}>{t(rag.ratingKey)}</span>
-                <span className={`text-xxs font-mono font-bold shrink-0 ${rag.textClass}`}>{healthScore}%</span>
-                <div className="h-1.5 flex-1 rounded-full bg-secondary overflow-hidden">
-                  <div
-                    className={`h-full rounded-full ${rag.barClass} transition-all duration-500`}
-                    style={{ width: `${healthScore}%` }}
-                  />
+        <div className="px-3 pt-4 pb-3 border-b border-border">
+          <div className="rounded-xl bg-card border border-border p-4">
+            {/* ── Profile block: click to open Profil Organisasi ── */}
+            <button
+              type="button"
+              onClick={onOpenProfile}
+              disabled={!coopProfile}
+              aria-label={t("sidebar.openProfile")}
+              className="group block w-full text-left rounded-lg transition-colors hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand space-y-3"
+            >
+              {/* ── Identity: emblem + name (wraps, never cut off) ── */}
+              <div className="flex items-center gap-3">
+                <CoopEmblem profile={coopProfile} size="md" />
+                <div className="min-w-0 flex-1">
+                  <h2 className="text-sm font-bold text-foreground leading-tight break-words">
+                    {coopProfile?.name ?? "..."}
+                  </h2>
                 </div>
+                <PencilSimple className="h-3.5 w-3.5 text-muted-foreground opacity-40 group-hover:opacity-100 transition-opacity shrink-0" />
               </div>
-            )}
+
+              {/* ── Level — single-row pill with progress bar ── */}
+              {currentLevel &&
+                (() => {
+                  const prog = getLevelProgress(currentLevel, xp);
+                  return (
+                    <div
+                      className={`flex items-center gap-2 rounded-lg px-2.5 py-1.5 border border-current/20 ${currentLevel.bgClass} ${currentLevel.textClass}`}
+                    >
+                      <span className="text-xxs font-black uppercase tracking-wider shrink-0">{`Lv.${currentLevel.tier}`}</span>
+                      <div className="h-3 flex-1 rounded-full bg-secondary/50 overflow-hidden relative">
+                        <div
+                          className="absolute inset-0 h-full rounded-full bg-current/25 transition-all duration-500"
+                          style={{ width: `${prog.percent}%` }}
+                        />
+                        <span className="absolute inset-0 flex items-center justify-center text-xxxs font-mono font-bold">
+                          {prog.xp}/{prog.maxXp}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })()}
+
+              {/* ── Health — single-row RAG pill ── */}
+              {healthScore > 0 && (
+                <div className="flex items-center gap-2 rounded-lg px-2.5 py-1.5 bg-secondary/40 border border-border">
+                  <span className={`h-1.5 w-1.5 rounded-full shrink-0 ${rag.dotClass}`} />
+                  <span className={`text-xxs font-semibold truncate ${rag.textClass}`}>{t(rag.ratingKey)}</span>
+                  <span className={`text-xxs font-mono font-bold shrink-0 ${rag.textClass}`}>{healthScore}%</span>
+                  <div className="h-1.5 flex-1 rounded-full bg-secondary overflow-hidden">
+                    <div
+                      className={`h-full rounded-full ${rag.barClass} transition-all duration-500`}
+                      style={{ width: `${healthScore}%` }}
+                    />
+                  </div>
+                </div>
+              )}
+            </button>
 
             {/* ── Quick stats — clickable cooperative scorecard ── */}
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 gap-2 mt-3">
               <QuickStat
                 icon={UsersIcon}
                 label={t("sidebar.statMembers")}

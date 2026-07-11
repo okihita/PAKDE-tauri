@@ -97,6 +97,7 @@
     "statNetWorth": "Net Worth",
     "statRanking": "Ranking",
     "goTo": "Open {{tab}}",
+    "openProfile": "Open cooperative profile",
     "systemNormal": "System Normal",
     "criticalAlerts_one": "{{count}} Critical Alert",
     "criticalAlerts_other": "{{count}} Critical Alerts"

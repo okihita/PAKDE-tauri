@@ -3,11 +3,10 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/useToast";
 import { useIconSettings } from "@/components/IconContext";
 import type { CooperativeProfile } from "@/types";
-import { updateCooperative, deleteCooperative } from "./settingsDb";
+import { deleteCooperative } from "./settingsDb";
 import { isDemoCooperative, seedDemoCooperativeAtLevel, type DemoLevel } from "@/db/seed-demo";
 import { invalidateAllCoopDbs } from "@/db/coopDb";
 import { closeRegistryDb } from "@/db/registry";
@@ -20,7 +19,6 @@ import {
   TextAaIcon,
   PaintBucketIcon,
   UserIcon,
-  BuildingsIcon,
   ArrowsLeftRightIcon,
   WarningIcon,
   ArchiveIcon,
@@ -29,7 +27,6 @@ import BackupRestoreCard from "@/features/System/Backup/BackupRestoreCard";
 
 interface Props {
   coopProfile: CooperativeProfile | null;
-  setCoopProfile: (v: CooperativeProfile) => void;
   fontSizeSetting: "small" | "normal" | "large" | "xlarge";
   setFontSizeSetting: (v: "small" | "normal" | "large" | "xlarge") => void;
   appTheme: "dark" | "light";
@@ -64,22 +61,8 @@ const ICON_WEIGHTS = [
   { value: "duotone", label: "Dt" },
 ] as const;
 
-const i18nFieldKeys: Record<string, string> = {
-  name: "name",
-  legal_id: "legalId",
-  address: "address",
-  village: "village",
-  district: "district",
-  regency: "regency",
-  province: "province",
-  postal_code: "postalCode",
-  phone: "phone",
-  email: "email",
-};
-
 export default function Settings({
   coopProfile,
-  setCoopProfile,
   fontSizeSetting,
   setFontSizeSetting,
   appTheme,
@@ -157,32 +140,6 @@ export default function Settings({
 
   if (!coopProfile) return <div className="text-muted-foreground text-xs">{t("common.loading")}</div>;
 
-  const handleFieldChange = (key: string, value: string) => {
-    setCoopProfile({ ...coopProfile, [key]: value });
-  };
-
-  const handleSaveProfile = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      await updateCooperative(coopProfile?.id || "", {
-        name: coopProfile?.name,
-        legal_id: coopProfile?.legal_id,
-        address: coopProfile?.address,
-        village: coopProfile?.village,
-        district: coopProfile?.district,
-        regency: coopProfile?.regency,
-        province: coopProfile?.province,
-        postal_code: coopProfile?.postal_code,
-        phone: coopProfile?.phone,
-        email: coopProfile?.email,
-        business_units: coopProfile?.business_units,
-      });
-      toast.success(t("toast.profileSaveSuccess"));
-    } catch (err) {
-      toast.error(t("toast.profileSaveFailed", { error: String(err) }));
-    }
-  };
-
   const bannerBase =
     "flex flex-col items-center justify-center gap-1.5 p-4 rounded-xl border-2 cursor-pointer transition-all text-center";
   const bannerActive = "border-success/50 bg-success/10";
@@ -195,19 +152,6 @@ export default function Settings({
   const L_PROCESSING = "Memproses...";
   const L_DEMO_RESET_OK = "Demo account reset successfully.";
   const bannerInactive = "border-border bg-muted/40 hover:border-muted-foreground/30 hover:bg-muted/70";
-
-  const PROFILE_FIELDS = [
-    { key: "name" },
-    { key: "legal_id" },
-    { key: "address" },
-    { key: "village" },
-    { key: "district" },
-    { key: "regency" },
-    { key: "province" },
-    { key: "postal_code" },
-    { key: "phone" },
-    { key: "email" },
-  ] as const;
 
   return (
     <div className="space-y-6">
@@ -374,38 +318,6 @@ export default function Settings({
                     : deleteConfirm
                       ? L_CONFIRM_DELETE
                       : L_DELETE_COOP}
-              </Button>
-            </CardContent>
-          </Card>
-
-          {/* Cooperative Profile */}
-          <Card className="bg-card border-border">
-            <CardHeader>
-              <CardTitle className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
-                <BuildingsIcon className="h-3.5 w-3.5 text-success" />
-                {t("settings.profileTitle")}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 gap-3 text-xs">
-                {PROFILE_FIELDS.map(({ key }) => (
-                  <div key={key} className="space-y-1">
-                    <label className="text-muted-foreground font-mono text-xxxs uppercase">
-                      {t(`settings.profileFields.${i18nFieldKeys[key]}`)}
-                    </label>
-                    <Input
-                      value={String(coopProfile[key as keyof CooperativeProfile] ?? "")}
-                      onChange={(e) => handleFieldChange(key, e.target.value)}
-                      className="bg-input border-border text-xs h-8"
-                    />
-                  </div>
-                ))}
-              </div>
-              <Button
-                onClick={handleSaveProfile}
-                className="bg-brand hover:bg-brand text-brand-foreground font-bold text-xs h-9 mt-4 w-full"
-              >
-                {t("settings.saveProfile")}
               </Button>
             </CardContent>
           </Card>

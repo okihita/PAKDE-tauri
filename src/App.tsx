@@ -41,6 +41,7 @@ import CreateEvent from "@/features/Community/CreateEvent/CreateEvent";
 import Dampak from "@/features/Community/Dampak/Dampak";
 import Sync from "@/features/System/Sync/Sync";
 import Settings from "@/features/System/Settings/Settings";
+import CoopProfileModal from "@/features/System/CoopProfileModal";
 import ProfileSelect from "@/features/System/ProfileSelect/ProfileSelect";
 import { useUpdater } from "@/hooks/useUpdater";
 import BackupFileOpenHandler from "@/features/System/Backup/BackupFileOpenHandler";
@@ -91,6 +92,7 @@ function AppContent() {
     return saved && FONT_LEVELS.includes(saved) ? saved : FONT_LEVEL_DEFAULT;
   });
   const [coopProfile, setCoopProfile] = useState<CooperativeProfile | null>(null);
+  const [showProfileModal, setShowProfileModal] = useState(false);
   const [ewsAlerts, setEwsAlerts] = useState<EwsAlert[]>([]);
   const [memberCount, setMemberCount] = useState(0);
   const [netWorth, setNetWorth] = useState(0);
@@ -508,6 +510,7 @@ function AppContent() {
           rankingStatus={ranking.status}
           rankingRank={ranking.ourRanks.kabupaten}
           rankingUnlocked={isTabUnlocked("ranking", coopProfile?.xp ?? 0)}
+          onOpenProfile={() => setShowProfileModal(true)}
         />
 
         <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
@@ -583,7 +586,6 @@ function AppContent() {
             {activeTab === "settings" && (
               <Settings
                 coopProfile={coopProfile}
-                setCoopProfile={setCoopProfile}
                 fontSizeSetting={fontSizeSetting}
                 setFontSizeSetting={setFontSizeSetting}
                 appTheme={appTheme}
@@ -672,6 +674,13 @@ function AppContent() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <CoopProfileModal
+        open={showProfileModal}
+        onOpenChange={setShowProfileModal}
+        coopProfile={coopProfile}
+        setCoopProfile={setCoopProfile}
+      />
     </div>
   );
 }

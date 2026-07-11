@@ -96,6 +96,7 @@
     "statUnits": "Unit Usaha",
     "statNetWorth": "Nilai Bersih",
     "statRanking": "Peringkat",
+    "openProfile": "Buka profil koperasi",
     "goTo": "Buka {{tab}}",
     "systemNormal": "Sistem Normal",
     "criticalAlerts_one": "{{count}} Critical Alert",
