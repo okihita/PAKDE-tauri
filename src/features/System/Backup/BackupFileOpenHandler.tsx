@@ -37,7 +37,7 @@ export default function BackupFileOpenHandler() {
       const parsed = await decryptAndUnzip(envelope, payload, passphrase);
       await applyBackup(parsed);
       localStorage.setItem("pakde-active-profile-id", parsed.manifest.coop_id);
-      toast.success(t("backup.importSuccess", { name: parsed.manifest.coop_name }));
+      toast.success(t("settings.backup.importSuccess", { name: parsed.manifest.coop_name }));
       try {
         await remove(path);
         await remove(await join(await appDataDir(), "_incoming", "_pending.txt"));
@@ -66,7 +66,7 @@ export default function BackupFileOpenHandler() {
           if (!cancelled) setPassPath(path);
           return;
         }
-        toast.error(t("backup.importFailed", { error: String(err) }));
+        toast.error(t("settings.backup.importFailed", { error: String(err) }));
       }
     };
 
@@ -97,7 +97,7 @@ export default function BackupFileOpenHandler() {
       setPassPath(null);
       setPass("");
     } catch (err) {
-      toast.error(t("backup.importFailed", { error: String(err) }));
+      toast.error(t("settings.backup.importFailed", { error: String(err) }));
     } finally {
       setBusy(false);
     }
@@ -117,13 +117,15 @@ export default function BackupFileOpenHandler() {
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-sm font-bold">
             <LockIcon className="h-4 w-4 text-warning" />
-            {t("backup.unlockTitle")}
+            {t("settings.backup.unlockTitle")}
           </DialogTitle>
-          <DialogDescription className="text-xxs text-muted-foreground">{t("backup.unlockDesc")}</DialogDescription>
+          <DialogDescription className="text-xxs text-muted-foreground">
+            {t("settings.backup.unlockDesc")}
+          </DialogDescription>
         </DialogHeader>
         <Input
           type="password"
-          placeholder={t("backup.passphrase")}
+          placeholder={t("settings.backup.passphrase")}
           value={pass}
           onChange={(e) => setPass(e.target.value)}
           className="bg-input border-border text-xs h-8"
@@ -144,7 +146,7 @@ export default function BackupFileOpenHandler() {
             disabled={busy || pass.length === 0}
             className="bg-brand hover:bg-brand text-brand-foreground font-bold text-xs"
           >
-            {busy ? t("common.processing") : t("backup.import")}
+            {busy ? t("common.processing") : t("settings.backup.import")}
           </Button>
         </DialogFooter>
       </DialogContent>

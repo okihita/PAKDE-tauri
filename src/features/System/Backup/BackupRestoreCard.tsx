@@ -94,10 +94,10 @@ export default function BackupRestoreCard({ coopId, coopName }: Props) {
     try {
       await restoreAutoBackup(entry.path);
       setRestoreOpen(false);
-      toast.success(t("backup.autoRestoreSuccess", { name: coopName }));
+      toast.success(t("settings.backup.autoRestoreSuccess", { name: coopName }));
       setTimeout(() => window.location.reload(), 600);
     } catch (err) {
-      toast.error(t("backup.importFailed", { error: String(err) }));
+      toast.error(t("settings.backup.importFailed", { error: String(err) }));
     } finally {
       setRestoring(false);
     }
@@ -120,7 +120,7 @@ export default function BackupRestoreCard({ coopId, coopName }: Props) {
 
   const handleExport = async () => {
     if (encrypt && pass1 !== pass2) {
-      toast.error(t("backup.passphraseMismatch"));
+      toast.error(t("settings.backup.passphraseMismatch"));
       return;
     }
     setBusy(true);
@@ -132,11 +132,11 @@ export default function BackupRestoreCard({ coopId, coopName }: Props) {
       });
       if (!path) return; // user cancelled
       await writeFile(path, bytes);
-      toast.success(t("backup.exportSuccess", { name: coopName }));
+      toast.success(t("settings.backup.exportSuccess", { name: coopName }));
       setMode(null);
       resetExportForm();
     } catch (err) {
-      toast.error(t("backup.exportFailed", { error: String(err) }));
+      toast.error(t("settings.backup.exportFailed", { error: String(err) }));
     } finally {
       setBusy(false);
     }
@@ -148,7 +148,7 @@ export default function BackupRestoreCard({ coopId, coopName }: Props) {
       const parsed: ParsedBackup = await decryptAndUnzip(pending.envelope, pending.payload, passphrase);
       await applyBackup(parsed);
       localStorage.setItem("pakde-active-profile-id", parsed.manifest.coop_id);
-      toast.success(t("backup.importSuccess", { name: parsed.manifest.coop_name }));
+      toast.success(t("settings.backup.importSuccess", { name: parsed.manifest.coop_name }));
       setMode(null);
       pendingRef.current = null;
       setImportPass("");
@@ -161,7 +161,7 @@ export default function BackupRestoreCard({ coopId, coopName }: Props) {
         setMode("import-passphrase");
         return;
       }
-      toast.error(t("backup.importFailed", { error: msg }));
+      toast.error(t("settings.backup.importFailed", { error: msg }));
     } finally {
       setBusy(false);
     }
@@ -181,7 +181,7 @@ export default function BackupRestoreCard({ coopId, coopName }: Props) {
       }
       await finishImport({ envelope, payload });
     } catch (err) {
-      toast.error(t("backup.importFailed", { error: String(err) }));
+      toast.error(t("settings.backup.importFailed", { error: String(err) }));
     } finally {
       setBusy(false);
     }
@@ -205,7 +205,7 @@ export default function BackupRestoreCard({ coopId, coopName }: Props) {
           className="border-border text-muted-foreground hover:text-foreground text-xs h-9"
         >
           <ExportIcon className="h-3.5 w-3.5 mr-1.5" />
-          {t("backup.export")}
+          {t("settings.backup.export")}
         </Button>
         <Button
           variant="outline"
@@ -214,7 +214,7 @@ export default function BackupRestoreCard({ coopId, coopName }: Props) {
           className="border-border text-muted-foreground hover:text-foreground text-xs h-9"
         >
           <TrayArrowUpIcon className="h-3.5 w-3.5 mr-1.5" />
-          {t("backup.import")}
+          {t("settings.backup.import")}
         </Button>
       </div>
 
@@ -231,16 +231,20 @@ export default function BackupRestoreCard({ coopId, coopName }: Props) {
           <span>
             <span className="flex items-center gap-1.5 font-semibold">
               <CloudArrowDownIcon className="h-3.5 w-3.5 text-success" />
-              {t("backup.autoTitle")}
+              {t("settings.backup.autoTitle")}
             </span>
-            <span className="block text-xxs text-muted-foreground font-normal mt-0.5">{t("backup.autoDesc")}</span>
+            <span className="block text-xxs text-muted-foreground font-normal mt-0.5">
+              {t("settings.backup.autoDesc")}
+            </span>
           </span>
         </label>
 
         {autoEnabled && (
           <div className="flex items-center justify-between gap-2 pl-5">
             <span className="text-xxs text-muted-foreground">
-              {autoBackups.length > 0 ? t("backup.autoCount", { count: autoBackups.length }) : t("backup.autoNone")}
+              {autoBackups.length > 0
+                ? t("settings.backup.autoCount", { count: autoBackups.length })
+                : t("settings.backup.autoNone")}
             </span>
             <Button
               variant="outline"
@@ -249,7 +253,7 @@ export default function BackupRestoreCard({ coopId, coopName }: Props) {
               className="border-border text-muted-foreground hover:text-foreground text-xxs h-8"
             >
               <ArrowCounterClockwiseIcon className="h-3.5 w-3.5 mr-1.5" />
-              {t("backup.autoRestore")}
+              {t("settings.backup.autoRestore")}
             </Button>
           </div>
         )}
@@ -269,31 +273,31 @@ export default function BackupRestoreCard({ coopId, coopName }: Props) {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-sm font-bold">
               <ExportIcon className="h-4 w-4 text-success" />
-              {t("backup.exportTitle")}
+              {t("settings.backup.exportTitle")}
             </DialogTitle>
             <DialogDescription className="text-xxs text-muted-foreground">
-              {t("backup.exportDesc", { name: coopName })}
+              {t("settings.backup.exportDesc", { name: coopName })}
             </DialogDescription>
           </DialogHeader>
 
           <label className="flex items-center gap-2 text-xs text-foreground cursor-pointer select-none">
             <input type="checkbox" checked={encrypt} onChange={(e) => setEncrypt(e.target.checked)} />
             <LockIcon className="h-3.5 w-3.5 text-warning" />
-            {t("backup.encrypt")}
+            {t("settings.backup.encrypt")}
           </label>
 
           {encrypt && (
             <div className="space-y-2">
               <Input
                 type="password"
-                placeholder={t("backup.passphrase")}
+                placeholder={t("settings.backup.passphrase")}
                 value={pass1}
                 onChange={(e) => setPass1(e.target.value)}
                 className="bg-input border-border text-xs h-8"
               />
               <Input
                 type="password"
-                placeholder={t("backup.confirmPassphrase")}
+                placeholder={t("settings.backup.confirmPassphrase")}
                 value={pass2}
                 onChange={(e) => setPass2(e.target.value)}
                 className="bg-input border-border text-xs h-8"
@@ -317,7 +321,7 @@ export default function BackupRestoreCard({ coopId, coopName }: Props) {
               disabled={busy || (encrypt && pass1.length === 0)}
               className="bg-brand hover:bg-brand text-brand-foreground font-bold text-xs"
             >
-              {busy ? t("common.processing") : t("backup.export")}
+              {busy ? t("common.processing") : t("settings.backup.export")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -338,14 +342,16 @@ export default function BackupRestoreCard({ coopId, coopName }: Props) {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-sm font-bold">
               <LockIcon className="h-4 w-4 text-warning" />
-              {t("backup.unlockTitle")}
+              {t("settings.backup.unlockTitle")}
             </DialogTitle>
-            <DialogDescription className="text-xxs text-muted-foreground">{t("backup.unlockDesc")}</DialogDescription>
+            <DialogDescription className="text-xxs text-muted-foreground">
+              {t("settings.backup.unlockDesc")}
+            </DialogDescription>
           </DialogHeader>
 
           <Input
             type="password"
-            placeholder={t("backup.passphrase")}
+            placeholder={t("settings.backup.passphrase")}
             value={importPass}
             onChange={(e) => setImportPass(e.target.value)}
             className="bg-input border-border text-xs h-8"
@@ -368,7 +374,7 @@ export default function BackupRestoreCard({ coopId, coopName }: Props) {
               disabled={busy || importPass.length === 0}
               className="bg-brand hover:bg-brand text-brand-foreground font-bold text-xs"
             >
-              {busy ? t("common.processing") : t("backup.import")}
+              {busy ? t("common.processing") : t("settings.backup.import")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -380,10 +386,10 @@ export default function BackupRestoreCard({ coopId, coopName }: Props) {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-sm font-bold">
               <ArrowCounterClockwiseIcon className="h-4 w-4 text-success" />
-              {t("backup.autoRestoreTitle")}
+              {t("settings.backup.autoRestoreTitle")}
             </DialogTitle>
             <DialogDescription className="text-xxs text-muted-foreground">
-              {t("backup.autoRestoreDesc")}
+              {t("settings.backup.autoRestoreDesc")}
             </DialogDescription>
           </DialogHeader>
 
@@ -396,11 +402,13 @@ export default function BackupRestoreCard({ coopId, coopName }: Props) {
                 className="w-full flex items-center justify-between gap-2 px-3 py-2 rounded-lg border border-border bg-muted/40 hover:bg-muted/70 text-left transition-colors disabled:opacity-50"
               >
                 <span className="text-xxs font-mono text-foreground">{entry.date.toLocaleString()}</span>
-                <span className="text-xxxs text-muted-foreground font-bold">{t("backup.autoRestorePick")}</span>
+                <span className="text-xxxs text-muted-foreground font-bold">
+                  {t("settings.backup.autoRestorePick")}
+                </span>
               </button>
             ))}
             {autoBackups.length === 0 && (
-              <p className="text-xxs text-muted-foreground text-center py-4">{t("backup.autoNone")}</p>
+              <p className="text-xxs text-muted-foreground text-center py-4">{t("settings.backup.autoNone")}</p>
             )}
           </div>
 
