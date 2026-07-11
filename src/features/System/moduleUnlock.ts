@@ -16,8 +16,8 @@ export const TABS_LEVEL_REQUIREMENTS = {
   feasibility: 40,
   dampak: 50,
   hibah: 0,
-  leveling: 60,
-  ranking: 60,
+  leveling: 0,
+  ranking: 0,
   development: 70,
   learn: 80,
 } satisfies Record<string, number>;

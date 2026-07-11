@@ -588,11 +588,10 @@
     "xpActivity": "XP Activity",
     "xpBaseline": "Starting balance",
     "xpEmpty": "No XP activity yet.",
-    "xpMemberRemoved": "Member removed"
+    "xpMemberRemoved": "Member removed",
+    "earnXp": "How to earn XP"
   },
   "xp": {
-    "verificationRequired": "Verification required",
-    "dailyCapReached": "Daily XP cap reached",
     "awardFailed": "Could not award XP",
     "revertFailed": "Could not revert XP"
   },

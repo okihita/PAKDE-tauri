@@ -4,48 +4,17 @@ import { useTranslation } from "react-i18next";
 import { LEVELS, getLevelProgress, getCurrentLevel, type LevelDef } from "@/data/leveling";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { getActiveCoopId } from "@/db/active-coop";
-import { getTierBand } from "@/data/xp-core";
+import { getTierBand, XP_SOURCES } from "@/data/xp-core";
 import XpFeed from "./XpFeed";
-import {
-  UsersIcon,
-  TrendUpIcon,
-  ShieldCheck,
-  ClipboardText,
-  BuildingsIcon,
-  Monitor,
-  CaretDownIcon,
-  CaretUpIcon,
-  TrophyIcon,
-  StarIcon,
-  LockIcon,
-  CheckCircleIcon,
-} from "@phosphor-icons/react";
+import { CaretDownIcon, CaretUpIcon, TrophyIcon, StarIcon, LockIcon } from "@phosphor-icons/react";
 
 interface Props {
   xp?: number;
 }
 
-const ASPECT_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
-  UsersIcon,
-  TrendUpIcon,
-  ShieldCheck,
-  ClipboardText,
-  BuildingsIcon,
-  Monitor,
-};
-
-function QuestItem({ done, text }: { done: boolean; text: string }) {
-  return (
-    <li className="flex items-start gap-1.5 text-xxs text-muted-foreground">
-      {done ? (
-        <CheckCircleIcon className="h-3 w-3 text-brand mt-0.5 shrink-0" />
-      ) : (
-        <span className="text-slate-700 mt-0.5 shrink-0">◈</span>
-      )}
-      <span className={done ? "text-success/70" : ""}>{text}</span>
-    </li>
-  );
-}
+/** The real, wired XP sources — rendered so the menu can never lie about
+ *  what raises XP. Derived from `XP_SOURCES` (the single source of truth). */
+const XP_ACTIONS = Object.values(XP_SOURCES).map((s) => ({ xp: s.xp, labelEn: s.labelEn, labelId: s.labelId }));
 
 function LevelCard({
   level,
@@ -127,28 +96,21 @@ function LevelCard({
 
       {open && (
         <CardContent className="pt-0 pb-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-            {level.aspects.map((aspect) => {
-              const AspectIcon = ASPECT_ICONS[aspect.icon] ?? StarIcon;
-              const aLabel = isId ? aspect.labelId : aspect.labelEn;
-              const quests = isId ? aspect.quests.map((q) => q.id) : aspect.quests.map((q) => q.en);
-
-              return (
-                <div key={aspect.aspectId} className="bg-input/50 rounded-lg p-3 border border-border">
-                  <div className="flex items-center gap-2 mb-2">
-                    <AspectIcon className="h-3.5 w-3.5 text-muted-foreground" />
-                    <span className="text-xxxs font-mono font-bold text-muted-foreground uppercase tracking-wider">
-                      {aLabel}
-                    </span>
-                  </div>
-                  <ul className="space-y-1">
-                    {quests.map((q, i) => (
-                      <QuestItem key={i} done={isUnlocked && !isCurrent ? true : false} text={q} />
-                    ))}
-                  </ul>
-                </div>
-              );
-            })}
+          <div className="bg-input/50 rounded-lg p-3 border border-border">
+            <div className="flex items-center gap-2 mb-2">
+              <StarIcon className="h-3.5 w-3.5 text-brand" />
+              <span className="text-xxxs font-mono font-bold text-muted-foreground uppercase tracking-wider">
+                {t("leveling.earnXp")}
+              </span>
+            </div>
+            <ul className="space-y-1">
+              {XP_ACTIONS.map((a, i) => (
+                <li key={i} className="flex items-center gap-2 text-xxs text-muted-foreground">
+                  <span className="text-brand font-mono font-bold">+{a.xp} XP</span>
+                  <span>{isId ? a.labelId : a.labelEn}</span>
+                </li>
+              ))}
+            </ul>
           </div>
         </CardContent>
       )}

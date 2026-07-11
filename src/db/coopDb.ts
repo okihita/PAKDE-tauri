@@ -14,7 +14,7 @@ import { mkdir } from "@tauri-apps/plugin-fs";
 import { getActiveCoopId } from "./active-coop";
 
 const COOPS_DIR = "coops";
-const COOP_SCHEMA_VERSION = 6;
+const COOP_SCHEMA_VERSION = 7;
 
 let coopDirEnsured: Promise<void> | null = null;
 const coopPromises = new Map<string, Promise<Database>>();
@@ -360,9 +360,14 @@ export async function initCoopDb(coopId: string): Promise<void> {
     // ── xp_events (gamification ledger, append-only) ──
     // Each row is one XP change; `total_after` is the running sum so the
     // ledger is replayable and the level (derived from `cooperatives.xp`)
-    // can always be reconstructed from events (R1/R3/R4).
+    // can always be reconstructed from events.
+    //
+    // v2 rebuild: DROP before CREATE so any ledger rows left by the old XP
+    // system are purged — otherwise stale actions with no entry in
+    // `XP_SOURCES` would surface as raw action strings in the feed.
+    await db.execute(`DROP TABLE IF EXISTS xp_events;`);
     await db.execute(`
-      CREATE TABLE IF NOT EXISTS xp_events (
+      CREATE TABLE xp_events (
         id TEXT PRIMARY KEY,
         action TEXT NOT NULL,
         delta INTEGER NOT NULL,

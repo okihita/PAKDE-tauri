@@ -9,13 +9,13 @@ describe("xp-core", () => {
     expect(computeTotal([{ delta: 5 }, { delta: -5 }])).toBe(0);
   });
 
-  it("scales member_joined XP to the existing 0-100 level curve", () => {
+  it("has exactly one wired source: member_joined (xp 5)", () => {
+    expect(Object.keys(XP_SOURCES)).toEqual(["member_joined"]);
     expect(XP_SOURCES.member_joined.xp).toBe(5);
+    expect(XP_SOURCES.member_joined.reversible).toBe(true);
   });
 
-  it("is a multi-source table (A2): member_joined plus future stubs", () => {
-    expect(Object.keys(XP_SOURCES)).toEqual(["member_joined", "member_verified", "weekly_active", "trade_completed"]);
-    // Flipping a source value changes the awarded XP — no code edit needed.
+  it("is data-driven: flipping a source value changes the awarded XP", () => {
     const original = XP_SOURCES.member_joined.xp;
     XP_SOURCES.member_joined.xp = 7;
     expect(XP_SOURCES.member_joined.xp).toBe(7);
@@ -23,27 +23,27 @@ describe("xp-core", () => {
   });
 });
 
-describe("level is derived only from xp (A1)", () => {
+describe("level is derived only from xp", () => {
   it("two members (+5 each) map to the level for xp=10, never to a member count", () => {
     const total = computeTotal([{ delta: 5 }, { delta: 5 }]);
     expect(total).toBe(10);
-    // The level is a pure function of xp; there is no member-count path.
     expect(getCurrentLevel(total)).toBe(getCurrentLevel(10));
   });
 
-  it("an xp total within the curve lands on the expected threshold band", () => {
+  it("lands on the expected threshold bands", () => {
     expect(getCurrentLevel(0).tier).toBe(1); // rintisan (Level 1 start)
+    expect(getCurrentLevel(10).id).toBe("pemula"); // 2 members → Level 2
     expect(getCurrentLevel(82).tier).toBeGreaterThan(1);
   });
 });
 
-describe("churn recompute (A3)", () => {
+describe("churn recompute", () => {
   it("supports negative deltas so a removal lowers the total", () => {
     expect(computeTotal([{ delta: 5 }, { delta: 5 }, { delta: -5 }])).toBe(5);
   });
 });
 
-describe("tier bands (A5)", () => {
+describe("tier bands", () => {
   it("maps level tiers onto Bronze/Silver/Gold", () => {
     expect(getTierBand(getCurrentLevel(0).tier).en).toBe("Bronze");
     expect(getTierBand(getCurrentLevel(82).tier).en).toBe("Gold");

@@ -2,6 +2,11 @@
 //
 // Kept dependency-free so it is unit-testable under vitest without the
 // Tauri runtime. All persistence lives in `xp.ts`.
+//
+// v2 (rebuilt from scratch): a single global XP scalar drives the
+// cooperative's level (`getCurrentLevel(xp)` in `leveling.ts`). The only
+// real, wired source is `member_joined`; additional actions are added as
+// rows here, not as code branches.
 
 export interface XpSource {
   /** XP awarded for this action. */
@@ -13,12 +18,14 @@ export interface XpSource {
 }
 
 /**
- * Data-driven XP source table (R2). Adding a new in-app action is a row
- * here, not a code branch. `member_joined` is the only MVP source; future
- * actions are data.
+ * Data-driven XP source table. Adding a new in-app action is a row here,
+ * not a code branch. `member_joined` is the only MVP source; the Leveling
+ * screen renders this table directly so it always reflects what actually
+ * raises XP (no fabricated quest text).
  *
  * The value is scaled to the existing 0–100 level curve
- * (`src/data/leveling-data.ts`, 10 levels × 10 xp). See `gamification-proposal.md` §6.
+ * (`src/data/leveling-data.ts`, 10 levels × 10 xp): 5 XP per member means
+ * ~2 registrations advance one level.
  */
 export const XP_SOURCES: Record<string, XpSource> = {
   member_joined: {
@@ -27,35 +34,14 @@ export const XP_SOURCES: Record<string, XpSource> = {
     labelId: "Anggota bergabung",
     reversible: true,
   },
-  // ── Future sources (data, not code) ──
-  // These rows make the table genuinely multi-source (A2): wiring one of
-  // them into a hook later is a data change, not a rewrite.
-  member_verified: {
-    xp: 2,
-    labelEn: "Member verifies identity",
-    labelId: "Anggota verifikasi identitas",
-    reversible: true,
-  },
-  weekly_active: {
-    xp: 1,
-    labelEn: "Weekly active member",
-    labelId: "Anggota aktif mingguan",
-    reversible: false,
-  },
-  trade_completed: {
-    xp: 3,
-    labelEn: "Cooperative completes a trade",
-    labelId: "Koperasi menyelesaikan transaksi",
-    reversible: false,
-  },
 };
 
-/** Sum of signed deltas — the authoritative XP total (R1/R4). */
+/** Sum of signed deltas — the authoritative XP total. */
 export function computeTotal(events: Array<{ delta: number }>): number {
   return events.reduce((sum, e) => sum + e.delta, 0);
 }
 
-// ── Tier bands (R5 overlay) ───────────────────────────────
+// ── Tier bands (overlay) ────────────────────────────────────────
 // Maps the existing level `tier` (1–10) onto named milestone bands.
 // This is an overlay on `leveling-data.ts` — it does not alter the
 // `minXp`/`maxXp` curve. Splits: Bronze 1–3, Silver 4–6, Gold 7–10.

@@ -238,14 +238,14 @@ export function useMembers(onChange?: () => void) {
       if (memberFormType === "add") {
         await membersRepo.insert(id, columns);
         // Award XP via the event ledger; keeps `cooperatives.xp` in sync.
-        // A guard rejection (e.g. verification/cap, R4) must NOT roll
-        // back the member insert — surface it as its own toast.
+        // A failure here must NOT roll back the member insert — surface it
+        // as its own toast.
         try {
           await awardXp(getActiveCoopId(), "member_joined", { memberId: id });
         } catch (e) {
-          // A guard rejection (xp.verificationRequired / xp.dailyCapReached)
-          // is a key and resolves via t(); any other (SQL) error is not,
-          // so log it and show the generic message instead of leaking raw SQL.
+          // A thrown key (e.g. unknown action) resolves via t(); any other
+          // (SQL) error does not, so log it and show the generic message
+          // instead of leaking raw SQL.
           console.error("awardXp failed:", e);
           const msg = e instanceof Error && e.message.startsWith("xp.") ? e.message : "xp.awardFailed";
           toast.error(t(msg));

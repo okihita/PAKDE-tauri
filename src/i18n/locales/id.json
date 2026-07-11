@@ -588,11 +588,10 @@
     "xpActivity": "Aktivitas XP",
     "xpBaseline": "Saldo awal",
     "xpEmpty": "Belum ada aktivitas XP.",
-    "xpMemberRemoved": "Anggota dihapus"
+    "xpMemberRemoved": "Anggota dihapus",
+    "earnXp": "Cara Mendapat XP"
   },
   "xp": {
-    "verificationRequired": "Verifikasi diperlukan",
-    "dailyCapReached": "Batas XP harian tercapai",
     "awardFailed": "Gagal memberikan XP",
     "revertFailed": "Gagal mengembalikan XP"
   },
