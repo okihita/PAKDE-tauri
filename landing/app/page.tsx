@@ -4,6 +4,7 @@ export default function HomePage() {
       <Nav />
       <Hero />
       <Features />
+      <VisualShowcase />
       <HowItWorks />
       <Modules />
       <OfflineFirst />
@@ -158,7 +159,7 @@ function HowItWorks() {
     {
       step: "1",
       title: "Download & Install",
-      desc: "Unduh aplikasi untuk macOS. Jalankan installer — tidak perlu setup database atau server.",
+      desc: "Unduh aplikasi untuk Windows atau macOS. Jalankan installer — tidak perlu setup database atau server.",
     },
     {
       step: "2",
@@ -324,23 +325,102 @@ function EngineeringPhilosophy() {
   );
 }
 
+function VisualShowcase() {
+  const pillars = [
+    {
+      title: "Demo Exploration",
+      badge: "Onboarding Tanpa Hambatan",
+      desc: "Merasakan seluruh fitur operasional secara langsung. Pengurus dapat memilih untuk memulai dari nol atau memuat akun demo simulasi dengan tingkat kesulitan berbeda untuk mempelajari fitur yang kaya data.",
+      image: "/images/demo-exploration.png",
+    },
+    {
+      title: "Sense of Direction",
+      badge: "Hub Misi (Quest Hub)",
+      desc: "Pengurus koperasi tidak butuh buku panduan yang tebal; mereka hanya perlu tahu apa yang harus dilakukan sekarang. Tugas harian dan kepatuhan hukum diterjemahkan menjadi Misi Harian, Mingguan, dan Utama. Setiap misi memiliki tautan satu klik langsung ke form pengisian terkait.",
+      image: "/images/sense-of-direction.png",
+    },
+    {
+      title: "Sense of Progress",
+      badge: "Aspek Koperasi & XP",
+      desc: "Pantau peningkatan kelas koperasi Anda secara real-time di 6 aspek operasional (Keuangan, Anggota, Ritel Waserda, dll.). Setiap penyelesaian misi memberikan XP yang menaikkan level kesehatan koperasi.",
+      image: "/images/sense-of-progress.png",
+    },
+    {
+      title: "Social Competition",
+      badge: "Papan Peringkat & Podium Daerah",
+      desc: "Memicu motivasi pengurus dengan membandingkan skor kesehatan koperasi dengan desa/kecamatan lain melalui papan peringkat interaktif dan sistem podium juara regional.",
+      image: "/images/social-competition.png",
+    },
+  ];
+
+  return (
+    <section className="px-6 py-24 border-t border-slate-800/50 bg-[#080808]">
+      <div className="mx-auto max-w-5xl">
+        <div className="text-center mb-20">
+          <h2 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">
+            Pilar Pengalaman Gamifikasi
+          </h2>
+          <p className="mt-3 text-sm text-slate-500 max-w-md mx-auto">
+            Menyederhanakan pengelolaan koperasi desa yang rumit menjadi petualangan produktivitas yang interaktif dan
+            menyenangkan.
+          </p>
+        </div>
+
+        <div className="space-y-32">
+          {pillars.map((p, idx) => {
+            const isEven = idx % 2 === 0;
+            return (
+              <div
+                key={p.title}
+                className={`flex flex-col gap-12 lg:items-center ${isEven ? "lg:flex-row" : "lg:flex-row-reverse"}`}
+              >
+                {/* Text Content */}
+                <div className="flex-1 space-y-4">
+                  <span className="inline-block rounded-full border border-emerald-800/40 bg-emerald-950/20 px-3 py-1 text-xxs font-semibold text-emerald-400 uppercase tracking-wider">
+                    {p.badge}
+                  </span>
+                  <h3 className="text-2xl font-bold text-white tracking-tight">{p.title}</h3>
+                  <p className="text-sm leading-relaxed text-slate-400">{p.desc}</p>
+                </div>
+
+                {/* Image Container with premium glassmorphism / shadow / borders */}
+                <div className="flex-1">
+                  <div className="relative group overflow-hidden rounded-xl border border-slate-800 bg-slate-950 p-2 shadow-2xl transition-all duration-350 hover:border-slate-700 hover:shadow-emerald-950/20 hover:shadow-3xl">
+                    <div className="absolute inset-0 bg-gradient-to-tr from-emerald-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+                    <img
+                      src={p.image}
+                      alt={p.title}
+                      className="w-full h-auto rounded-lg object-cover transition-transform duration-500 group-hover:scale-[1.01]"
+                      loading="lazy"
+                    />
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function Download() {
   return (
     <section id="download" className="px-6 py-24 border-t border-slate-800/50">
       <div className="mx-auto max-w-4xl text-center">
         <h2 className="text-3xl font-bold tracking-tight">Unduh Sekarang</h2>
-        <p className="mt-3 text-sm text-slate-500">{"Versi Terbaru 0.8.1 — Gratis, Ringan, & Open Source"}</p>
+        <p className="mt-3 text-sm text-slate-500">{"Versi Terbaru 1.0.0 — Gratis, Ringan, & Open Source"}</p>
 
-        <div className="mt-12 grid gap-6 sm:grid-cols-2 text-left">
+        <div className="mt-12 grid gap-8 sm:grid-cols-2 text-left">
           {/* Windows Download Card */}
-          <div className="rounded-2xl border border-slate-800 bg-slate-900/50 p-8 flex flex-col justify-between hover:border-emerald-850/40 transition-colors">
+          <div className="rounded-2xl border border-slate-800 bg-slate-900/50 p-8 flex flex-col justify-between hover:border-emerald-500/30 transition-all duration-350">
             <div>
               <div className="text-4xl mb-4">💻</div>
               <h3 className="text-lg font-bold text-white">Windows</h3>
               <p className="mt-1 text-xs text-slate-500">{"Windows 7, 8, 10, 11 • 32-bit & 64-bit"}</p>
               <ul className="mt-6 space-y-2 text-xs text-slate-400">
                 <li className="flex items-center gap-2">
-                  <span className="text-emerald-500">✓</span> Installer ringan (.exe / .msi)
+                  <span className="text-emerald-500">✓</span> Installer ringan (.exe)
                 </li>
                 <li className="flex items-center gap-2">
                   <span className="text-emerald-500">✓</span> {"Bisa disalin & diinstal offline via USB"}
@@ -349,19 +429,37 @@ function Download() {
                   <span className="text-emerald-500">✓</span> Optimal untuk PC berspesifikasi rendah
                 </li>
               </ul>
+
+              {/* Windows Installation Steps */}
+              <div className="mt-8 border-t border-slate-800/80 pt-6">
+                <h4 className="text-xs font-bold text-slate-300 uppercase tracking-wider mb-3">Langkah Instalasi:</h4>
+                <ol className="list-decimal list-inside space-y-2.5 text-xs text-slate-500">
+                  <li>
+                    <span className="text-slate-400">Unduh installer</span> dengan mengklik tombol di bawah.
+                  </li>
+                  <li>
+                    <span className="text-slate-400">Jalankan file `.exe`</span> hasil unduhan.
+                  </li>
+                  <li>
+                    Jika muncul peringatan Windows SmartScreen (*"Windows protected your PC"*), klik{" "}
+                    <span className="text-slate-300 font-medium">"More info"</span> lalu pilih{" "}
+                    <span className="text-emerald-400 font-medium">"Run anyway"</span>.
+                  </li>
+                </ol>
+              </div>
             </div>
             <div className="mt-8">
               <a
-                href="https://github.com/okihita/PAKDE-tauri/releases/latest"
+                href="https://github.com/okihita/PAKDE-tauri/releases/download/v1.0.0/PAKDE_1.0.0_x64-setup.exe"
                 className="block text-center rounded-lg bg-emerald-600 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-emerald-600/20 hover:bg-emerald-500 transition-colors"
               >
-                Unduh .exe / .msi
+                Unduh untuk Windows (.exe)
               </a>
             </div>
           </div>
 
           {/* macOS Download Card */}
-          <div className="rounded-2xl border border-slate-800 bg-slate-900/50 p-8 flex flex-col justify-between hover:border-emerald-850/40 transition-colors">
+          <div className="rounded-2xl border border-slate-800 bg-slate-900/50 p-8 flex flex-col justify-between hover:border-emerald-500/30 transition-all duration-350">
             <div>
               <div className="text-4xl mb-4">🍎</div>
               <h3 className="text-lg font-bold text-white">macOS</h3>
@@ -377,13 +475,36 @@ function Download() {
                   <span className="text-emerald-500">✓</span> UI performa tinggi berbasis Tauri v2
                 </li>
               </ul>
+
+              {/* macOS Installation Steps */}
+              <div className="mt-8 border-t border-slate-800/80 pt-6">
+                <h4 className="text-xs font-bold text-slate-300 uppercase tracking-wider mb-3">Langkah Instalasi:</h4>
+                <ol className="list-decimal list-inside space-y-2.5 text-xs text-slate-500">
+                  <li>
+                    <span className="text-slate-400">Unduh file `.dmg`</span> dengan mengklik tombol di bawah.
+                  </li>
+                  <li>
+                    Buka file `.dmg` dan <span className="text-slate-400">tarik ikon PAKDE</span> ke dalam folder{" "}
+                    <span className="text-slate-300">Applications</span>.
+                  </li>
+                  <li>
+                    Bypass Gatekeeper: <span className="text-slate-300 font-medium">Klik kanan</span> aplikasi di
+                    Applications, pilih <span className="text-slate-300 font-medium">Open</span>, lalu konfirmasi{" "}
+                    <span className="text-emerald-400 font-medium">Open</span>. (Atau jalankan{" "}
+                    <code className="bg-slate-950 px-1 py-0.5 rounded text-red-400 text-xxs font-mono">
+                      xattr -cr /Applications/PAKDE.app
+                    </code>{" "}
+                    di Terminal).
+                  </li>
+                </ol>
+              </div>
             </div>
             <div className="mt-8">
               <a
-                href="https://github.com/okihita/PAKDE-tauri/releases/latest"
+                href="https://github.com/okihita/PAKDE-tauri/releases/download/v1.0.0/PAKDE_1.0.0_universal.dmg"
                 className="block text-center rounded-lg border border-slate-700 bg-slate-900/50 px-6 py-3 text-sm font-semibold text-slate-300 hover:border-slate-500 hover:text-white transition-colors"
               >
-                Unduh .dmg
+                Unduh untuk macOS (.dmg)
               </a>
             </div>
           </div>
