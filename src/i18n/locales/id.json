@@ -111,7 +111,8 @@
     "events": "kegiatan",
     "alerts": "Peringatan Risiko",
     "alertsDesc": "{{count}} sinyal peringatan dini aktif.",
-    "alertsNone": "Tidak ada peringatan aktif"
+    "alertsNone": "Tidak ada peringatan aktif",
+    "openProfile": "Buka profil pengguna"
   },
   "dashboard": {
     "welcome": "Selamat Datang",
@@ -501,7 +502,15 @@
     "userProfile": {
       "title": "Profil Operator",
       "name": "Nama",
-      "role": "Peran"
+      "role": "Peran",
+      "pin": "PIN (6 digit)",
+      "pinConfirm": "Konfirmasi PIN",
+      "pinMismatch": "PIN tidak cocok",
+      "recovery": "Pemulihan akun (opsional)",
+      "recoveryQuestion": "Pertanyaan pemulihan",
+      "recoveryAnswer": "Jawaban pemulihan",
+      "pinValidation": "PIN harus 6 digit angka dan cocok dengan konfirmasi.",
+      "saveProfile": "Simpan Profil"
     },
     "profileTitle": "Profil Organisasi Koperasi Desa",
     "profileFields": {
@@ -517,6 +526,7 @@
       "email": "Email"
     },
     "saveProfile": "Simpan Profil Koperasi",
+    "saving": "Menyimpan...",
     "updater": {
       "title": "Pemeliharaan Aplikasi & Update OTA",
       "description": "Sambungkan ke repositori GitHub untuk mengunduh update biner rilis PAKDE secara langsung.",
@@ -608,6 +618,10 @@
   "xp": {
     "awardFailed": "Gagal memberikan XP",
     "revertFailed": "Gagal mengembalikan XP"
+  },
+  "levelUp": {
+    "title": "Naik Level!",
+    "message": "Koperasi Anda sekarang sudah masuk tier {{tier}} — {{label}}. Menu Leaderboard terbuka jika ada sinkron online."
   },
   "ranking": {
     "title": "Peringkat Koperasi",

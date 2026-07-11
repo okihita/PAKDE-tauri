@@ -10,18 +10,21 @@ import {
   Coins,
   Fire,
   Warning,
+  PencilSimple,
 } from "@phosphor-icons/react";
 import type { TabId } from "@/features/System/moduleUnlock";
 import { Tooltip } from "@/components/ui/tooltip";
 import type { TopBarStats } from "@/features/System/ProfileSelect/cooperativeDb";
+import type { LocalUser } from "@/types";
 
 interface TopBarProps {
   activeTab: TabId;
   onNavigate: (tab: TabId) => void;
-  currentUser: { name: string; role: string } | null;
+  currentUser: LocalUser | null;
   appTheme: "dark" | "light";
   onThemeToggle: () => void;
   onSwitchProfile: () => void;
+  onOpenProfile: () => void;
   onQuit: () => void;
   topStats?: TopBarStats | null;
   onAlertsClick?: () => void;
@@ -42,6 +45,7 @@ export default function TopBar({
   appTheme,
   onThemeToggle,
   onSwitchProfile,
+  onOpenProfile,
   onQuit,
   topStats,
   onAlertsClick,
@@ -165,15 +169,21 @@ export default function TopBar({
         </button>
 
         {/* ── User profile (near-right anchor) ── */}
-        <div className="flex items-center gap-2.5 shrink-0">
-          <div className="w-8 h-8 rounded-full bg-success/20 flex items-center justify-center ring-1 ring-brand/30">
+        <button
+          type="button"
+          onClick={onOpenProfile}
+          aria-label={t("topbar.openProfile")}
+          className="group flex items-center gap-2.5 rounded-lg px-1.5 py-1 -my-1 shrink-0 transition-colors hover:bg-sidebar-ring focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+        >
+          <div className="w-8 h-8 rounded-full bg-success/20 flex items-center justify-center ring-1 ring-brand/30 group-hover:ring-brand/60 transition-colors">
             <UserCheck className="h-3.5 w-3.5 text-success" />
           </div>
-          <div className="min-w-0 leading-tight">
+          <div className="min-w-0 leading-tight text-left">
             <p className="text-xs font-bold text-foreground truncate max-w-[140px]">{currentUser?.name}</p>
             <p className="text-xxs text-muted-foreground truncate max-w-[140px]">{currentUser?.role}</p>
           </div>
-        </div>
+          <PencilSimple className="h-3.5 w-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
+        </button>
 
         <span className="h-6 w-px bg-border mx-2 shrink-0" />
 

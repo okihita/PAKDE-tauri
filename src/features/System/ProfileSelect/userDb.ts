@@ -50,6 +50,31 @@ export async function getUserById(userId: string): Promise<LocalUser | null> {
   return rows.length > 0 ? rows[0] : null;
 }
 
+export interface UpdateUserInput {
+  name?: string;
+  role?: "admin" | "operator" | "pengawas";
+  pin?: string;
+  recoveryQuestion?: string;
+  recoveryAnswer?: string;
+}
+
+export async function updateUser(userId: string, input: UpdateUserInput): Promise<LocalUser> {
+  const patch: Record<string, unknown> = {};
+  if (input.name !== undefined) patch.name = input.name.trim();
+  if (input.role !== undefined) patch.role = input.role;
+  if (input.pin !== undefined && input.pin.length > 0) patch.pin_hash = await hashPin(input.pin);
+  if (input.recoveryQuestion !== undefined) patch.recovery_question = input.recoveryQuestion.trim() || null;
+  if (input.recoveryAnswer !== undefined)
+    patch.recovery_answer_hash = input.recoveryAnswer.trim() ? await hashPin(input.recoveryAnswer) : null;
+
+  if (Object.keys(patch).length > 0) {
+    await usersRepo.update(userId, patch);
+  }
+  const updated = await getUserById(userId);
+  if (!updated) throw new Error("User not found");
+  return updated;
+}
+
 export async function validatePin(cooperativeId: string, userId: string, pin: string): Promise<LocalUser | null> {
   const db = await getCoopDb(cooperativeId);
   const rows = await db.select<LocalUser[]>("SELECT * FROM local_users WHERE id = ?", [userId]);

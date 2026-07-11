@@ -111,7 +111,8 @@
     "events": "events",
     "alerts": "Risk Alerts",
     "alertsDesc": "{{count}} active early-warning signal(s).",
-    "alertsNone": "No active alerts"
+    "alertsNone": "No active alerts",
+    "openProfile": "Open user profile"
   },
   "dashboard": {
     "welcome": "Welcome",
@@ -501,7 +502,15 @@
     "userProfile": {
       "title": "Operator Profile",
       "name": "Name",
-      "role": "Role"
+      "role": "Role",
+      "pin": "PIN (6 digits)",
+      "pinConfirm": "Confirm PIN",
+      "pinMismatch": "PINs do not match",
+      "recovery": "Account recovery (optional)",
+      "recoveryQuestion": "Recovery question",
+      "recoveryAnswer": "Recovery answer",
+      "pinValidation": "PIN must be 6 digits and match confirmation.",
+      "saveProfile": "Save Profile"
     },
     "profileTitle": "Cooperative Organization Profile",
     "profileFields": {
@@ -517,6 +526,7 @@
       "email": "Email"
     },
     "saveProfile": "Save Cooperative Profile",
+    "saving": "Saving...",
     "updater": {
       "title": "Application Maintenance & OTA Updates",
       "description": "Connect to the GitHub repository to download PAKDE release binary updates directly.",
@@ -608,6 +618,10 @@
   "xp": {
     "awardFailed": "Could not award XP",
     "revertFailed": "Could not revert XP"
+  },
+  "levelUp": {
+    "title": "Level Up!",
+    "message": "Your cooperative has now reached tier {{tier}} — {{label}}. The Leaderboard menu unlocks when synced online."
   },
   "ranking": {
     "title": "Cooperative Ranking",

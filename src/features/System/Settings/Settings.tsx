@@ -18,8 +18,6 @@ import {
   GlobeIcon,
   TextAaIcon,
   PaintBucketIcon,
-  UserIcon,
-  ArrowsLeftRightIcon,
   WarningIcon,
   ArchiveIcon,
 } from "@phosphor-icons/react";
@@ -31,7 +29,6 @@ interface Props {
   setFontSizeSetting: (v: "small" | "normal" | "large" | "xlarge") => void;
   appTheme: "dark" | "light";
   setAppTheme: (v: "dark" | "light") => void;
-  currentUser: { id: string; name: string; role: string } | null;
   onSwitchProfile: () => void;
 }
 
@@ -67,7 +64,6 @@ export default function Settings({
   setFontSizeSetting,
   appTheme,
   setAppTheme,
-  currentUser,
   onSwitchProfile,
 }: Props) {
   const { t, i18n } = useTranslation();
@@ -257,40 +253,8 @@ export default function Settings({
           </CardContent>
         </Card>
 
-        {/* ── Right: UserIcon Profile + Cooperative Profile ── */}
+        {/* ── Right: User actions ── */}
         <div className="space-y-6">
-          {/* UserIcon Profile */}
-          {currentUser && (
-            <Card className="bg-card border-border">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
-                  <UserIcon className="h-3.5 w-3.5 text-info" />
-                  {t("settings.userProfile.title")}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="space-y-1.5">
-                  <div className="flex items-center justify-between text-xxs">
-                    <span className="text-muted-foreground font-mono">{t("settings.userProfile.name")}</span>
-                    <span className="font-bold text-foreground">{currentUser.name}</span>
-                  </div>
-                  <div className="flex items-center justify-between text-xxs">
-                    <span className="text-muted-foreground font-mono">{t("settings.userProfile.role")}</span>
-                    <span className="font-bold text-foreground">{currentUser.role}</span>
-                  </div>
-                </div>
-                <Button
-                  variant="outline"
-                  onClick={onSwitchProfile}
-                  className="w-full border-border text-muted-foreground hover:text-foreground text-xs h-8"
-                >
-                  <ArrowsLeftRightIcon className="h-3.5 w-3.5 mr-1.5" />
-                  {t("profileSelect.switchProfile")}
-                </Button>
-              </CardContent>
-            </Card>
-          )}
-
           {/* Delete / Reset */}
           <Card className={`bg-card ${isDemo ? "border-amber-800/30" : "border-destructive/20"}`}>
             <CardHeader>

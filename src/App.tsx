@@ -42,6 +42,7 @@ import Dampak from "@/features/Community/Dampak/Dampak";
 import Sync from "@/features/System/Sync/Sync";
 import Settings from "@/features/System/Settings/Settings";
 import CoopProfileModal from "@/features/System/CoopProfileModal";
+import UserProfileModal from "@/features/System/UserProfileModal";
 import ProfileSelect from "@/features/System/ProfileSelect/ProfileSelect";
 import { useUpdater } from "@/hooks/useUpdater";
 import BackupFileOpenHandler from "@/features/System/Backup/BackupFileOpenHandler";
@@ -93,6 +94,7 @@ function AppContent() {
   });
   const [coopProfile, setCoopProfile] = useState<CooperativeProfile | null>(null);
   const [showProfileModal, setShowProfileModal] = useState(false);
+  const [showUserModal, setShowUserModal] = useState(false);
   const [ewsAlerts, setEwsAlerts] = useState<EwsAlert[]>([]);
   const [memberCount, setMemberCount] = useState(0);
   const [netWorth, setNetWorth] = useState(0);
@@ -526,6 +528,7 @@ function AppContent() {
               appTheme={appTheme}
               onThemeToggle={() => setAppTheme((t) => (t === "dark" ? "light" : "dark"))}
               onSwitchProfile={requestSwitchProfile}
+              onOpenProfile={() => setShowUserModal(true)}
               onQuit={() => setShowQuitConfirm(true)}
               topStats={topStats}
               onAlertsClick={() => guardedSetActiveTab("home")}
@@ -563,6 +566,7 @@ function AppContent() {
             {activeTab === "learn" && <Learn />}
             {activeTab === "anggota" && (
               <Members
+                xp={coopProfile?.xp ?? 0}
                 onMembersChanged={() => {
                   void refreshMemberCount();
                   void refreshTopStats();
@@ -590,9 +594,6 @@ function AppContent() {
                 setFontSizeSetting={setFontSizeSetting}
                 appTheme={appTheme}
                 setAppTheme={setAppTheme}
-                currentUser={
-                  currentUser ? { id: currentUser.id, name: currentUser.name, role: currentUser.role } : null
-                }
                 onSwitchProfile={requestSwitchProfile}
               />
             )}
@@ -680,6 +681,13 @@ function AppContent() {
         onOpenChange={setShowProfileModal}
         coopProfile={coopProfile}
         setCoopProfile={setCoopProfile}
+      />
+
+      <UserProfileModal
+        open={showUserModal}
+        onOpenChange={setShowUserModal}
+        currentUser={currentUser}
+        setCurrentUser={setCurrentUser}
       />
     </div>
   );
