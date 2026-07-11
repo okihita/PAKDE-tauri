@@ -59,6 +59,9 @@ const LBL_CANCEL = "Batal";
 const LBL_QUIT = "Tutup Aplikasi";
 const LBL_QUIT_BTN = "QUIT";
 const LBL_QUIT_CONFIRM = "Apakah Anda yakin ingin menutup aplikasi?";
+const LBL_EXIT = "Keluar ke Pilihan Profil";
+const LBL_EXIT_BTN = "KELUAR";
+const LBL_EXIT_CONFIRM = "Apakah Anda yakin ingin kembali ke pilihan profil? Sesi Anda tersimpan otomatis.";
 const LBL_ALERT_ATTENTION = "Perlu perhatian segera";
 
 function quitApp() {
@@ -90,6 +93,7 @@ function AppContent() {
   const [memberCount, setMemberCount] = useState(0);
   const [netWorth, setNetWorth] = useState(0);
   const [showQuitConfirm, setShowQuitConfirm] = useState(false);
+  const [showExitConfirm, setShowExitConfirm] = useState(false);
 
   // Update lifecycle — owned at the app root so the title screen can surface an
   // "Update available" banner and a manual check button without a login gate.
@@ -110,29 +114,62 @@ function AppContent() {
     }
   }, [appTheme]);
 
-  // Keyboard shortcuts: Cmd/Ctrl + +/-/0 to zoom font, Escape for back/exit
+  // Return to the profile-selection (title) screen. Stable; safe to reference
+  // from the Escape handler below.
+  const handleSwitchProfile = useCallback(() => {
+    setCoopProfile(null);
+    localStorage.removeItem("pakde-active-profile-id");
+    setAppState("profile_select");
+  }, []);
+
+  // Ask for confirmation before exiting to the profile screen (avoids misclick
+  // on Escape / the Switch Profile button). Stable.
+  const requestSwitchProfile = useCallback(() => {
+    setShowExitConfirm(true);
+  }, []);
+
+  // Keyboard shortcuts: Cmd/Ctrl + +/-/0 to zoom font, Escape to return home
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Escape: back/exit
+      // Escape: return to profile selection — never quit. Quitting is the
+      // explicit QUIT button only.
       if (e.key === "Escape") {
-        // If a confirmation dialog is already open, Escape closes it (highest priority).
+        // 1. A confirmation dialog is already open → let it close itself
+        //    (highest priority). Its onEscapeKeyDown is prevented, so we
+        //    must close it here.
         if (showQuitConfirm) {
           e.preventDefault();
           e.stopPropagation();
           setShowQuitConfirm(false);
           return;
         }
-        if (appState === "profile_select") {
+        // 1b. The exit-to-profile confirmation is open → close it.
+        if (showExitConfirm) {
           e.preventDefault();
-          setShowQuitConfirm(true);
+          e.stopPropagation();
+          setShowExitConfirm(false);
           return;
         }
+        // 2. Any other open modal dialog (member form, settings sub-dialog,
+        //    etc.) → let Radix close it; do NOT navigate away from the view.
+        if (document.querySelector('[role="dialog"][data-state="open"]')) {
+          return;
+        }
+        // 3. Sign-in / create-user → back to profile selection.
         if (appState === "user_signin" || appState === "user_create") {
           e.preventDefault();
           setAppState("profile_select");
           return;
         }
+        // 4. Main app (the "game loop") → confirm before returning to the
+        //    profile screen (avoid misclick). Title screen is already home.
         if (appState === "main") {
+          e.preventDefault();
+          requestSwitchProfile();
+          return;
+        }
+        // 5. Title screen (profile selection) → confirm before quitting.
+        if (appState === "profile_select") {
           e.preventDefault();
           setShowQuitConfirm(true);
           return;
@@ -163,7 +200,7 @@ function AppContent() {
 
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [appState, showQuitConfirm]);
+  }, [appState, showQuitConfirm, showExitConfirm, handleSwitchProfile, requestSwitchProfile]);
 
   // Load dashboard data on mount
   useEffect(() => {
@@ -282,12 +319,6 @@ function AppContent() {
   );
 
   const ranking = useRanking(coopProfile);
-
-  const handleSwitchProfile = () => {
-    setCoopProfile(null);
-    localStorage.removeItem("pakde-active-profile-id");
-    setAppState("profile_select");
-  };
 
   const handleTitlebarMouseDown = (e: React.MouseEvent) => {
     // Only respond to left mouse button
@@ -469,7 +500,7 @@ function AppContent() {
                 currentUser={currentUser}
                 appTheme={appTheme}
                 onThemeToggle={() => setAppTheme((t) => (t === "dark" ? "light" : "dark"))}
-                onSwitchProfile={handleSwitchProfile}
+                onSwitchProfile={requestSwitchProfile}
                 onQuit={() => setShowQuitConfirm(true)}
               />
 
@@ -523,7 +554,7 @@ function AppContent() {
               appTheme={appTheme}
               setAppTheme={setAppTheme}
               currentUser={currentUser ? { id: currentUser.id, name: currentUser.name, role: currentUser.role } : null}
-              onSwitchProfile={handleSwitchProfile}
+              onSwitchProfile={requestSwitchProfile}
             />
           )}
         </main>
@@ -561,6 +592,44 @@ function AppContent() {
             >
               <SignOut className="h-3.5 w-3.5 mr-1" />
               {LBL_QUIT}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Exit-to-profile confirmation (main view). Opened by Escape or the
+          Switch Profile button; confirms before leaving the session so a
+          misclick can't drop the user to the title screen. Never quits. */}
+      <Dialog open={showExitConfirm} onOpenChange={setShowExitConfirm}>
+        <DialogContent
+          className="bg-slate-900 border border-slate-800 max-w-sm shadow-2xl"
+          onEscapeKeyDown={(e) => e.preventDefault()}
+        >
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-sm font-bold text-slate-200">
+              <SignOut className="h-5 w-5 text-warning shrink-0" />
+              {LBL_EXIT}
+            </DialogTitle>
+          </DialogHeader>
+          <p className="text-xs text-slate-400 leading-relaxed py-2">{LBL_EXIT_CONFIRM}</p>
+          <DialogFooter className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setShowExitConfirm(false)}
+              className="flex-1 border-slate-800 bg-slate-950 text-slate-300 hover:text-white text-xs h-8"
+            >
+              <XCircle className="h-3.5 w-3.5 mr-1" />
+              {LBL_CANCEL}
+            </Button>
+            <Button
+              onClick={() => {
+                setShowExitConfirm(false);
+                handleSwitchProfile();
+              }}
+              className="flex-1 bg-warning hover:bg-warning/90 text-white font-bold text-xs h-8"
+            >
+              <SignOut className="h-3.5 w-3.5 mr-1" />
+              {LBL_EXIT_BTN}
             </Button>
           </DialogFooter>
         </DialogContent>
