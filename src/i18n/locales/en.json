@@ -100,6 +100,16 @@
     "criticalAlerts_one": "{{count}} Critical Alert",
     "criticalAlerts_other": "{{count}} Critical Alerts"
   },
+  "topbar": {
+    "netWorth": "Net Worth",
+    "netWorthDesc": "Assets minus liabilities from the ledger.",
+    "liveliness": "Community Liveliness",
+    "livelinessDesc": "{{count}} activities in the last 30 days · {{avg}} avg attendees.",
+    "events": "events",
+    "alerts": "Risk Alerts",
+    "alertsDesc": "{{count}} active early-warning signal(s).",
+    "alertsNone": "No active alerts"
+  },
   "dashboard": {
     "welcome": "Welcome",
     "legalId": "LEGAL ID",

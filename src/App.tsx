@@ -7,6 +7,8 @@ import {
   getMemberCount,
   getActiveEwsAlerts,
   getNetWorth,
+  getTopBarStats,
+  type TopBarStats,
 } from "@/features/System/ProfileSelect/cooperativeDb";
 import { getUsersByCooperativeId } from "@/features/System/ProfileSelect/userDb";
 import { isTabUnlocked, type TabId } from "@/features/System/moduleUnlock";
@@ -92,6 +94,7 @@ function AppContent() {
   const [ewsAlerts, setEwsAlerts] = useState<EwsAlert[]>([]);
   const [memberCount, setMemberCount] = useState(0);
   const [netWorth, setNetWorth] = useState(0);
+  const [topStats, setTopStats] = useState<TopBarStats | null>(null);
   const [showQuitConfirm, setShowQuitConfirm] = useState(false);
   const [showExitConfirm, setShowExitConfirm] = useState(false);
 
@@ -274,6 +277,26 @@ function AppContent() {
       console.error(e);
     }
   }, [coopProfile?.id]);
+
+  // Refresh the headline top-bar stats (net worth, liveliness, risk alerts).
+  // Event-driven: recomputes on every tab switch and whenever the co-op
+  // profile changes, so the meters stay live without a polling timer.
+  const refreshTopStats = useCallback(async () => {
+    const id = coopProfile?.id || getActiveCoopId();
+    if (!id) return;
+    try {
+      setTopStats(await getTopBarStats(id));
+    } catch (e) {
+      console.error(e);
+    }
+  }, [coopProfile?.id]);
+
+  useEffect(() => {
+    if (appState !== "main") return;
+    (async () => {
+      await refreshTopStats();
+    })();
+  }, [appState, activeTab, coopProfile?.id, refreshTopStats]);
 
   // Boot resume: if a cooperative was previously active, skip the title screen
   // and drop the user straight back into their session. Demo coop → auto-login
@@ -501,6 +524,8 @@ function AppContent() {
               onThemeToggle={() => setAppTheme((t) => (t === "dark" ? "light" : "dark"))}
               onSwitchProfile={requestSwitchProfile}
               onQuit={() => setShowQuitConfirm(true)}
+              topStats={topStats}
+              onAlertsClick={() => guardedSetActiveTab("home")}
             />
           </div>
 
@@ -533,7 +558,14 @@ function AppContent() {
             {activeTab === "sales" && <Sales />}
             {activeTab === "development" && <Development onTabChange={setActiveTab} />}
             {activeTab === "learn" && <Learn />}
-            {activeTab === "anggota" && <Members onMembersChanged={refreshMemberCount} />}
+            {activeTab === "anggota" && (
+              <Members
+                onMembersChanged={() => {
+                  void refreshMemberCount();
+                  void refreshTopStats();
+                }}
+              />
+            )}
             {activeTab === "kegiatan" && <CreateEvent coopId={coopProfile?.id ?? getActiveCoopId()} />}
             {activeTab === "dampak" && <Dampak />}
             {activeTab === "accounting" && (

@@ -100,6 +100,16 @@
     "criticalAlerts_one": "{{count}} Critical Alert",
     "criticalAlerts_other": "{{count}} Critical Alerts"
   },
+  "topbar": {
+    "netWorth": "Nilai Bersih",
+    "netWorthDesc": "Aset dikurangi kewajiban dari buku besar.",
+    "liveliness": "Keaktifan Komunitas",
+    "livelinessDesc": "{{count}} kegiatan 30 hari terakhir · {{avg}} rata-rata peserta.",
+    "events": "kegiatan",
+    "alerts": "Peringatan Risiko",
+    "alertsDesc": "{{count}} sinyal peringatan dini aktif.",
+    "alertsNone": "Tidak ada peringatan aktif"
+  },
   "dashboard": {
     "welcome": "Selamat Datang",
     "legalId": "BADAN HUKUM",

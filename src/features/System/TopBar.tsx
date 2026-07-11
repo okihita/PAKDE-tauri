@@ -1,6 +1,19 @@
 import { useTranslation } from "react-i18next";
-import { Gear, SunIcon, MoonIcon, UserCheck, SignOut, XCircle, CloudCheck } from "@phosphor-icons/react";
+import {
+  Gear,
+  SunIcon,
+  MoonIcon,
+  UserCheck,
+  SignOut,
+  XCircle,
+  CloudCheck,
+  Coins,
+  Fire,
+  Warning,
+} from "@phosphor-icons/react";
 import type { TabId } from "@/features/System/moduleUnlock";
+import { Tooltip } from "@/components/ui/tooltip";
+import type { TopBarStats } from "@/features/System/ProfileSelect/cooperativeDb";
 
 interface TopBarProps {
   activeTab: TabId;
@@ -10,7 +23,17 @@ interface TopBarProps {
   onThemeToggle: () => void;
   onSwitchProfile: () => void;
   onQuit: () => void;
+  topStats?: TopBarStats | null;
+  onAlertsClick?: () => void;
 }
+
+const idr = new Intl.NumberFormat("id-ID", {
+  style: "currency",
+  currency: "IDR",
+  maximumFractionDigits: 0,
+});
+
+const statSlot = "flex items-center gap-1.5 px-2 py-1 rounded-lg hover:bg-sidebar-ring transition-colors shrink-0";
 
 export default function TopBar({
   activeTab,
@@ -20,80 +43,159 @@ export default function TopBar({
   onThemeToggle,
   onSwitchProfile,
   onQuit,
+  topStats,
+  onAlertsClick,
 }: TopBarProps) {
   const { t } = useTranslation();
 
   const ctrlBtn = "p-2 rounded-lg hover:bg-sidebar-ring transition-colors shrink-0 text-muted-foreground";
 
+  const sevClass =
+    topStats?.worstSeverity === "critical"
+      ? "text-danger"
+      : topStats?.worstSeverity === "warning"
+        ? "text-warning"
+        : "text-muted-foreground";
+
   return (
-    <div className="bg-sidebar border-b border-border flex items-center justify-end gap-1 px-6 h-12 shrink-0 select-none print:hidden z-40 relative">
-      {/* ── Preferences ── */}
-      <div className="flex items-center gap-1">
-        <button
-          onClick={() => onNavigate("settings")}
-          aria-label={t("sidebar.nav.settings")}
-          title={t("sidebar.nav.settings")}
-          className={`${ctrlBtn} ${activeTab === "settings" ? "text-foreground bg-sidebar-ring" : ""}`}
-        >
-          <Gear className="h-4 w-4" />
-        </button>
-        <button
-          onClick={onThemeToggle}
-          aria-label={appTheme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
-          title={appTheme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
-          className={ctrlBtn}
-        >
-          {appTheme === "dark" ? (
-            <SunIcon className="h-4 w-4 hover:text-warning transition-colors" />
-          ) : (
-            <MoonIcon className="h-4 w-4 hover:text-info transition-colors" />
-          )}
-        </button>
+    <div className="bg-sidebar border-b border-border flex items-center justify-between gap-3 px-6 h-12 shrink-0 select-none print:hidden z-40 relative">
+      {/* ── Live stat cluster (left): the co-op's "tavern status bar" ── */}
+      <div className="flex items-center gap-1 min-w-0">
+        {topStats && (
+          <>
+            {/* 💰 Resource — Net Worth (Assets − Liabilities) */}
+            <Tooltip label={t("topbar.netWorth")} description={t("topbar.netWorthDesc")} className="inline-flex">
+              <div className={statSlot}>
+                <Coins className="h-4 w-4 text-success shrink-0" />
+                <div className="leading-none">
+                  <p className="text-xs font-bold text-foreground tabular-nums">{idr.format(topStats.netWorth)}</p>
+                  <p className="text-xxxs text-muted-foreground mt-0.5">{t("topbar.netWorth")}</p>
+                </div>
+              </div>
+            </Tooltip>
+
+            <span className="h-6 w-px bg-border mx-0.5 shrink-0" />
+
+            {/* 🔥 Morale — Community Liveliness (events + turnout, 30d) */}
+            <Tooltip
+              label={t("topbar.liveliness")}
+              description={t("topbar.livelinessDesc", {
+                count: topStats.eventCount,
+                avg: topStats.avgParticipants.toFixed(1),
+              })}
+              className="inline-flex"
+            >
+              <div className={statSlot}>
+                <Fire className="h-4 w-4 text-warning shrink-0" />
+                <div className="leading-none">
+                  <p className="text-xs font-bold text-foreground tabular-nums">
+                    {topStats.eventCount}
+                    <span className="text-xxxs font-normal text-muted-foreground ml-1">{t("topbar.events")}</span>
+                  </p>
+                  <p className="text-xxxs text-muted-foreground mt-0.5">{t("topbar.liveliness")}</p>
+                </div>
+              </div>
+            </Tooltip>
+
+            <span className="h-6 w-px bg-border mx-0.5 shrink-0" />
+
+            {/* ⚔️ Threat — Active Risk Alerts (EWS), colored by severity */}
+            <Tooltip
+              label={t("topbar.alerts")}
+              description={
+                topStats.alertCount > 0
+                  ? t("topbar.alertsDesc", { count: topStats.alertCount })
+                  : t("topbar.alertsNone")
+              }
+              className="inline-flex"
+            >
+              <button
+                type="button"
+                onClick={onAlertsClick}
+                disabled={topStats.alertCount === 0}
+                className={`${statSlot} ${topStats.alertCount === 0 ? "cursor-default" : "hover:bg-sidebar-ring"}`}
+              >
+                <Warning className={`h-4 w-4 shrink-0 ${sevClass}`} />
+                <div className="leading-none text-left">
+                  <p className={`text-xs font-bold tabular-nums ${sevClass}`}>{topStats.alertCount}</p>
+                  <p className="text-xxxs text-muted-foreground mt-0.5">{t("topbar.alerts")}</p>
+                </div>
+              </button>
+            </Tooltip>
+          </>
+        )}
       </div>
 
-      <span className="h-6 w-px bg-border mx-2 shrink-0" />
-
-      {/* ── Primary action + identity anchor ── */}
-      <button
-        onClick={() => onNavigate("sync")}
-        aria-label={t("sidebar.nav.sync")}
-        title={t("sidebar.nav.sync")}
-        className={`${ctrlBtn} hover:text-info ${activeTab === "sync" ? "text-foreground bg-sidebar-ring" : ""}`}
-      >
-        <CloudCheck className="h-4 w-4" />
-      </button>
-
-      {/* ── User profile (near-right anchor) ── */}
-      <div className="flex items-center gap-2.5 shrink-0">
-        <div className="w-8 h-8 rounded-full bg-success/20 flex items-center justify-center ring-1 ring-brand/30">
-          <UserCheck className="h-3.5 w-3.5 text-success" />
+      {/* ── Utility controls (right) ── */}
+      <div className="flex items-center gap-1 shrink-0">
+        {/* ── Preferences ── */}
+        <div className="flex items-center gap-1">
+          <button
+            onClick={() => onNavigate("settings")}
+            aria-label={t("sidebar.nav.settings")}
+            title={t("sidebar.nav.settings")}
+            className={`${ctrlBtn} ${activeTab === "settings" ? "text-foreground bg-sidebar-ring" : ""}`}
+          >
+            <Gear className="h-4 w-4" />
+          </button>
+          <button
+            onClick={onThemeToggle}
+            aria-label={appTheme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+            title={appTheme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+            className={ctrlBtn}
+          >
+            {appTheme === "dark" ? (
+              <SunIcon className="h-4 w-4 hover:text-warning transition-colors" />
+            ) : (
+              <MoonIcon className="h-4 w-4 hover:text-info transition-colors" />
+            )}
+          </button>
         </div>
-        <div className="min-w-0 leading-tight">
-          <p className="text-xs font-bold text-foreground truncate max-w-[140px]">{currentUser?.name}</p>
-          <p className="text-xxs text-muted-foreground truncate max-w-[140px]">{currentUser?.role}</p>
+
+        <span className="h-6 w-px bg-border mx-2 shrink-0" />
+
+        {/* ── Primary action + identity anchor ── */}
+        <button
+          onClick={() => onNavigate("sync")}
+          aria-label={t("sidebar.nav.sync")}
+          title={t("sidebar.nav.sync")}
+          className={`${ctrlBtn} hover:text-info ${activeTab === "sync" ? "text-foreground bg-sidebar-ring" : ""}`}
+        >
+          <CloudCheck className="h-4 w-4" />
+        </button>
+
+        {/* ── User profile (near-right anchor) ── */}
+        <div className="flex items-center gap-2.5 shrink-0">
+          <div className="w-8 h-8 rounded-full bg-success/20 flex items-center justify-center ring-1 ring-brand/30">
+            <UserCheck className="h-3.5 w-3.5 text-success" />
+          </div>
+          <div className="min-w-0 leading-tight">
+            <p className="text-xs font-bold text-foreground truncate max-w-[140px]">{currentUser?.name}</p>
+            <p className="text-xxs text-muted-foreground truncate max-w-[140px]">{currentUser?.role}</p>
+          </div>
         </div>
-      </div>
 
-      <span className="h-6 w-px bg-border mx-2 shrink-0" />
+        <span className="h-6 w-px bg-border mx-2 shrink-0" />
 
-      {/* ── Session exit ── */}
-      <div className="flex items-center gap-1">
-        <button
-          onClick={onSwitchProfile}
-          aria-label={t("profileSelect.switchProfile")}
-          title={t("profileSelect.switchProfile")}
-          className={`${ctrlBtn} hover:text-danger`}
-        >
-          <SignOut className="h-4 w-4" />
-        </button>
-        <button
-          onClick={onQuit}
-          aria-label={LBL_QUIT}
-          title={LBL_QUIT}
-          className="p-2 rounded-lg hover:bg-danger/10 transition-colors shrink-0 text-muted-foreground hover:text-danger"
-        >
-          <XCircle className="h-4 w-4" />
-        </button>
+        {/* ── Session exit ── */}
+        <div className="flex items-center gap-1">
+          <button
+            onClick={onSwitchProfile}
+            aria-label={t("profileSelect.switchProfile")}
+            title={t("profileSelect.switchProfile")}
+            className={`${ctrlBtn} hover:text-danger`}
+          >
+            <SignOut className="h-4 w-4" />
+          </button>
+          <button
+            onClick={onQuit}
+            aria-label={LBL_QUIT}
+            title={LBL_QUIT}
+            className="p-2 rounded-lg hover:bg-danger/10 transition-colors shrink-0 text-muted-foreground hover:text-danger"
+          >
+            <XCircle className="h-4 w-4" />
+          </button>
+        </div>
       </div>
     </div>
   );

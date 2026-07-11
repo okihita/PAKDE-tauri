@@ -107,11 +107,77 @@ export async function getNetWorth(cooperativeId: string): Promise<number> {
   const db = await getCoopDb(cooperativeId);
   const rows = await db.select<Array<{ assets: number; liabilities: number }>>(
     `SELECT
-       COALESCE(SUM(CASE WHEN type = 'aset' THEN balance ELSE 0 END), 0) AS assets,
-       COALESCE(SUM(CASE WHEN type = 'kewajiban' THEN balance ELSE 0 END), 0) AS liabilities
-     FROM coa_accounts`,
+        COALESCE(SUM(CASE WHEN type = 'aset' THEN balance ELSE 0 END), 0) AS assets,
+        COALESCE(SUM(CASE WHEN type = 'kewajiban' THEN balance ELSE 0 END), 0) AS liabilities
+      FROM coa_accounts`,
   );
   const r = rows[0];
   if (!r) return 0;
   return r.assets - r.liabilities;
+}
+
+export type AlertSeverity = "info" | "warning" | "critical";
+
+/** Live headline stats for the persistent top-bar status cluster. */
+export interface TopBarStats {
+  /** Assets − Liabilities from the chart of accounts. */
+  netWorth: number;
+  /** Number of community events in the trailing window. */
+  eventCount: number;
+  /** Average attendees per event over the trailing window. */
+  avgParticipants: number;
+  /** Count of active (unresolved) EWS alerts. */
+  alertCount: number;
+  /** Worst active alert severity, or null when none. */
+  worstSeverity: AlertSeverity | null;
+}
+
+/**
+ * "Community Liveliness": how bustling the co-op is. Counts events in the last
+ * `days` and the total attendance (parsed from the `participant_ids` JSON
+ * array), so it reflects both frequency and turnout.
+ */
+export async function getCommunityLiveliness(
+  cooperativeId: string,
+  days = 30,
+): Promise<{ eventCount: number; avgParticipants: number }> {
+  const db = await getCoopDb(cooperativeId);
+  const rows = await db.select<Array<{ event_count: number; participant_sum: number }>>(
+    `SELECT
+        COUNT(*) AS event_count,
+        COALESCE(SUM(CASE WHEN json_valid(participant_ids)
+                          THEN json_array_length(participant_ids) ELSE 0 END), 0) AS participant_sum
+      FROM events
+      WHERE date >= date('now', '-' || ? || ' days')`,
+    [days],
+  );
+  const r = rows[0] ?? { event_count: 0, participant_sum: 0 };
+  const avgParticipants = r.event_count > 0 ? r.participant_sum / r.event_count : 0;
+  return { eventCount: r.event_count, avgParticipants };
+}
+
+const SEVERITY_ORDER: Record<AlertSeverity, number> = { info: 1, warning: 2, critical: 3 };
+
+/** Aggregate the three headline meters into a single call (one DB open). */
+export async function getTopBarStats(cooperativeId: string): Promise<TopBarStats> {
+  const [netWorth, liveliness, alerts] = await Promise.all([
+    getNetWorth(cooperativeId),
+    getCommunityLiveliness(cooperativeId),
+    getActiveEwsAlerts(cooperativeId),
+  ]);
+
+  let worstSeverity: AlertSeverity | null = null;
+  for (const a of alerts) {
+    if (SEVERITY_ORDER[a.level] > (worstSeverity ? SEVERITY_ORDER[worstSeverity] : 0)) {
+      worstSeverity = a.level;
+    }
+  }
+
+  return {
+    netWorth,
+    eventCount: liveliness.eventCount,
+    avgParticipants: liveliness.avgParticipants,
+    alertCount: alerts.length,
+    worstSeverity,
+  };
 }
