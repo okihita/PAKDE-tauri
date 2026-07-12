@@ -1,4 +1,5 @@
 import "./Statistics.css";
+import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import {
   HeartIcon,
@@ -13,30 +14,19 @@ import {
   CheckCircleIcon,
 } from "@phosphor-icons/react";
 import type { CooperativeProfile } from "@/types";
+import { getCoopDb } from "@/db";
 
 interface Props {
   coopProfile: CooperativeProfile | null;
 }
 
-// ── mock data (replace with real DB queries when available) ──
-const MOCK = {
-  totalMembers: 328,
-  totalSimpanan: 1_850_000_000,
-  shuAnnual: 178_000_000,
-  pendapatan: [
-    { label: "Simpanan", value: 420_000_000 },
-    { label: "Pinjaman", value: 580_000_000 },
-    { label: "Unit Usaha", value: 210_000_000 },
-    { label: "Lain-lain", value: 65_000_000 },
-  ],
-  beban: [
-    { label: "Operasional", value: 280_000_000 },
-    { label: "Bunga", value: 95_000_000 },
-    { label: "Penyusutan", value: 45_000_000 },
-    { label: "Lain-lain", value: 60_000_000 },
-  ],
-  alerts: [] as Array<{ indicator: string; message: string; level: "warning" | "critical" }>,
-};
+interface StatisticsData {
+  totalMembers: number;
+  totalSimpanan: number;
+  pendapatan: Array<{ label: string; value: number }>;
+  beban: Array<{ label: string; value: number }>;
+  alerts: Array<{ indicator: string; message: string; level: "warning" | "critical" }>;
+}
 
 function formatRp(n: number): string {
   if (n >= 1_000_000_000) return `Rp ${(n / 1_000_000_000).toFixed(1)}M`;
@@ -58,14 +48,87 @@ function getHealthTier(score: number): "sehat" | "cukup" | "kurang" {
 
 export default function Statistics({ coopProfile }: Props) {
   const { t } = useTranslation();
+  const [stats, setStats] = useState<StatisticsData | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let active = true;
+    async function loadData() {
+      if (!coopProfile?.id) return;
+      try {
+        setLoading(true);
+        const db = await getCoopDb(coopProfile.id);
+
+        // 1. Get member count
+        const membersCountRow = await db.select<Array<{ count: number }>>("SELECT COUNT(*) AS count FROM members");
+        const totalMembers = membersCountRow[0]?.count ?? 0;
+
+        // 2. Get total savings
+        const savingsRow = await db.select<Array<{ total: number }>>(
+          "SELECT SUM(savings_pokok + savings_wajib + savings_sukarela) AS total FROM members",
+        );
+        const totalSimpanan = savingsRow[0]?.total ?? 0;
+
+        // 3. Get coa accounts for income & expense
+        const accounts = await db.select<Array<{ name: string; type: string; balance: number }>>(
+          "SELECT name, type, balance FROM coa_accounts WHERE type IN ('pendapatan', 'beban') AND is_active = 1",
+        );
+
+        const pendapatan = accounts
+          .filter((a) => a.type === "pendapatan")
+          .map((a) => ({ label: a.name, value: a.balance }));
+
+        const beban = accounts.filter((a) => a.type === "beban").map((a) => ({ label: a.name, value: a.balance }));
+
+        // 4. Get active EWS alerts
+        const alerts = await db.select<Array<{ indicator: string; message: string; level: "warning" | "critical" }>>(
+          "SELECT indicator, message, level FROM ews_alerts WHERE is_active = 1 AND level IN ('warning', 'critical')",
+        );
+
+        if (active) {
+          setStats({
+            totalMembers,
+            totalSimpanan,
+            pendapatan,
+            beban,
+            alerts,
+          });
+          setLoading(false);
+        }
+      } catch (err) {
+        console.error("Failed to load statistics:", err);
+        if (active) {
+          setLoading(false);
+        }
+      }
+    }
+
+    loadData();
+    return () => {
+      active = false;
+    };
+  }, [coopProfile?.id]);
 
   const healthScore = coopProfile?.health_score ?? 72;
   const tier = getHealthTier(healthScore);
 
+  if (loading || !stats) {
+    return (
+      <div className="flex-1 flex items-center justify-center p-6 text-xs font-mono text-muted-foreground animate-pulse">
+        <div className="flex items-center gap-2">
+          <span className="w-2 h-2 bg-emerald-400 rounded-full animate-ping" />
+          <span>{t("common.loading")}</span>
+        </div>
+      </div>
+    );
+  }
+
+  const MOCK = stats;
+
   const totalPendapatan = MOCK.pendapatan.reduce((s, p) => s + p.value, 0);
   const totalBeban = MOCK.beban.reduce((s, b) => s + b.value, 0);
   const hasilBersih = totalPendapatan - totalBeban;
-  const maxBar = Math.max(...MOCK.pendapatan.map((d) => d.value), ...MOCK.beban.map((d) => d.value));
+  const maxBar = Math.max(1, ...MOCK.pendapatan.map((d) => d.value), ...MOCK.beban.map((d) => d.value));
 
   // Health gauge styling
   const gaugeColor = tier === "sehat" ? "text-emerald-400" : tier === "cukup" ? "text-amber-400" : "text-red-400";
