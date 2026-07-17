@@ -117,7 +117,7 @@ export default function CampaignStrip({ xp = 0, pengurusReady = false }: Campaig
   const overflow = memberCount - crowd;
 
   return (
-    <div className="w-full px-6 pt-4">
+    <div className="w-full pb-4">
       <div
         className={`relative overflow-hidden rounded-2xl border border-border bg-linear-to-b ${backdropClass} to-card`}
       >
