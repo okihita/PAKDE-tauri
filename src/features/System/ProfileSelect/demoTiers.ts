@@ -24,11 +24,11 @@ export const DEMO_TIERS: DemoTier[] = [
     title: "Pemula",
     coopName: "Koperasi Tani Sejahtera",
     narrative:
-      "Pak Karto baru saja merintis koperasi ini bersama 24 tetangganya di Lampung. Mereka mulai dengan mengumpulkan pupuk untuk musim tanam berikutnya — gotong royong, langkah demi langkah.",
+      "Pak Karto baru saja merintis koperasi ini bersama 19 tetangganya di Lampung. Mereka mulai dengan mengumpulkan pupuk untuk musim tanam berikutnya — gotong royong, langkah demi langkah.",
     features: ["Dashboard", "Anggota", "Unit Usaha", "Penjualan", "Inventaris", "Akuntansi Dasar", "Profil Koperasi"],
     stats: [
       { label: "Berjalan", value: "4 bulan" },
-      { label: "Anggota", value: "25" },
+      { label: "Anggota", value: "20" },
       { label: "Unit Usaha", value: "1" },
     ],
     village: "Sri Way Langsep",

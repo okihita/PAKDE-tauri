@@ -8,6 +8,7 @@ import { useIconSettings } from "@/components/IconContext";
 import type { CooperativeProfile } from "@/types";
 import { deleteCooperative } from "./settingsDb";
 import { isDemoCooperative, seedDemoCooperativeAtLevel, type DemoLevel } from "@/db/seed-demo";
+import { sfx } from "@/features/System/ProfileSelect/sfx";
 import { invalidateAllCoopDbs } from "@/db/coopDb";
 import { closeRegistryDb } from "@/db/registry";
 import { appDataDir, join } from "@tauri-apps/api/path";
@@ -20,6 +21,8 @@ import {
   PaintBucketIcon,
   WarningIcon,
   ArchiveIcon,
+  SpeakerHighIcon,
+  SpeakerXIcon,
 } from "@phosphor-icons/react";
 import BackupRestoreCard from "@/features/System/Backup/BackupRestoreCard";
 
@@ -68,6 +71,7 @@ export default function Settings({
 }: Props) {
   const { t, i18n } = useTranslation();
   const [lang, setLang] = useState(i18n.language);
+  const [soundOn, setSoundOn] = useState(sfx.enabled);
   const toast = useToast();
   const { settings: iconSettings, setWeight } = useIconSettings();
   const [resetConfirm, setResetConfirm] = useState(false);
@@ -228,6 +232,40 @@ export default function Settings({
                 ))}
               </div>
               <p className="text-xxxs text-muted-foreground font-mono">{t("settings.preferences.fontHint")}</p>
+            </div>
+
+            {/* Sound */}
+            <div className="space-y-2">
+              <label className="text-xxs font-mono text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+                {soundOn ? (
+                  <SpeakerHighIcon className="h-3 w-3 text-slate-500" />
+                ) : (
+                  <SpeakerXIcon className="h-3 w-3 text-slate-500" />
+                )}
+                {t("settings.preferences.sound")}
+              </label>
+              <div className="grid grid-cols-2 gap-3">
+                {[
+                  { value: true, label: t("settings.preferences.soundOn") },
+                  { value: false, label: t("settings.preferences.soundOff") },
+                ].map((opt) => (
+                  <button
+                    key={String(opt.value)}
+                    onClick={() => {
+                      const next = sfx.toggleSound(opt.value);
+                      setSoundOn(next);
+                    }}
+                    className={`${bannerBase} ${soundOn === opt.value ? bannerActive : bannerInactive}`}
+                  >
+                    {opt.value ? (
+                      <SpeakerHighIcon className="h-5 w-5" weight="fill" />
+                    ) : (
+                      <SpeakerXIcon className="h-5 w-5" weight="fill" />
+                    )}
+                    <span className="text-xxs font-bold text-foreground">{opt.label}</span>
+                  </button>
+                ))}
+              </div>
             </div>
 
             {/* Icon Weight */}

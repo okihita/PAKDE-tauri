@@ -163,6 +163,63 @@ class RetroAudioEngine {
     }
   }
 
+  /** Descending two-tone — for cancel / close / back navigation. */
+  playBack(frequency = 420, duration = 0.1) {
+    if (!this.enabled) return;
+    try {
+      this.init();
+      const ctx = this.ctx;
+      if (!ctx) return;
+      if (ctx.state === "suspended") {
+        ctx.resume().catch(() => {});
+        return;
+      }
+      const now = ctx.currentTime;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "square";
+      osc.frequency.setValueAtTime(frequency, now);
+      osc.frequency.exponentialRampToValueAtTime(frequency * 0.6, now + duration);
+      gain.gain.setValueAtTime(0.03, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now);
+      osc.stop(now + duration);
+    } catch {
+      // ignore
+    }
+  }
+
+  /** Low buzz — for invalid input / errors. */
+  playError(frequency = 140, duration = 0.18) {
+    if (!this.enabled) return;
+    try {
+      this.init();
+      const ctx = this.ctx;
+      if (!ctx) return;
+      if (ctx.state === "suspended") {
+        ctx.resume().catch(() => {});
+        return;
+      }
+      const now = ctx.currentTime;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "sawtooth";
+      osc.frequency.setValueAtTime(frequency, now);
+      // Slight wobble so it reads as an error, not a tone.
+      osc.frequency.linearRampToValueAtTime(frequency * 0.85, now + duration);
+      gain.gain.setValueAtTime(0.04, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now);
+      osc.stop(now + duration);
+    } catch {
+      // ignore
+    }
+  }
+
   toggleSound(forceState?: boolean): boolean {
     this.enabled = forceState !== undefined ? forceState : !this.enabled;
     localStorage.setItem("pakde-splash-sfx", this.enabled.toString());

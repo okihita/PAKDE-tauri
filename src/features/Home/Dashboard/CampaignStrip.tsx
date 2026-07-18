@@ -18,9 +18,15 @@ import { getCurrentLevel, LEVELS } from "@/data/leveling";
 import { getTierBand } from "@/data/xp-core";
 import { getCoopMemberCount } from "@/hooks/useMembers";
 import { onMembersChanged } from "@/lib/memberEvents";
+import { getActiveCoopId } from "@/db/active-coop";
+import { sfx } from "@/features/System/ProfileSelect/sfx";
 import KopdesBuilding from "./KopdesBuilding";
 
+// Per-campaign "seen" flag — namespaced by coop id so a NEW campaign (new coop
+// profile) replays the intro dialogue instead of being permanently suppressed
+// by a global flag. Falls back to the legacy global key for pre-namespacing data.
 const SEEN_KEY = "pakde-campaign-seen";
+const seenKeyFor = (coopId: string) => (coopId ? `pakde-campaign-seen:${coopId}` : SEEN_KEY);
 
 // Hardcoded Indonesian narration for the easy campaign (v1; extracted to i18n later).
 const SCRIPT: string[] = [
@@ -32,6 +38,7 @@ const SCRIPT: string[] = [
 
 const LABEL_CAMPAIGN = "Kampanye · Tingkat";
 const LABEL_NEXT = "▸ Lanjut";
+const LABEL_ELDER = "Penatua Desa";
 const LABEL_OVERFLOW = "lainnya";
 const LABEL_LEADER = "Pengurus";
 const LABEL_RESIDENTS = "Warga:";
@@ -60,8 +67,9 @@ export default function CampaignStrip({ xp = 0, pengurusReady = false }: Campaig
   const goalMinXp = LEVELS[goalTier - 1]?.minXp ?? startMinXp + 1;
   const progress = Math.max(0, Math.min(1, (xp - startMinXp) / Math.max(1, goalMinXp - startMinXp)));
 
+  const coopId = getActiveCoopId();
   const [mode, setMode] = useState<SceneMode>(() =>
-    typeof localStorage !== "undefined" && localStorage.getItem(SEEN_KEY) === "1" ? "scene" : "dialogue",
+    typeof localStorage !== "undefined" && localStorage.getItem(seenKeyFor(coopId)) === "1" ? "scene" : "dialogue",
   );
   const [lineIdx, setLineIdx] = useState(0);
   const [shown, setShown] = useState("");
@@ -85,9 +93,11 @@ export default function CampaignStrip({ xp = 0, pengurusReady = false }: Campaig
 
   const advance = useCallback(() => {
     if (lineIdx < SCRIPT.length - 1) {
+      sfx.playClick(420, 0.04);
       setLineIdx((n) => n + 1);
     } else {
-      localStorage.setItem(SEEN_KEY, "1");
+      sfx.playChime();
+      localStorage.setItem(seenKeyFor(getActiveCoopId()), "1");
       setMode("scene");
     }
   }, [lineIdx]);
@@ -95,6 +105,7 @@ export default function CampaignStrip({ xp = 0, pengurusReady = false }: Campaig
   // Skip the typewriter and reveal the full line immediately on click.
   const onBoxClick = useCallback(() => {
     if (shown.length < fullLine.length) {
+      sfx.playClick(300, 0.05);
       setShown(fullLine);
     } else {
       advance();
@@ -119,7 +130,7 @@ export default function CampaignStrip({ xp = 0, pengurusReady = false }: Campaig
   return (
     <div className="w-full pb-4">
       <div
-        className={`relative overflow-hidden rounded-2xl border border-border bg-linear-to-b ${backdropClass} to-card`}
+        className={`relative overflow-hidden rounded-2xl border border-border bg-linear-to-b ${backdropClass} to-card bg-cover bg-center bg-no-repeat [background-image:url('/campaign-bg.jpg')]`}
       >
         {/* Region 1 — tier track */}
         <div className="flex flex-col gap-2 px-5 pt-4">
@@ -144,23 +155,34 @@ export default function CampaignStrip({ xp = 0, pengurusReady = false }: Campaig
         {/* Region 2 — RPG box (dialogue or scene) */}
         <div className="px-5 py-4">
           {mode === "dialogue" ? (
-            <div className="flex flex-col gap-3">
+            <div className="flex items-end gap-3">
+              {/* Square avatar frame — Penatua Desa */}
+              <div className="flex shrink-0 flex-col items-center gap-1">
+                <div className="grid h-16 w-16 place-items-center rounded-xl border-2 border-white/80 bg-black/30 text-3xl shadow-lg backdrop-blur-sm">
+                  <span aria-hidden="true">👴</span>
+                </div>
+                <span className="text-xxxs font-bold uppercase tracking-wide text-white/90">{LABEL_ELDER}</span>
+              </div>
+
+              {/* Dialogue box */}
               <div
                 onClick={onBoxClick}
-                className="min-h-[3.5rem] cursor-pointer rounded-xl border border-border bg-secondary/50 px-4 py-3 text-xs leading-relaxed text-foreground"
+                data-sfx="ignore"
+                className="min-h-[3.5rem] flex-1 cursor-pointer rounded-xl border border-black/10 bg-white px-4 py-3 text-xs leading-relaxed text-slate-900 shadow-md"
               >
                 {shown}
-                {shown.length < fullLine.length && <span className="ml-0.5 animate-pulse">▌</span>}
+                {shown.length < fullLine.length && <span className="ml-0.5 animate-pulse text-slate-400">▌</span>}
               </div>
-              <div className="flex justify-end">
-                <button
-                  onClick={advance}
-                  disabled={shown.length < fullLine.length}
-                  className="rounded-lg bg-brand px-3 py-1 text-xxxs font-bold text-brand-foreground transition-opacity disabled:opacity-40"
-                >
-                  {LABEL_NEXT}
-                </button>
-              </div>
+
+              {/* Continue button — animated when ready */}
+              <button
+                onClick={advance}
+                disabled={shown.length < fullLine.length}
+                data-sfx="ignore"
+                className="shrink-0 self-end rounded-lg bg-brand px-3 py-2 text-xxxs font-bold text-brand-foreground shadow-md transition-all hover:scale-105 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:scale-100 enabled:animate-pulse"
+              >
+                {LABEL_NEXT}
+              </button>
             </div>
           ) : (
             <div className="flex items-end gap-4">

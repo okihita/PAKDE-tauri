@@ -43,6 +43,15 @@ export async function seedDemoCooperativeAtLevel(level: DemoLevel): Promise<void
   // 1. Clear any existing demo data (file + registry row)
   await clearDemoCooperative();
 
+  // Reset the per-campaign intro flag so the dialogue replays on (re)seed —
+  // the campaign is "new" again. Covers every demo entry path.
+  try {
+    localStorage.removeItem(`pakde-campaign-seen:${DEMO_COOP_UUID}`);
+    localStorage.removeItem("pakde-campaign-seen");
+  } catch {
+    /* localStorage unavailable — non-fatal */
+  }
+
   // 2. Insert the cooperative metadata row into the REGISTRY.
   const reg = await getRegistryDb();
   const units = JSON.stringify(tier.units);

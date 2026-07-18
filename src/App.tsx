@@ -45,6 +45,7 @@ import CoopProfileModal from "@/features/System/CoopProfileModal";
 import UserProfileModal from "@/features/System/UserProfileModal";
 import ProfileSelect from "@/features/System/ProfileSelect/ProfileSelect";
 import { useUpdater } from "@/hooks/useUpdater";
+import { useGlobalSfx } from "@/hooks/useGlobalSfx";
 import BackupFileOpenHandler from "@/features/System/Backup/BackupFileOpenHandler";
 import { takeAutoBackup, isAutoBackupEnabled, AUTO_BACKUP_INTERVAL_MS } from "@/features/System/Backup/autoBackup";
 import { reportError } from "@/lib/reportError";
@@ -79,6 +80,7 @@ function AppContent() {
   const [appState, setAppState] = useState<"profile_select" | "user_signin" | "user_create" | "main" | "db_error">(
     "profile_select",
   );
+  useGlobalSfx(appState === "main");
   const [dbErrorMessage, setDbErrorMessage] = useState("");
   const [currentUser, setCurrentUser] = useState<LocalUser | null>(null);
 
