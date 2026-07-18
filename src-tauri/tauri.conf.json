@@ -45,7 +45,7 @@
   "plugins": {
     "updater": {
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDI5NjExRTVENDVGQUUwOApSV1FJcmwvVTVSR1dBaWNweVIzVTlGM1JFWWE0aDlpalJnWUxKVzk5UFBEZkUzbGZUWC9UbnRjSgo=",
-      "endpoints": ["https://github.com/okihita/PAKDE-tauri/releases/latest/download/latest.json"]
+      "endpoints": ["https://github.com/okihita/PAKDE/releases/latest/download/latest.json"]
     }
   }
 }

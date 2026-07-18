@@ -44,7 +44,7 @@ function Nav() {
             Download
           </a>
           <a
-            href="https://github.com/okihita/PAKDE-tauri"
+            href="https://github.com/okihita/PAKDE"
             className="rounded-lg border border-slate-700 px-3 py-1.5 hover:border-emerald-500/60 hover:text-white transition-colors"
           >
             GitHub
@@ -363,7 +363,7 @@ function EngineeringPhilosophy() {
                 <div className="text-xl mb-3">⚡</div>
                 <h4 className="text-sm font-bold text-emerald-400">{"Arsitektur PAKDE (User-First & Kokoh)"}</h4>
                 <p className="mt-2 text-xs leading-relaxed text-slate-500">
-                  Menempuh jalur engineering yang lebih matang: desktop-first native berukuran ~10MB berbasis Rust/Tauri
+                  Menempuh jalur engineering yang lebih matang: desktop-first native berukuran ~10MB berbasis Rust
                   dengan SQLite lokal terenkripsi. Bisa dijalankan sepenuhnya dari Flashdisk tanpa perlu instalasi
                   rumit, 100% offline, dan sangat ringan.
                 </p>
@@ -499,7 +499,7 @@ function Download() {
               </div>
               <div className="mt-8">
                 <a
-                  href="https://github.com/okihita/PAKDE-tauri/releases/download/v1.0.3/PAKDE_1.0.3_x64-setup.exe"
+                  href="https://github.com/okihita/PAKDE/releases/download/v1.0.3/PAKDE_1.0.3_x64-setup.exe"
                   className="group/btn relative block overflow-hidden rounded-lg bg-emerald-600 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-emerald-600/25 hover:bg-emerald-500 transition-colors"
                 >
                   <span className="absolute inset-y-0 left-0 w-1/3 -skew-x-12 bg-white/20 blur-md group-hover/btn:animate-shine" />
@@ -522,7 +522,7 @@ function Download() {
                     <span className="text-emerald-500">✓</span> Dukungan penuh untuk chip M1/M2/M3
                   </li>
                   <li className="flex items-center gap-2">
-                    <span className="text-emerald-500">✓</span> UI performa tinggi berbasis Tauri v2
+                    <span className="text-emerald-500">✓</span> UI performa tinggi berbasis desktop native
                   </li>
                 </ul>
 
@@ -536,7 +536,7 @@ function Download() {
               </div>
               <div className="mt-8">
                 <a
-                  href="https://github.com/okihita/PAKDE-tauri/releases/download/v1.0.3/PAKDE_1.0.3_universal.dmg"
+                  href="https://github.com/okihita/PAKDE/releases/download/v1.0.3/PAKDE_1.0.3_universal.dmg"
                   className="block text-center rounded-lg border border-slate-700 bg-slate-900/50 px-6 py-3 text-sm font-semibold text-slate-300 hover:border-slate-500 hover:text-white transition-colors"
                 >
                   Unduh untuk macOS (.dmg)
@@ -561,11 +561,11 @@ function Footer() {
           <span>— Pengelolaan dan Akselerasi Koperasi Desa Elektronik</span>
         </div>
         <div className="flex gap-6">
-          <a href="https://github.com/okihita/PAKDE-tauri" className="hover:text-slate-400 transition-colors">
+          <a href="https://github.com/okihita/PAKDE" className="hover:text-slate-400 transition-colors">
             GitHub
           </a>
           <a
-            href="https://github.com/okihita/PAKDE-tauri/blob/main/LICENSE"
+            href="https://github.com/okihita/PAKDE/blob/main/LICENSE"
             className="hover:text-slate-400 transition-colors"
           >
             MIT License

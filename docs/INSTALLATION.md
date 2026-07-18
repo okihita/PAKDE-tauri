@@ -3,10 +3,10 @@
 This guide provides instructions on how to install and run the PAKDE desktop application.
 
 ### 📥 Direct Downloads (v1.0.3)
-*   **[Download for Windows (.exe)](https://github.com/okihita/PAKDE-tauri/releases/download/v1.0.3/PAKDE_1.0.3_x64-setup.exe)**
-*   **[Download for macOS (.dmg)](https://github.com/okihita/PAKDE-tauri/releases/download/v1.0.3/PAKDE_1.0.3_universal.dmg)**
+*   **[Download for Windows (.exe)](https://github.com/okihita/PAKDE/releases/download/v1.0.3/PAKDE_1.0.3_x64-setup.exe)**
+*   **[Download for macOS (.dmg)](https://github.com/okihita/PAKDE/releases/download/v1.0.3/PAKDE_1.0.3_universal.dmg)**
 
-For other versions, Linux packages, or alternative installer formats, please visit the [Releases](https://github.com/okihita/PAKDE-tauri/releases) page.
+For other versions, Linux packages, or alternative installer formats, please visit the [Releases](https://github.com/okihita/PAKDE/releases) page.
 
 ---
 

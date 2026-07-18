@@ -1,9 +1,8 @@
 # 💼 PAKDE (Pengelolaan dan Akselerasi Koperasi Desa Elektronik)
 
 [![Live Website](https://img.shields.io/badge/Live_Demo-pakde.vercel.app-emerald?style=for-the-badge)](https://pakde.vercel.app)
-[![Download for Windows](https://img.shields.io/badge/Download_for_Windows-EXE-blue?style=for-the-badge&logo=windows)](https://github.com/okihita/PAKDE-tauri/releases/download/v1.0.3/PAKDE_1.0.3_x64-setup.exe)
-[![Download for macOS](https://img.shields.io/badge/Download_for_macOS-DMG-black?style=for-the-badge&logo=apple)](https://github.com/okihita/PAKDE-tauri/releases/download/v1.0.3/PAKDE_1.0.3_universal.dmg)
-[![Tauri](https://img.shields.io/badge/Tauri-2.0-blue?style=for-the-badge&logo=tauri)](https://tauri.app/)
+[![Download for Windows](https://img.shields.io/badge/Download_for_Windows-EXE-blue?style=for-the-badge&logo=windows)](https://github.com/okihita/PAKDE/releases/download/v1.0.3/PAKDE_1.0.3_x64-setup.exe)
+[![Download for macOS](https://img.shields.io/badge/Download_for_macOS-DMG-black?style=for-the-badge&logo=apple)](https://github.com/okihita/PAKDE/releases/download/v1.0.3/PAKDE_1.0.3_universal.dmg)
 [![React](https://img.shields.io/badge/React-19-blue?style=for-the-badge&logo=react)](https://react.dev/)
 [![Rust](https://img.shields.io/badge/Rust-2021-orange?style=for-the-badge&logo=rust)](https://www.rust-lang.org/)
 [![Platform](https://img.shields.io/badge/Platform-Windows_|_macOS_|_Ubuntu-purple?style=for-the-badge)](#)
@@ -15,8 +14,8 @@
 Get up and running with PAKDE immediately:
 
 1. **Download the installer:**
-   * **[Download for Windows (.exe)](https://github.com/okihita/PAKDE-tauri/releases/download/v1.0.3/PAKDE_1.0.3_x64-setup.exe)**
-   * **[Download for macOS (.dmg)](https://github.com/okihita/PAKDE-tauri/releases/download/v1.0.3/PAKDE_1.0.3_universal.dmg)**
+   * **[Download for Windows (.exe)](https://github.com/okihita/PAKDE/releases/download/v1.0.3/PAKDE_1.0.3_x64-setup.exe)**
+   * **[Download for macOS (.dmg)](https://github.com/okihita/PAKDE/releases/download/v1.0.3/PAKDE_1.0.3_universal.dmg)**
 2. **Follow the setup instructions:** Check the [INSTALLATION.md](docs/INSTALLATION.md) for OS-specific steps (such as macOS Gatekeeper workarounds) and building from source.
 
 ---
@@ -38,7 +37,7 @@ Most hackathon teams default to building online SaaS web portals or React Native
 *   **Mobile Apps Fail** because rural phones are perpetually full, their memory bloated by family chat apps, images, and unoptimized software.
 *   **Phone Screens Are Too Small** for high-fidelity auditing, inventory planning, and SAK EP compliant double-entry bookkeeping.
 
-PAKDE rejects the lazy mainstream approach. We chose the harder engineering path: building a **desktop-native offline node** compiled in Rust and Tauri for **Windows**, **macOS**, and **Ubuntu (Linux)**. 
+PAKDE rejects the lazy mainstream approach. We chose the harder engineering path: building a **desktop-native offline node** compiled in Rust for **Windows**, **macOS**, and **Ubuntu (Linux)**. 
 
 *   **Offline-First & Speed:** Runs on a local, encrypted SQLite database. Zero latency, zero loading spinners.
 *   **Ultra-Lightweight (~10MB):** The entire installer is only 10MB, and data files are less than 1MB.
@@ -130,7 +129,7 @@ Sebagian besar tim hackathon secara instan membuat aplikasi web online (SaaS) at
 *   **Aplikasi HP Gagal** karena penyimpanan HP pengurus/anggota selalu penuh oleh file WhatsApp, gambar, dan aplikasi bawaan yang tidak bisa dihapus.
 *   **Layar HP Terlalu Kecil** untuk melakukan audit inventaris, pembukuan akuntansi ganda SAK EP, dan tata letak rak toko.
 
-PAKDE menolak cara malas tersebut. Kami menempuh jalur engineering yang lebih matang: membangun **aplikasi desktop native** menggunakan Rust dan Tauri untuk **Windows**, **macOS**, dan **Ubuntu (Linux)**.
+PAKDE menolak cara malas tersebut. Kami menempuh jalur engineering yang lebih matang: membangun **aplikasi desktop native** menggunakan Rust untuk **Windows**, **macOS**, dan **Ubuntu (Linux)**.
 
 *   **Offline-First:** Menggunakan SQLite lokal terenkripsi. Tanpa loading, tanpa internet.
 *   **Sangat Ringan (~10MB):** Ukuran installer hanya 10MB dengan ukuran file data kurang dari 1MB.
@@ -202,7 +201,7 @@ Seluruh aturan hukum koperasi di Indonesia telah diintegrasikan langsung ke dala
 
 ## 📂 Repository Layout
 
-This repository is the **desktop app** (Tauri v2 + React). It also contains one intentional sibling project:
+This repository is the **desktop app** (Rust backend + React frontend). It also contains one intentional sibling project:
 
 | Path | What it is |
 | :--- | :--- |
@@ -220,7 +219,7 @@ This repository is the **desktop app** (Tauri v2 + React). It also contains one 
 | **Frontend** | React 19, TypeScript 5.8, Tailwind CSS v4 |
 | **State Management** | Zustand |
 | **Canvas Engine** | Canvas / SVG / CSS |
-| **Desktop Runtime** | Tauri v2 (Rust Backend) |
+| **Desktop Runtime** | Rust (native desktop shell) |
 | **Database** | SQLite (SQLCipher binding) |
 | **Icons & Font** | Lucide Icons, Space Grotesk, JetBrains Mono |
 
@@ -229,8 +228,8 @@ This repository is the **desktop app** (Tauri v2 + React). It also contains one 
 ## 🚀 Quickstart & Setup
 
 ### 📦 Pre-built Installers (v1.0.3)
-*   **[Download for Windows (.exe)](https://github.com/okihita/PAKDE-tauri/releases/download/v1.0.3/PAKDE_1.0.3_x64-setup.exe)**
-*   **[Download for macOS (.dmg)](https://github.com/okihita/PAKDE-tauri/releases/download/v1.0.3/PAKDE_1.0.3_universal.dmg)**
-*   For other targets or versions, see the [GitHub Releases](https://github.com/okihita/PAKDE-tauri/releases) page.
+*   **[Download for Windows (.exe)](https://github.com/okihita/PAKDE/releases/download/v1.0.3/PAKDE_1.0.3_x64-setup.exe)**
+*   **[Download for macOS (.dmg)](https://github.com/okihita/PAKDE/releases/download/v1.0.3/PAKDE_1.0.3_universal.dmg)**
+*   For other targets or versions, see the [GitHub Releases](https://github.com/okihita/PAKDE/releases) page.
 
 Please refer to [INSTALLATION.md](docs/INSTALLATION.md) for full Windows, macOS, and Linux setup instructions, Gatekeeper workarounds, and guidance on running the development environment from source.
