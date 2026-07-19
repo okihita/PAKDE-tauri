@@ -167,8 +167,14 @@ function AppContent() {
           setAppState("profile_select");
           return;
         }
-        // 4. Main app (the "game loop") → confirm before returning to the
-        //    profile screen (avoid misclick). Title screen is already home.
+        // 4. Main app, not on Beranda and no popup open → return to Beranda.
+        if (appState === "main" && activeTab !== "home") {
+          e.preventDefault();
+          setActiveTab("home");
+          return;
+        }
+        // 5. Main app on Beranda → open the session dialog (avoid misclick
+        //    leaving the app). Title screen is handled below.
         if (appState === "main") {
           e.preventDefault();
           openSessionDialog();
@@ -206,7 +212,7 @@ function AppContent() {
 
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [appState, showQuitConfirm, showSessionDialog, handleSwitchProfile, openSessionDialog]);
+  }, [appState, activeTab, showQuitConfirm, showSessionDialog, handleSwitchProfile, openSessionDialog]);
 
   // Load dashboard data on mount
   useEffect(() => {
