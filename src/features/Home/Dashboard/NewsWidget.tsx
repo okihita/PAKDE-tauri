@@ -226,7 +226,7 @@ export default function NewsWidget({ coopId, isCollapsed, onToggleCollapse }: Ne
           </div>
 
           <div
-            className="writing-mode-vertical text-xxxs font-bold text-muted-foreground uppercase tracking-widest py-4 flex items-center gap-1 rotate-180"
+            className="writing-mode-vertical text-xxxs font-bold text-muted-foreground uppercase tracking-widest py-4 flex items-center gap-1 rotate-180 select-none"
             style={{ writingMode: "vertical-rl" }}
           >
             <span>{t("beranda.news.title")}</span>

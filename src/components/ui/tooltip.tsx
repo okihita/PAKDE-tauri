@@ -24,11 +24,11 @@ const SIDE_CLASSES: Record<NonNullable<TooltipProps["side"]>, string> = {
  */
 export function Tooltip({ label, description, side = "top", className, children }: TooltipProps) {
   return (
-    <span className={cn("group/tip relative hover:z-30", className)}>
+    <span className={cn("group/tip relative hover:z-30 select-none", className)}>
       {children}
       <span
         className={cn(
-          "absolute z-50 w-max min-w-20 max-w-64 rounded-md border border-slate-700/80 bg-slate-900/95 px-2.5 py-1.5 text-center opacity-0 shadow-xl backdrop-blur-md transition-opacity duration-150 group-hover/tip:opacity-100 pointer-events-none",
+          "absolute z-50 w-max min-w-20 max-w-64 rounded-md border border-slate-700/80 bg-slate-900/95 px-2.5 py-1.5 text-center opacity-0 shadow-xl backdrop-blur-md transition-opacity duration-150 group-hover/tip:opacity-100 pointer-events-none select-none",
           SIDE_CLASSES[side],
         )}
       >

@@ -334,7 +334,7 @@ export default function Dashboard({ xp = 0, coopId }: { xp?: number; coopId: str
   return (
     <div className="flex-1 overflow-auto">
       {/* Campaign strip is capped to the 3-column campaign area (not full width). */}
-      <div className="flex gap-4 items-start">
+      <div className="flex gap-4 items-stretch">
         {/* ── Left: campaign strip + 3-column campaign row ── */}
         <div className="flex-1 min-w-0 flex flex-col gap-4">
           <CampaignStrip xp={xp} pengurusReady={pengurusReady} />

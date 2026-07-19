@@ -248,7 +248,7 @@ export default function Sidebar({
         type="button"
         onClick={() => onTabChange("home")}
         className={cn(
-          "flex items-center gap-3 w-full text-left px-4 py-2 rounded-lg text-xxs font-bold uppercase tracking-wider transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand",
+          "flex items-center gap-3 w-full text-left px-4 py-2 rounded-lg text-xxs font-bold uppercase tracking-wider transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand whitespace-nowrap",
           isActive ? "bg-amber/10 text-amber" : "text-amber/80 hover:bg-secondary hover:text-amber",
         )}
       >
@@ -298,7 +298,7 @@ export default function Sidebar({
     }
 
     const inner = !unlocked ? (
-      <div className="flex items-center gap-3 rounded-lg px-4 py-2 transition-all text-xs font-semibold border opacity-40 cursor-not-allowed text-muted-foreground border-transparent">
+      <div className="flex items-center gap-3 rounded-lg px-4 py-2 transition-all text-xs font-semibold border opacity-40 cursor-not-allowed text-muted-foreground border-transparent whitespace-nowrap">
         <LockSimple className="h-4 w-4 shrink-0" />
         <span>{item.label}</span>
       </div>
@@ -307,7 +307,7 @@ export default function Sidebar({
         type="button"
         onClick={() => onTabChange(item.id)}
         className={cn(
-          "w-full text-left flex items-center gap-3 rounded-lg px-4 py-2 cursor-pointer transition-all text-xs font-semibold border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand",
+          "w-full text-left flex items-center gap-3 rounded-lg px-4 py-2 cursor-pointer transition-all text-xs font-semibold border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand whitespace-nowrap",
           isActive ? a.active : "text-muted-foreground hover:bg-secondary hover:text-foreground border-transparent",
         )}
       >
@@ -324,7 +324,9 @@ export default function Sidebar({
     return (
       <div key={group.id} className={cn("border-t border-border mt-1", isCollapsed && "pt-1")}>
         {!isCollapsed && (
-          <p className={cn("px-4 pt-3 pb-1 text-xxs font-bold uppercase tracking-wider", a.label)}>{group.label}</p>
+          <p className={cn("px-4 pt-3 pb-1 text-xxs font-bold uppercase tracking-wider whitespace-nowrap", a.label)}>
+            {group.label}
+          </p>
         )}
         <div className="space-y-0.5">{group.items.map((item) => renderNavItem(item, group.accent))}</div>
       </div>
@@ -386,7 +388,7 @@ export default function Sidebar({
                 <div className="flex items-center gap-2.5">
                   <CoopEmblem profile={coopProfile} size="md" />
                   <div className="min-w-0 flex-1">
-                    <h2 className="text-xs font-bold text-foreground leading-tight break-words">
+                    <h2 className="text-xs font-bold text-foreground leading-tight truncate">
                       {coopProfile?.name ?? "..."}
                     </h2>
                   </div>
@@ -468,7 +470,7 @@ export default function Sidebar({
         </div>
 
         {/* ── Navigation ── */}
-        <nav className={cn("flex-1 overflow-y-auto nav-scroll", isCollapsed ? "p-1.5 overflow-visible" : "p-3")}>
+        <nav className={cn("flex-1", isCollapsed ? "p-1.5 overflow-visible" : "p-3 overflow-y-auto nav-scroll")}>
           {renderHome()}
           {GROUPS.map(renderGroup)}
         </nav>
