@@ -47,6 +47,25 @@
     "message": "The system cannot read the internal SQLite database. Please restart the application.",
     "reload": "Reload"
   },
+  "campaign": {
+    "title": "Campaign · Tier",
+    "elder": "Village Elder",
+    "next": "▸ Next",
+    "skip": "▸ Skip",
+    "overflow": "more",
+    "leader": "Board Member",
+    "residents": "Villagers:",
+    "tierLabel": "· Tier",
+    "done": "🎉 campaign completed",
+    "replay": "Dialogue",
+    "replayTitle": "Replay Village Elder RPG Dialogue",
+    "script": [
+      "Village Elder: Welcome, Board Member. This cooperative was just founded.",
+      "Your quest is simple - elevate this cooperative two tiers higher.",
+      "Register villagers, track finances, and let this village flourish.",
+      "Every step you take will be recorded in our ledgers. Let us begin."
+    ]
+  },
   "crash": {
     "title": "Something went wrong",
     "message": "The app hit an unexpected error and stopped. Your data is safe on this device. Reload to continue.",

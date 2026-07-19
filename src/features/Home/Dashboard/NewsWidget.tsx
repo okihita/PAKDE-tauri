@@ -203,43 +203,36 @@ export default function NewsWidget({ coopId, isCollapsed, onToggleCollapse }: Ne
 
   if (isCollapsed) {
     return (
-      <Tooltip label={LBL_OPEN_NEWS} side="left" className="h-full block">
+      <div className="bg-sidebar text-foreground flex flex-col h-full items-center justify-between select-none w-12 border-l border-border">
+        <div className="flex flex-col items-center gap-2 pt-3">
+          <NewspaperIcon className="h-4 w-4 text-info" weight="duotone" />
+          {unreadCount > 0 && (
+            <span className="text-xxxs font-black bg-info/20 text-info px-1 py-0.5 rounded-full animate-pulse">
+              {unreadCount}
+            </span>
+          )}
+        </div>
+
         <div
-          onClick={onToggleCollapse}
-          className="bg-sidebar text-foreground hover:bg-secondary/40 flex flex-col h-full items-center justify-between p-2 cursor-pointer select-none w-12 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+          className="writing-mode-vertical text-xxxs font-bold text-muted-foreground uppercase tracking-widest py-4 flex items-center gap-1 rotate-180 select-none"
+          style={{ writingMode: "vertical-rl" }}
         >
-          <div className="flex flex-col items-center gap-2 pt-1">
+          <span>{t("beranda.news.title")}</span>
+        </div>
+
+        <div className="border-t border-border shrink-0 bg-sidebar w-full p-1.5 flex justify-center">
+          <Tooltip label={LBL_OPEN_NEWS} side="left">
             <button
               type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                onToggleCollapse?.();
-              }}
-              className="p-1 rounded-md hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand"
+              onClick={onToggleCollapse}
               aria-label={LBL_OPEN_NEWS}
+              className="h-10 w-10 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand cursor-pointer"
             >
-              <CaretLeft className="h-4 w-4" />
+              <CaretLeft className="h-4 w-4 shrink-0" />
             </button>
-            <NewspaperIcon className="h-4 w-4 text-info" weight="duotone" />
-            {unreadCount > 0 && (
-              <span className="text-xxxs font-black bg-info/20 text-info px-1 py-0.5 rounded-full animate-pulse">
-                {unreadCount}
-              </span>
-            )}
-          </div>
-
-          <div
-            className="writing-mode-vertical text-xxxs font-bold text-muted-foreground uppercase tracking-widest py-4 flex items-center gap-1 rotate-180 select-none"
-            style={{ writingMode: "vertical-rl" }}
-          >
-            <span>{t("beranda.news.title")}</span>
-          </div>
-
-          <div className="pb-1">
-            <CaretLeft className="h-4 w-4 text-muted-foreground" />
-          </div>
+          </Tooltip>
         </div>
-      </Tooltip>
+      </div>
     );
   }
 
@@ -443,6 +436,20 @@ export default function NewsWidget({ coopId, isCollapsed, onToggleCollapse }: Ne
           })}
         </div>
       </div>
+
+      {/* ── News Bottom Footer (Matching Sidebar style) ── */}
+      {onToggleCollapse && (
+        <div className="border-t border-border shrink-0 bg-sidebar p-2">
+          <button
+            type="button"
+            onClick={onToggleCollapse}
+            className="w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand whitespace-nowrap cursor-pointer"
+          >
+            <span>{LBL_CLOSE_NEWS}</span>
+            <CaretRight className="h-4 w-4 shrink-0" />
+          </button>
+        </div>
+      )}
 
       <NewsDetailModal
         selectedNews={selectedNews}

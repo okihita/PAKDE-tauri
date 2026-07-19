@@ -204,30 +204,35 @@ export default function TopBar({
           <span className="h-5 w-px bg-border/60 mx-1 shrink-0" />
 
           {/* User Profile Identity Pill */}
-          <button
-            type="button"
-            onClick={onOpenProfile}
-            aria-label={t("topbar.openProfile")}
-            title={currentUser?.name ? `${currentUser.name} (${currentUser.role ?? "User"})` : t("topbar.openProfile")}
-            className="group flex items-center gap-2 rounded-lg px-2 py-1 -my-1 shrink-0 transition-colors hover:bg-sidebar-ring focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand"
-          >
-            <div className="w-7 h-7 rounded-full bg-success/20 flex items-center justify-center ring-1 ring-brand/30 group-hover:ring-brand/60 transition-colors text-xs font-bold text-success">
-              {currentUser?.name ? (
-                currentUser.name.charAt(0).toUpperCase()
-              ) : (
-                <UserCheck className="h-3.5 w-3.5 text-success" />
-              )}
-            </div>
-            <div className="text-left hidden xl:block max-w-[85px] leading-tight min-w-0">
-              <p className="text-xxs font-bold text-foreground truncate font-sans">
-                {currentUser?.name ?? t("topbar.openProfile")}
-              </p>
-              <p className="text-xxxs text-muted-foreground uppercase tracking-wider truncate font-sans">
-                {currentUser?.role ?? "User"}
-              </p>
-            </div>
-            <PencilSimple className="h-3 w-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
-          </button>
+          {(() => {
+            const firstName = currentUser?.name ? currentUser.name.trim().split(/\s+/)[0] : t("topbar.openProfile");
+            return (
+              <button
+                type="button"
+                onClick={onOpenProfile}
+                aria-label={t("topbar.openProfile")}
+                title={
+                  currentUser?.name ? `${currentUser.name} (${currentUser.role ?? "User"})` : t("topbar.openProfile")
+                }
+                className="group flex items-center gap-2 rounded-lg px-2 py-1 -my-1 shrink-0 transition-colors hover:bg-sidebar-ring focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand"
+              >
+                <div className="w-7 h-7 rounded-full bg-success/20 flex items-center justify-center ring-1 ring-brand/30 group-hover:ring-brand/60 transition-colors text-xs font-bold text-success">
+                  {currentUser?.name ? (
+                    currentUser.name.charAt(0).toUpperCase()
+                  ) : (
+                    <UserCheck className="h-3.5 w-3.5 text-success" />
+                  )}
+                </div>
+                <div className="text-left hidden xl:block max-w-[85px] leading-tight min-w-0">
+                  <p className="text-xxs font-bold text-foreground truncate font-sans">{firstName}</p>
+                  <p className="text-xxxs text-muted-foreground uppercase tracking-wider truncate font-sans">
+                    {currentUser?.role ?? "User"}
+                  </p>
+                </div>
+                <PencilSimple className="h-3 w-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
+              </button>
+            );
+          })()}
 
           <span className="h-5 w-px bg-border/60 mx-1 shrink-0" />
 

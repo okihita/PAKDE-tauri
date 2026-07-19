@@ -319,3 +319,9 @@
     box-shadow: 0 0 8px hsl(var(--brand) / 0.4);
   }
 }
+
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}

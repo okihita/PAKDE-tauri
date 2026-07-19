@@ -47,6 +47,25 @@
     "message": "Sistem tidak dapat membaca database internal SQLite. Coba jalankan ulang aplikasi.",
     "reload": "Muat Ulang"
   },
+  "campaign": {
+    "title": "Kampanye · Tingkat",
+    "elder": "Penatua Desa",
+    "next": "▸ Lanjut",
+    "skip": "▸ Skip",
+    "overflow": "lainnya",
+    "leader": "Pengurus",
+    "residents": "Warga:",
+    "tierLabel": "· Tingkat",
+    "done": "🎉 kampanye selesai",
+    "replay": "Dialog",
+    "replayTitle": "Buka kembali dialog RPG Penatua Desa",
+    "script": [
+      "Penatua Desa: Selamat datang, Pengurus. Koperasi ini baru saja berdiri.",
+      "Tugasmu sederhana - bawa koperasi ini naik dua tingkat dari sekarang.",
+      "Daftarkan warga, catat keuangan, dan biarkan desa ini tumbuh.",
+      "Setiap langkahmu akan kuteruskan ke pembukuan. Mari kita mulai."
+    ]
+  },
   "crash": {
     "title": "Terjadi Kesalahan",
     "message": "Aplikasi mengalami error tak terduga dan berhenti. Data Anda aman di perangkat ini. Muat ulang untuk melanjutkan.",

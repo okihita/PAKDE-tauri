@@ -69,18 +69,12 @@ type Accent = "sky" | "brand" | "violet" | "warning" | "amber";
 const isMac = IS_MAC;
 const shortcutText = isMac ? "⌘B" : "Ctrl+B";
 const LBL_EXPAND_SIDEBAR = `Buka Sidebar (${shortcutText})`;
-const LBL_COLLAPSE_SIDEBAR = `Tutup Sidebar (${shortcutText})`;
-
-/** Static class strings so Tailwind's content scanner picks them up. */
+const LBL_COLLAPSE_SIDEBAR = `Tutup Sidebar (${shortcutText})`; /** Static class strings so Tailwind's content scanner picks them up. */
 const ACCENT_CLASSES: Record<Accent, { label: string; icon: string; active: string }> = {
   sky: { label: "text-sky", icon: "text-sky", active: "bg-sky/10 text-sky border-sky/20" },
   brand: { label: "text-brand", icon: "text-brand", active: "bg-brand/10 text-brand border-brand/20" },
   violet: { label: "text-violet", icon: "text-violet", active: "bg-violet/10 text-violet border-violet/20" },
-  warning: {
-    label: "text-warning",
-    icon: "text-warning",
-    active: "bg-warning/10 text-warning border-warning/20",
-  },
+  warning: { label: "text-warning", icon: "text-warning", active: "bg-warning/10 text-warning border-warning/20" },
   amber: { label: "text-amber", icon: "text-amber", active: "bg-amber/10 text-amber border-amber/20" },
 };
 
@@ -98,6 +92,7 @@ export default function Sidebar({
   onToggleCollapse,
 }: SidebarProps) {
   const { t } = useTranslation();
+
   const healthScore = coopProfile?.health_score ?? 0;
   const xp = coopProfile?.xp ?? 0;
   const currentLevel = getCurrentLevel(xp);
@@ -146,7 +141,6 @@ export default function Sidebar({
     <LockSimple className="h-3.5 w-3.5 text-muted-foreground" />
   );
 
-  // Ranking tile value: live rank + freshness dot, or a lock when gated.
   const rankingStatusDot = cn(
     "h-1.5 w-1.5 rounded-full",
     rankingStatus === "live"
