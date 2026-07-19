@@ -306,6 +306,31 @@ export default function Dashboard({ xp = 0, coopId }: { xp?: number; coopId: str
     calendar: <CalendarWidget t={t} />,
   };
 
+  const [newsCollapsed, setNewsCollapsed] = useState<boolean>(() => {
+    const userPref = localStorage.getItem("pakde-news-collapsed");
+    if (userPref !== null) return userPref === "true";
+    return typeof window !== "undefined" ? window.innerWidth < 1400 : false;
+  });
+
+  useEffect(() => {
+    const handleResize = () => {
+      const userPref = localStorage.getItem("pakde-news-collapsed");
+      if (userPref === null) {
+        setNewsCollapsed(window.innerWidth < 1400);
+      }
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  const toggleNewsCollapse = () => {
+    setNewsCollapsed((prev) => {
+      const next = !prev;
+      localStorage.setItem("pakde-news-collapsed", String(next));
+      return next;
+    });
+  };
+
   return (
     <div className="flex-1 overflow-auto">
       {/* Campaign strip is capped to the 3-column campaign area (not full width). */}
@@ -314,8 +339,7 @@ export default function Dashboard({ xp = 0, coopId }: { xp?: number; coopId: str
         <div className="flex-1 min-w-0 flex flex-col gap-4">
           <CampaignStrip xp={xp} pengurusReady={pengurusReady} />
 
-          {/* Fixed 3-column campaign row: mainquest · tugas · calendar.
-              Drag-and-drop removed — order is fixed. */}
+          {/* Fixed 3-column campaign row: mainquest · tugas · calendar. */}
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 auto-rows-min">
             {CAMPAIGN_CARDS.map((id) => (
               <div key={id}>{cardContents[id]}</div>
@@ -323,10 +347,11 @@ export default function Dashboard({ xp = 0, coopId }: { xp?: number; coopId: str
           </div>
         </div>
 
-        {/* ── Right rail: Berita column (fixed width, full height, top-aligned).
-            Mirrors the left Sidebar / TopBar settings right rail (w-72). ── */}
-        <div className="w-72 shrink-0 h-full">
-          <NewsWidget coopId={coopId} />
+        {/* ── Right rail: Berita column (collapsible w-72 <-> w-12). ── */}
+        <div
+          className={`shrink-0 h-full transition-all duration-300 ${newsCollapsed ? "w-12 overflow-visible" : "w-72 overflow-hidden"}`}
+        >
+          <NewsWidget coopId={coopId} isCollapsed={newsCollapsed} onToggleCollapse={toggleNewsCollapse} />
         </div>
       </div>
     </div>

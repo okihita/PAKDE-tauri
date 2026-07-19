@@ -19,6 +19,8 @@ import {
   Coins,
   HandCoins,
   PencilSimple,
+  CaretLeft,
+  CaretRight,
 } from "@phosphor-icons/react";
 import { CoopEmblem } from "./CoopEmblem";
 import { getCurrentLevel, getLevelProgress } from "@/data/leveling";
@@ -33,6 +35,8 @@ import { QuickStat } from "./QuickStat";
 import type { RankingStatus } from "@/features/Finance/Ranking/useRanking";
 import type { CooperativeProfile } from "@/types";
 
+import { Tooltip } from "@/components/ui/tooltip";
+
 interface SidebarProps {
   activeTab: TabId;
   onTabChange: (tab: TabId) => void;
@@ -43,6 +47,8 @@ interface SidebarProps {
   rankingRank: number | null;
   rankingUnlocked: boolean;
   onOpenProfile: () => void;
+  isCollapsed?: boolean;
+  onToggleCollapse?: () => void;
 }
 
 interface NavItemDef {
@@ -59,6 +65,9 @@ interface NavGroupDef {
 }
 
 type Accent = "sky" | "brand" | "violet" | "warning" | "amber";
+
+const LBL_EXPAND_SIDEBAR = "Buka Sidebar";
+const LBL_COLLAPSE_SIDEBAR = "Tutup Sidebar";
 
 /** Static class strings so Tailwind's content scanner picks them up. */
 const ACCENT_CLASSES: Record<Accent, { label: string; icon: string; active: string }> = {
@@ -83,6 +92,8 @@ export default function Sidebar({
   rankingRank,
   rankingUnlocked,
   onOpenProfile,
+  isCollapsed,
+  onToggleCollapse,
 }: SidebarProps) {
   const { t } = useTranslation();
   const healthScore = coopProfile?.health_score ?? 0;
@@ -211,18 +222,38 @@ export default function Sidebar({
 
   function renderHome() {
     const isActive = activeTab === "home";
+    const label = t("sidebar.nav.home");
+    if (isCollapsed) {
+      return (
+        <Tooltip key="home" label={label} side="right" className="flex justify-center my-1">
+          <button
+            type="button"
+            onClick={() => onTabChange("home")}
+            className={cn(
+              "h-10 w-10 rounded-lg flex items-center justify-center transition-all border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand",
+              isActive
+                ? "bg-amber/10 text-amber border-amber/20"
+                : "text-amber/80 hover:bg-secondary hover:text-amber border-transparent",
+            )}
+          >
+            <SquaresFour className="h-4 w-4 shrink-0" />
+          </button>
+        </Tooltip>
+      );
+    }
+
     return (
       <button
         key="home"
         type="button"
         onClick={() => onTabChange("home")}
         className={cn(
-          "flex items-center gap-3 w-full text-left px-4 py-2 rounded-lg text-xxs font-bold uppercase tracking-wider transition-colors",
+          "flex items-center gap-3 w-full text-left px-4 py-2 rounded-lg text-xxs font-bold uppercase tracking-wider transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand",
           isActive ? "bg-amber/10 text-amber" : "text-amber/80 hover:bg-secondary hover:text-amber",
         )}
       >
         <SquaresFour className="h-4 w-4 shrink-0" />
-        <span>{t("sidebar.nav.home")}</span>
+        <span>{label}</span>
       </button>
     );
   }
@@ -232,6 +263,39 @@ export default function Sidebar({
     const isActive = activeTab === item.id;
     const unlocked = isTabUnlocked(item.id, xp);
     const a = ACCENT_CLASSES[accent];
+    const reqLabel = !unlocked ? (getUnlockRequirementLabel(item.id) ?? undefined) : undefined;
+
+    if (isCollapsed) {
+      return (
+        <Tooltip
+          key={item.id}
+          label={item.label}
+          description={reqLabel}
+          side="right"
+          className="flex justify-center my-1"
+        >
+          <button
+            type="button"
+            onClick={unlocked ? () => onTabChange(item.id) : undefined}
+            disabled={!unlocked}
+            className={cn(
+              "h-10 w-10 rounded-lg flex items-center justify-center transition-all border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand",
+              !unlocked
+                ? "opacity-40 cursor-not-allowed border-transparent text-muted-foreground"
+                : isActive
+                  ? a.active
+                  : "text-muted-foreground hover:bg-secondary hover:text-foreground border-transparent",
+            )}
+          >
+            {!unlocked ? (
+              <LockSimple className="h-4 w-4 shrink-0" />
+            ) : (
+              <Icon className={cn("h-4 w-4 shrink-0", !isActive && a.icon)} />
+            )}
+          </button>
+        </Tooltip>
+      );
+    }
 
     const inner = !unlocked ? (
       <div className="flex items-center gap-3 rounded-lg px-4 py-2 transition-all text-xs font-semibold border opacity-40 cursor-not-allowed text-muted-foreground border-transparent">
@@ -239,16 +303,17 @@ export default function Sidebar({
         <span>{item.label}</span>
       </div>
     ) : (
-      <div
+      <button
+        type="button"
+        onClick={() => onTabChange(item.id)}
         className={cn(
-          "flex items-center gap-3 rounded-lg px-4 py-2 cursor-pointer transition-all text-xs font-semibold border",
+          "w-full text-left flex items-center gap-3 rounded-lg px-4 py-2 cursor-pointer transition-all text-xs font-semibold border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand",
           isActive ? a.active : "text-muted-foreground hover:bg-secondary hover:text-foreground border-transparent",
         )}
-        onClick={() => onTabChange(item.id)}
       >
         <Icon className={cn("h-4 w-4 shrink-0", !isActive && a.icon)} />
         <span>{item.label}</span>
-      </div>
+      </button>
     );
 
     return inner;
@@ -257,122 +322,153 @@ export default function Sidebar({
   function renderGroup(group: NavGroupDef) {
     const a = ACCENT_CLASSES[group.accent];
     return (
-      <div key={group.id} className="border-t border-border mt-1">
-        <p className={cn("px-4 pt-3 pb-1 text-xxs font-bold uppercase tracking-wider", a.label)}>{group.label}</p>
+      <div key={group.id} className={cn("border-t border-border mt-1", isCollapsed && "pt-1")}>
+        {!isCollapsed && (
+          <p className={cn("px-4 pt-3 pb-1 text-xxs font-bold uppercase tracking-wider", a.label)}>{group.label}</p>
+        )}
         <div className="space-y-0.5">{group.items.map((item) => renderNavItem(item, group.accent))}</div>
       </div>
     );
   }
 
   return (
-    <aside className="w-72 border-r border-border bg-sidebar flex flex-col print:hidden">
+    <aside
+      className={cn(
+        "relative border-r border-border bg-sidebar flex flex-col print:hidden transition-all duration-300 shrink-0 select-none",
+        isCollapsed ? "w-16 overflow-visible" : "w-72 overflow-x-hidden",
+      )}
+    >
+      {/* ── Border edge toggle button ── */}
+      <Tooltip label={isCollapsed ? LBL_EXPAND_SIDEBAR : LBL_COLLAPSE_SIDEBAR} side="right">
+        <button
+          type="button"
+          onClick={onToggleCollapse}
+          className="absolute -right-3 top-3.5 z-40 h-6 w-6 rounded-full border border-border bg-card hover:bg-secondary text-muted-foreground hover:text-foreground shadow-sm flex items-center justify-center transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+        >
+          {isCollapsed ? <CaretRight className="h-3.5 w-3.5" /> : <CaretLeft className="h-3.5 w-3.5" />}
+        </button>
+      </Tooltip>
+
       <div className="flex flex-col flex-1 min-h-0">
         {/* ── Guild Header ── */}
-        <div className="px-3 pt-4 pb-3 border-b border-border">
-          <div className="rounded-xl bg-card border border-border p-4">
-            {/* ── Profile block: click to open Profil Organisasi ── */}
-            <button
-              type="button"
-              onClick={onOpenProfile}
-              disabled={!coopProfile}
-              aria-label={t("sidebar.openProfile")}
-              className="group block w-full text-left rounded-lg transition-colors hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand space-y-3"
-            >
-              {/* ── Identity: emblem + name (wraps, never cut off) ── */}
-              <div className="flex items-center gap-3">
-                <CoopEmblem profile={coopProfile} size="md" />
-                <div className="min-w-0 flex-1">
-                  <h2 className="text-sm font-bold text-foreground leading-tight break-words">
-                    {coopProfile?.name ?? "..."}
-                  </h2>
-                </div>
-                <PencilSimple className="h-3.5 w-3.5 text-muted-foreground opacity-40 group-hover:opacity-100 transition-opacity shrink-0" />
-              </div>
-
-              {/* ── Level — single-row pill with progress bar ── */}
-              {currentLevel &&
-                (() => {
-                  const prog = getLevelProgress(currentLevel, xp);
-                  return (
-                    <div
-                      className={`flex items-center gap-2 rounded-lg px-2.5 py-1.5 border border-current/20 ${currentLevel.bgClass} ${currentLevel.textClass}`}
-                    >
-                      <span className="text-xxs font-black uppercase tracking-wider shrink-0">{`Lv.${currentLevel.tier}`}</span>
-                      <div className="h-3 flex-1 rounded-full bg-secondary/50 overflow-hidden relative">
-                        <div
-                          className="absolute inset-0 h-full rounded-full bg-current/25 transition-all duration-500"
-                          style={{ width: `${prog.percent}%` }}
-                        />
-                        <span className="absolute inset-0 flex items-center justify-center text-xxxs font-mono font-bold">
-                          {prog.xp}/{prog.maxXp}
-                        </span>
-                      </div>
-                    </div>
-                  );
-                })()}
-
-              {/* ── Health — single-row RAG pill ── */}
-              {healthScore > 0 && (
-                <div className="flex items-center gap-2 rounded-lg px-2.5 py-1.5 bg-secondary/40 border border-border">
-                  <span className={`h-1.5 w-1.5 rounded-full shrink-0 ${rag.dotClass}`} />
-                  <span className={`text-xxs font-semibold truncate ${rag.textClass}`}>{t(rag.ratingKey)}</span>
-                  <span className={`text-xxs font-mono font-bold shrink-0 ${rag.textClass}`}>{healthScore}%</span>
-                  <div className="h-1.5 flex-1 rounded-full bg-secondary overflow-hidden">
-                    <div
-                      className={`h-full rounded-full ${rag.barClass} transition-all duration-500`}
-                      style={{ width: `${healthScore}%` }}
-                    />
-                  </div>
-                </div>
+        <div className="px-2 pt-3 pb-2 border-b border-border">
+          {isCollapsed ? (
+            <div className="flex flex-col items-center gap-2 py-1">
+              <Tooltip label={coopProfile?.name ?? "Profil Co-op"} side="right">
+                <button
+                  type="button"
+                  onClick={onOpenProfile}
+                  disabled={!coopProfile}
+                  className="group p-1 rounded-lg hover:bg-secondary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+                >
+                  <CoopEmblem profile={coopProfile} size="sm" />
+                </button>
+              </Tooltip>
+              {currentLevel && (
+                <span
+                  className={`text-xxxs font-black uppercase px-1 py-0.5 rounded border border-current/20 ${currentLevel.bgClass} ${currentLevel.textClass}`}
+                >
+                  {`L${currentLevel.tier}`}
+                </span>
               )}
-            </button>
-
-            {/* ── Quick stats — clickable cooperative scorecard ── */}
-            <div className="grid grid-cols-2 gap-2 mt-3">
-              <QuickStat
-                icon={UsersIcon}
-                label={t("sidebar.statMembers")}
-                value={memberCount.toString()}
-                onClick={() => onTabChange("anggota")}
-                title={t("sidebar.goTo", { tab: t("sidebar.nav.anggota") })}
-              />
-              <QuickStat
-                icon={BuildingsIcon}
-                label={t("sidebar.statUnits")}
-                value={unitValue}
-                onClick={() => onTabChange("units")}
-                title={t("sidebar.goTo", { tab: t("sidebar.nav.units") })}
-              />
-              <QuickStat
-                icon={Coins}
-                label={t("sidebar.statNetWorth")}
-                value={netWorthValue}
-                onClick={acctUnlocked ? () => onTabChange("accounting") : undefined}
-                disabled={!acctUnlocked}
-                title={
-                  acctUnlocked
-                    ? t("sidebar.goTo", { tab: t("sidebar.nav.accounting") })
-                    : (getUnlockRequirementLabel("accounting") ?? undefined)
-                }
-              />
-              <QuickStat
-                icon={TrophyIcon}
-                label={t("sidebar.statRanking")}
-                value={rankingValue}
-                onClick={rankingUnlocked ? () => onTabChange("ranking") : undefined}
-                disabled={!rankingUnlocked}
-                title={
-                  rankingUnlocked
-                    ? t("sidebar.goTo", { tab: t("ranking.beaconTitle") })
-                    : (getUnlockRequirementLabel("ranking") ?? undefined)
-                }
-              />
             </div>
-          </div>
+          ) : (
+            <div className="rounded-xl bg-card border border-border p-3 relative">
+              {/* ── Profile block: click to open Profil Organisasi ── */}
+              <button
+                type="button"
+                onClick={onOpenProfile}
+                disabled={!coopProfile}
+                aria-label={t("sidebar.openProfile")}
+                className="group block w-full text-left rounded-lg transition-colors hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand space-y-2"
+              >
+                {/* ── Identity: emblem + name ── */}
+                <div className="flex items-center gap-2.5">
+                  <CoopEmblem profile={coopProfile} size="md" />
+                  <div className="min-w-0 flex-1">
+                    <h2 className="text-xs font-bold text-foreground leading-tight break-words">
+                      {coopProfile?.name ?? "..."}
+                    </h2>
+                  </div>
+                  <PencilSimple className="h-3.5 w-3.5 text-muted-foreground opacity-40 group-hover:opacity-100 transition-opacity shrink-0" />
+                </div>
+
+                {/* ── Level — single-row pill with progress bar ── */}
+                {currentLevel &&
+                  (() => {
+                    const prog = getLevelProgress(currentLevel, xp);
+                    return (
+                      <div
+                        className={`flex items-center gap-2 rounded-lg px-2 py-1 border border-current/20 ${currentLevel.bgClass} ${currentLevel.textClass}`}
+                      >
+                        <span className="text-xxs font-black uppercase tracking-wider shrink-0">{`Lv.${currentLevel.tier}`}</span>
+                        <div className="h-2.5 flex-1 rounded-full bg-secondary/50 overflow-hidden relative">
+                          <div
+                            className="absolute inset-0 h-full rounded-full bg-current/25 transition-all duration-500"
+                            style={{ width: `${prog.percent}%` }}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })()}
+
+                {/* ── Health — single-row RAG pill ── */}
+                {healthScore > 0 && (
+                  <div className="flex items-center gap-2 rounded-lg px-2 py-1 bg-secondary/40 border border-border">
+                    <span className={`h-1.5 w-1.5 rounded-full shrink-0 ${rag.dotClass}`} />
+                    <span className={`text-xxs font-semibold truncate ${rag.textClass}`}>{t(rag.ratingKey)}</span>
+                    <span className={`text-xxs font-mono font-bold shrink-0 ${rag.textClass}`}>{healthScore}%</span>
+                  </div>
+                )}
+              </button>
+
+              {/* ── Quick stats ── */}
+              <div className="grid grid-cols-2 gap-1.5 mt-2">
+                <QuickStat
+                  icon={UsersIcon}
+                  label={t("sidebar.statMembers")}
+                  value={memberCount.toString()}
+                  onClick={() => onTabChange("anggota")}
+                  title={t("sidebar.goTo", { tab: t("sidebar.nav.anggota") })}
+                />
+                <QuickStat
+                  icon={BuildingsIcon}
+                  label={t("sidebar.statUnits")}
+                  value={unitValue}
+                  onClick={() => onTabChange("units")}
+                  title={t("sidebar.goTo", { tab: t("sidebar.nav.units") })}
+                />
+                <QuickStat
+                  icon={Coins}
+                  label={t("sidebar.statNetWorth")}
+                  value={netWorthValue}
+                  onClick={acctUnlocked ? () => onTabChange("accounting") : undefined}
+                  disabled={!acctUnlocked}
+                  title={
+                    acctUnlocked
+                      ? t("sidebar.goTo", { tab: t("sidebar.nav.accounting") })
+                      : (getUnlockRequirementLabel("accounting") ?? undefined)
+                  }
+                />
+                <QuickStat
+                  icon={TrophyIcon}
+                  label={t("sidebar.statRanking")}
+                  value={rankingValue}
+                  onClick={rankingUnlocked ? () => onTabChange("ranking") : undefined}
+                  disabled={!rankingUnlocked}
+                  title={
+                    rankingUnlocked
+                      ? t("sidebar.goTo", { tab: t("ranking.beaconTitle") })
+                      : (getUnlockRequirementLabel("ranking") ?? undefined)
+                  }
+                />
+              </div>
+            </div>
+          )}
         </div>
 
         {/* ── Navigation ── */}
-        <nav className="flex-1 overflow-y-auto p-3 nav-scroll">
+        <nav className={cn("flex-1 overflow-y-auto nav-scroll", isCollapsed ? "p-1.5 overflow-visible" : "p-3")}>
           {renderHome()}
           {GROUPS.map(renderGroup)}
         </nav>

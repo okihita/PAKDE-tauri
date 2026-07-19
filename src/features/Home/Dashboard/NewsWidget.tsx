@@ -9,6 +9,7 @@ import {
   Flag,
   Megaphone,
   CaretRight,
+  CaretLeft,
   PushPin,
   MagnifyingGlass,
   X,
@@ -16,10 +17,19 @@ import {
 import { type NewsItem } from "@/data/news";
 import { getNewsItems } from "@/db/news";
 import NewsDetailModal from "./NewsDetailModal";
+import { Tooltip } from "@/components/ui/tooltip";
 
 const NEWS_READ_KEY = "pakde-news-read";
+const LBL_OPEN_NEWS = "Buka Berita & Info";
+const LBL_CLOSE_NEWS = "Tutup Berita & Info";
 
 type FilterTab = "all" | "internal" | "government";
+
+interface NewsWidgetProps {
+  coopId?: string;
+  isCollapsed?: boolean;
+  onToggleCollapse?: () => void;
+}
 
 const SOURCE_BADGE: Record<NewsItem["source"], string> = {
   kementerian: "bg-purple-500/10 text-purple-400 border border-purple-500/20",
@@ -71,7 +81,7 @@ function formatRelativeTimestamp(iso: string, locale: string): string {
   });
 }
 
-function useNewsRead(items: NewsItem[], coopId: string) {
+function useNewsRead(items: NewsItem[], coopId: string = "default") {
   const [readIds, setReadIds] = useState<Set<string>>(() => {
     try {
       const saved = localStorage.getItem(`${NEWS_READ_KEY}:${coopId}`);
@@ -109,13 +119,9 @@ function useNewsRead(items: NewsItem[], coopId: string) {
   return { readIds, markRead, toggleRead, markAllRead };
 }
 
-interface NewsWidgetProps {
-  coopId: string;
-}
-
-export default function NewsWidget({ coopId }: NewsWidgetProps) {
+export default function NewsWidget({ coopId, isCollapsed, onToggleCollapse }: NewsWidgetProps) {
   const { t, i18n } = useTranslation();
-  const [newsItems, setNewsItems] = useState<NewsItem[]>([]);
+  const [news, setNews] = useState<NewsItem[]>([]);
   const [newsLoading, setNewsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<FilterTab>("all");
   const [searchQuery, setSearchQuery] = useState("");
@@ -124,39 +130,36 @@ export default function NewsWidget({ coopId }: NewsWidgetProps) {
 
   useEffect(() => {
     let alive = true;
-    getNewsItems(coopId)
-      .then((items) => {
-        if (alive) {
-          setNewsItems(items);
-          setNewsLoading(false);
-        }
-      })
-      .catch(() => {
-        if (alive) {
-          setNewsItems([]);
-          setNewsLoading(false);
-        }
-      });
+    void (async () => {
+      setNewsLoading(true);
+      try {
+        const items = await getNewsItems(coopId || "");
+        if (alive) setNews(items);
+      } catch {
+        /* non-fatal fallback */
+      } finally {
+        if (alive) setNewsLoading(false);
+      }
+    })();
     return () => {
       alive = false;
     };
   }, [coopId]);
 
-  const { readIds, markRead, toggleRead, markAllRead } = useNewsRead(newsItems, coopId);
+  const { readIds, markRead, toggleRead, markAllRead } = useNewsRead(news, coopId ?? "default");
 
-  const unreadCount = useMemo(() => newsItems.filter((n) => !readIds.has(n.id)).length, [newsItems, readIds]);
+  const unreadCount = useMemo(() => news.filter((n) => !readIds.has(n.id)).length, [news, readIds]);
 
   const unreadByTab = useMemo(() => {
-    const isGov = (src: NewsItem["source"]) => src === "kabupaten" || src === "provinsi" || src === "kementerian";
     return {
-      all: newsItems.filter((n) => !readIds.has(n.id)).length,
-      internal: newsItems.filter((n) => n.source === "internal" && !readIds.has(n.id)).length,
-      government: newsItems.filter((n) => isGov(n.source) && !readIds.has(n.id)).length,
+      all: news.filter((n) => !readIds.has(n.id)).length,
+      internal: news.filter((n) => n.source === "internal" && !readIds.has(n.id)).length,
+      government: news.filter((n) => n.source !== "internal" && !readIds.has(n.id)).length,
     };
-  }, [newsItems, readIds]);
+  }, [news, readIds]);
 
   const filteredNews = useMemo(() => {
-    return newsItems.filter((item) => {
+    return news.filter((item) => {
       if (activeTab === "internal" && item.source !== "internal") return false;
       if (activeTab === "government" && item.source === "internal") return false;
 
@@ -169,7 +172,7 @@ export default function NewsWidget({ coopId }: NewsWidgetProps) {
       }
       return true;
     });
-  }, [newsItems, activeTab, searchQuery]);
+  }, [news, activeTab, searchQuery]);
 
   const selectedNews = selectedIndex !== null && filteredNews[selectedIndex] ? filteredNews[selectedIndex] : null;
 
@@ -195,10 +198,51 @@ export default function NewsWidget({ coopId }: NewsWidgetProps) {
     }
   }, [selectedIndex, filteredNews, readIds, markRead]);
 
+  if (isCollapsed) {
+    return (
+      <Tooltip label={LBL_OPEN_NEWS} side="left" className="h-full block">
+        <Card
+          onClick={onToggleCollapse}
+          className="bg-card border-border text-foreground hover-glow-card flex flex-col h-full items-center justify-between p-2 cursor-pointer select-none transition-all w-12 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+        >
+          <div className="flex flex-col items-center gap-2 pt-1">
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onToggleCollapse?.();
+              }}
+              className="p-1 rounded-md hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand"
+              aria-label={LBL_OPEN_NEWS}
+            >
+              <CaretLeft className="h-4 w-4" />
+            </button>
+            <NewspaperIcon className="h-4 w-4 text-info" weight="duotone" />
+            {unreadCount > 0 && (
+              <span className="text-xxxs font-black bg-info/20 text-info px-1 py-0.5 rounded-full animate-pulse">
+                {unreadCount}
+              </span>
+            )}
+          </div>
+
+          <div
+            className="writing-mode-vertical text-xxxs font-bold text-muted-foreground uppercase tracking-widest py-4 flex items-center gap-1 rotate-180"
+            style={{ writingMode: "vertical-rl" }}
+          >
+            <span>{t("beranda.news.title")}</span>
+          </div>
+
+          <div className="pb-1">
+            <CaretLeft className="h-4 w-4 text-muted-foreground" />
+          </div>
+        </Card>
+      </Tooltip>
+    );
+  }
+
   return (
     <Card className="bg-card border-border text-foreground hover-glow-card flex flex-col h-full">
       <CardHeader className="p-0 space-y-0 relative border-b border-border/40">
-        {/* Standalone illustrated title bar strip */}
         <div className="relative overflow-hidden rounded-t-xl px-3 h-11 flex items-center justify-between shrink-0">
           <div
             className="absolute inset-0 bg-cover bg-left bg-no-repeat pointer-events-none opacity-30 dark:opacity-40 transition-opacity"
@@ -217,34 +261,46 @@ export default function NewsWidget({ coopId }: NewsWidgetProps) {
               )}
             </CardTitle>
             <div className="flex items-center gap-1.5">
-              <button
-                onClick={() => {
-                  setShowSearch((prev) => !prev);
-                  if (showSearch) setSearchQuery("");
-                }}
-                className={`p-1 rounded transition-colors ${
-                  showSearch || searchQuery
-                    ? "text-foreground bg-secondary"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-                title={t("beranda.news.searchPlaceholder")}
-              >
-                <MagnifyingGlass className="h-3.5 w-3.5" />
-              </button>
+              <Tooltip label={t("beranda.news.searchPlaceholder")} side="bottom">
+                <button
+                  onClick={() => {
+                    setShowSearch((prev) => !prev);
+                    if (showSearch) setSearchQuery("");
+                  }}
+                  className={`p-1 rounded transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand ${
+                    showSearch || searchQuery
+                      ? "text-foreground bg-secondary"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                  aria-label={t("beranda.news.searchPlaceholder")}
+                >
+                  <MagnifyingGlass className="h-3.5 w-3.5" />
+                </button>
+              </Tooltip>
 
               {unreadCount > 0 && (
                 <button
                   onClick={markAllRead}
-                  className="text-xxxs text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap"
+                  className="text-xxxs text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand rounded px-1"
                 >
                   {t("beranda.news.markRead")}
                 </button>
+              )}
+              {onToggleCollapse && (
+                <Tooltip label={LBL_CLOSE_NEWS} side="bottom">
+                  <button
+                    onClick={onToggleCollapse}
+                    className="p-1 rounded hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand"
+                    aria-label={LBL_CLOSE_NEWS}
+                  >
+                    <CaretRight className="h-3.5 w-3.5" />
+                  </button>
+                </Tooltip>
               )}
             </div>
           </div>
         </div>
 
-        {/* Controls sub-row below title illustration */}
         <div className="p-2.5 bg-card/50 border-t border-border/20">
           {showSearch ? (
             <div className="relative">
@@ -267,8 +323,9 @@ export default function NewsWidget({ coopId }: NewsWidgetProps) {
           ) : (
             <div className="flex items-center gap-1 bg-secondary/60 p-0.5 rounded-md text-xxxs">
               <button
+                type="button"
                 onClick={() => setActiveTab("all")}
-                className={`flex-1 py-1 px-1.5 rounded font-medium transition-all flex items-center justify-center gap-1 ${
+                className={`flex-1 py-1 px-1.5 rounded font-medium transition-all flex items-center justify-center gap-1 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand ${
                   activeTab === "all"
                     ? "bg-card text-foreground shadow-xs font-semibold"
                     : "text-muted-foreground hover:text-foreground"
@@ -278,8 +335,9 @@ export default function NewsWidget({ coopId }: NewsWidgetProps) {
                 {unreadByTab.all > 0 && <span className="w-1.5 h-1.5 rounded-full bg-info shrink-0" />}
               </button>
               <button
+                type="button"
                 onClick={() => setActiveTab("internal")}
-                className={`flex-1 py-1 px-1.5 rounded font-medium transition-all flex items-center justify-center gap-1 ${
+                className={`flex-1 py-1 px-1.5 rounded font-medium transition-all flex items-center justify-center gap-1 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand ${
                   activeTab === "internal"
                     ? "bg-card text-foreground shadow-xs font-semibold"
                     : "text-muted-foreground hover:text-foreground"
@@ -289,8 +347,9 @@ export default function NewsWidget({ coopId }: NewsWidgetProps) {
                 {unreadByTab.internal > 0 && <span className="w-1.5 h-1.5 rounded-full bg-brand shrink-0" />}
               </button>
               <button
+                type="button"
                 onClick={() => setActiveTab("government")}
-                className={`flex-1 py-1 px-1.5 rounded font-medium transition-all flex items-center justify-center gap-1 ${
+                className={`flex-1 py-1 px-1.5 rounded font-medium transition-all flex items-center justify-center gap-1 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand ${
                   activeTab === "government"
                     ? "bg-card text-foreground shadow-xs font-semibold"
                     : "text-muted-foreground hover:text-foreground"
@@ -319,9 +378,10 @@ export default function NewsWidget({ coopId }: NewsWidgetProps) {
             const SourceIcon = SOURCE_ICON[item.source];
 
             return (
-              <div
+              <button
+                type="button"
                 key={item.id}
-                className={`group flex items-start gap-2.5 p-2 rounded-lg border transition-all cursor-pointer ${
+                className={`group text-left w-full flex items-start gap-2.5 p-2 rounded-lg border transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand ${
                   isUnread
                     ? "bg-info/5 border-info/30 hover:bg-info/10 shadow-xs"
                     : "bg-card/50 border-border/60 hover:bg-secondary/70"
@@ -375,7 +435,7 @@ export default function NewsWidget({ coopId }: NewsWidgetProps) {
                     </div>
                   </div>
                 </div>
-              </div>
+              </button>
             );
           })}
         </div>

@@ -131,6 +131,32 @@ function AppContent() {
   const [showQuitConfirm, setShowQuitConfirm] = useState(false);
   const [showSessionDialog, setShowSessionDialog] = useState(false);
 
+  // Sidebar auto-collapse on resize (< 1280px), with manual override preference.
+  const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(() => {
+    const userPref = localStorage.getItem("pakde-sidebar-collapsed");
+    if (userPref !== null) return userPref === "true";
+    return typeof window !== "undefined" ? window.innerWidth < 1280 : false;
+  });
+
+  useEffect(() => {
+    const handleResize = () => {
+      const userPref = localStorage.getItem("pakde-sidebar-collapsed");
+      if (userPref === null) {
+        setSidebarCollapsed(window.innerWidth < 1280);
+      }
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  const toggleSidebarCollapse = useCallback(() => {
+    setSidebarCollapsed((prev) => {
+      const next = !prev;
+      localStorage.setItem("pakde-sidebar-collapsed", String(next));
+      return next;
+    });
+  }, []);
+
   // Update lifecycle — owned at the app root so the title screen can surface an
   // "Update available" banner and a manual check button without a login gate.
   const updater = useUpdater();
@@ -655,6 +681,8 @@ function AppContent() {
           rankingRank={ranking.ourRanks.kabupaten}
           rankingUnlocked={isTabUnlocked("ranking", coopProfile?.xp ?? 0)}
           onOpenProfile={() => setShowProfileModal(true)}
+          isCollapsed={sidebarCollapsed}
+          onToggleCollapse={toggleSidebarCollapse}
         />
 
         <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
