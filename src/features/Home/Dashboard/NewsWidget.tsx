@@ -18,9 +18,10 @@ import { type NewsItem } from "@/data/news";
 import { getNewsItems } from "@/db/news";
 import NewsDetailModal from "./NewsDetailModal";
 import { Tooltip } from "@/components/ui/tooltip";
+import { IS_MAC } from "@/lib/utils";
 
 const NEWS_READ_KEY = "pakde-news-read";
-const isMac = typeof navigator !== "undefined" && /Mac|iPhone|iPad/.test(navigator.platform);
+const isMac = IS_MAC;
 const newsShortcut = isMac ? "⌘⇧B" : "Ctrl+Shift+B";
 const LBL_OPEN_NEWS = `Buka Berita & Info (${newsShortcut})`;
 const LBL_CLOSE_NEWS = `Tutup Berita & Info (${newsShortcut})`;

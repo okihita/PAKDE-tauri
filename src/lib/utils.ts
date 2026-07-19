@@ -25,3 +25,6 @@ export function formatCompactRupiah(value: number, omitSymbol: boolean = false):
   if (abs >= 1_000) return `${prefix}${Math.round(value / 1_000)} rb`;
   return `${prefix}${value}`;
 }
+
+/** Platform check for macOS / iOS device detection. */
+export const IS_MAC = typeof navigator !== "undefined" && /Mac|iPhone|iPad/.test(navigator.platform);

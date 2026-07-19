@@ -13,7 +13,7 @@ import {
   ChartBar,
   MagnifyingGlassIcon,
 } from "@phosphor-icons/react";
-import { formatCompactRupiah } from "@/lib/utils";
+import { formatCompactRupiah, IS_MAC } from "@/lib/utils";
 import type { TabId } from "@/features/System/moduleUnlock";
 import { Tooltip } from "@/components/ui/tooltip";
 import type { TopBarStats } from "@/features/System/ProfileSelect/cooperativeDb";
@@ -51,7 +51,7 @@ export default function TopBar({
 }: TopBarProps) {
   const { t } = useTranslation();
 
-  const isMac = typeof navigator !== "undefined" && /Mac|iPhone|iPad/.test(navigator.platform);
+  const isMac = IS_MAC;
 
   const ctrlBtn =
     "p-2 rounded-lg hover:bg-sidebar-ring focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand transition-colors shrink-0 text-muted-foreground";

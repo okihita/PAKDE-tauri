@@ -1,6 +1,6 @@
 import { useMemo, type ComponentType } from "react";
 import { useTranslation } from "react-i18next";
-import { cn, formatCompactRupiah } from "@/lib/utils";
+import { cn, formatCompactRupiah, IS_MAC } from "@/lib/utils";
 import { resolveRag, ragMeta } from "@/lib/rag";
 import {
   SquaresFour,
@@ -66,7 +66,7 @@ interface NavGroupDef {
 
 type Accent = "sky" | "brand" | "violet" | "warning" | "amber";
 
-const isMac = typeof navigator !== "undefined" && /Mac|iPhone|iPad/.test(navigator.platform);
+const isMac = IS_MAC;
 const shortcutText = isMac ? "⌘B" : "Ctrl+B";
 const LBL_EXPAND_SIDEBAR = `Buka Sidebar (${shortcutText})`;
 const LBL_COLLAPSE_SIDEBAR = `Tutup Sidebar (${shortcutText})`;

@@ -78,6 +78,7 @@ import { useGlobalSfx } from "@/hooks/useGlobalSfx";
 import BackupFileOpenHandler from "@/features/System/Backup/BackupFileOpenHandler";
 import { takeAutoBackup, isAutoBackupEnabled, AUTO_BACKUP_INTERVAL_MS } from "@/features/System/Backup/autoBackup";
 import { reportError } from "@/lib/reportError";
+import { IS_MAC } from "@/lib/utils";
 import CreateUserProfile from "@/features/System/ProfileSelect/CreateUserProfile";
 import UserSignIn from "@/features/System/ProfileSelect/UserSignIn";
 
@@ -93,6 +94,7 @@ const TITLEBAR_TEXT = "PAKDE";
 const LBL_CANCEL = "Batal";
 const LBL_QUIT = "Tutup Aplikasi";
 const LBL_QUIT_BTN = "QUIT";
+const isMac = IS_MAC;
 const LBL_QUIT_CONFIRM = "Apakah Anda yakin ingin menutup aplikasi?";
 const LBL_ALERT_ATTENTION = "Perlu perhatian segera";
 
