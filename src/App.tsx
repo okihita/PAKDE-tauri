@@ -639,39 +639,59 @@ function AppContent() {
           cancel. Opened by the TopBar session button or the Settings switch. */}
       <Dialog open={showSessionDialog} onOpenChange={setShowSessionDialog}>
         <DialogContent
-          className="bg-slate-900 border border-slate-800 max-w-sm shadow-2xl"
+          className="bg-slate-900 border border-slate-800 max-w-sm shadow-2xl p-0 overflow-hidden"
           onEscapeKeyDown={(e) => e.preventDefault()}
         >
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-sm font-bold text-slate-200">
-              <SignOut className="h-5 w-5 text-warning shrink-0" />
-              {t("session.title")}
-            </DialogTitle>
-          </DialogHeader>
-          <p className="text-xs text-slate-400 leading-relaxed py-1">{t("session.desc")}</p>
-          <div className="flex flex-col gap-2 pt-2">
-            <Button
+          {/* Header */}
+          <div className="flex items-center gap-3 px-5 pt-5 pb-4 border-b border-slate-800">
+            <div className="grid h-9 w-9 place-items-center rounded-full bg-warning/15 text-warning shrink-0">
+              <SignOut className="h-4 w-4" />
+            </div>
+            <div className="min-w-0">
+              <DialogTitle className="text-sm font-bold text-slate-100">{t("session.title")}</DialogTitle>
+              <p className="text-xxs text-slate-400 mt-0.5">{t("session.desc")}</p>
+            </div>
+          </div>
+
+          {/* Action rows */}
+          <div className="flex flex-col gap-1 p-3">
+            <button
+              type="button"
               onClick={() => {
                 setShowSessionDialog(false);
                 handleSwitchProfile();
               }}
-              className="w-full justify-start bg-warning hover:bg-warning/90 text-white font-bold text-xs h-9"
+              className="group flex items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors hover:bg-slate-800/70 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-warning"
             >
-              <SignOut className="h-3.5 w-3.5 mr-2" />
-              {t("session.logout")}
-              <span className="ml-auto text-xxs font-normal opacity-80">{t("session.logoutDesc")}</span>
-            </Button>
-            <Button
+              <div className="grid h-8 w-8 place-items-center rounded-lg bg-warning/10 text-warning shrink-0">
+                <SignOut className="h-4 w-4" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-bold text-slate-100">{t("session.logout")}</p>
+                <p className="text-xxs text-slate-400 leading-snug">{t("session.logoutDesc")}</p>
+              </div>
+            </button>
+
+            <button
+              type="button"
               onClick={() => {
                 setShowSessionDialog(false);
                 quitApp();
               }}
-              className="w-full justify-start bg-danger hover:bg-danger/90 text-white font-bold text-xs h-9"
+              className="group flex items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors hover:bg-danger/10 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-danger"
             >
-              <XCircle className="h-3.5 w-3.5 mr-2" />
-              {t("session.quitApp")}
-              <span className="ml-auto text-xxs font-normal opacity-80">{t("session.quitAppDesc")}</span>
-            </Button>
+              <div className="grid h-8 w-8 place-items-center rounded-lg bg-danger/10 text-danger shrink-0">
+                <XCircle className="h-4 w-4" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-bold text-slate-100">{t("session.quitApp")}</p>
+                <p className="text-xxs text-slate-400 leading-snug">{t("session.quitAppDesc")}</p>
+              </div>
+            </button>
+          </div>
+
+          {/* Footer */}
+          <div className="px-3 pb-3">
             <Button
               variant="outline"
               onClick={() => setShowSessionDialog(false)}
