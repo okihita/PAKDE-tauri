@@ -23,6 +23,15 @@ class BgMusicController {
       this.audio = new Audio("/audio/bg.mp3");
       this.audio.loop = true;
       this.audio.volume = this.enabled ? this.NORMAL_VOLUME : this.MUTED_VOLUME;
+
+      // Fallback loop handling for environments where native loop property fails or gets interrupted
+      this.audio.addEventListener("ended", () => {
+        if (this.audio && this.enabled) {
+          this.audio.currentTime = 0;
+          this.audio.play().catch(() => {});
+        }
+      });
+
       this.audio.play().catch(() => {});
     } catch {
       // Audio init may fail if user hasn't interacted yet
@@ -31,9 +40,18 @@ class BgMusicController {
 
   /** Call on first user interaction to start playback (browser autoplay policy). */
   resume() {
-    if (!this.audio) return;
-    if (this.audio.paused) {
+    if (!this.audio) {
+      this.initAudio();
+    }
+    if (this.audio && (this.audio.paused || this.audio.ended)) {
+      if (this.audio.ended) this.audio.currentTime = 0;
       this.audio.play().catch(() => {});
+    }
+  }
+
+  pause() {
+    if (this.audio && !this.audio.paused) {
+      this.audio.pause();
     }
   }
 
@@ -44,11 +62,15 @@ class BgMusicController {
     if (!this.audio) this.initAudio();
     if (!this.audio) return this.enabled;
 
-    if (this.audio.paused) {
-      this.audio.play().catch(() => {});
+    if (this.enabled) {
+      if (this.audio.paused || this.audio.ended) {
+        if (this.audio.ended) this.audio.currentTime = 0;
+        this.audio.play().catch(() => {});
+      }
+      this.audio.volume = this.NORMAL_VOLUME;
+    } else {
+      this.audio.volume = this.MUTED_VOLUME;
     }
-
-    this.audio.volume = this.enabled ? this.NORMAL_VOLUME : this.MUTED_VOLUME;
     return this.enabled;
   }
 

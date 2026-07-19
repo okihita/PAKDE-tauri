@@ -34,7 +34,7 @@ function UserProfileForm({ user, onSaved }: { user: LocalUser; onSaved: (u: Loca
 
   const handleSave = async () => {
     if (!isValid) {
-      setError(t("userProfile.pinValidation"));
+      setError(t("settings.userProfile.pinValidation"));
       return;
     }
     setSaving(true);
@@ -58,12 +58,12 @@ function UserProfileForm({ user, onSaved }: { user: LocalUser; onSaved: (u: Loca
   return (
     <div className="space-y-4 text-xs">
       <div className="space-y-1.5">
-        <label className="text-muted-foreground font-mono text-xxxs uppercase">{t("userProfile.name")}</label>
+        <label className="text-muted-foreground font-mono text-xxxs uppercase">{t("settings.userProfile.name")}</label>
         <Input value={name} onChange={(e) => setName(e.target.value)} className="bg-input border-border text-xs h-8" />
       </div>
 
       <div className="space-y-1.5">
-        <label className="text-muted-foreground font-mono text-xxxs uppercase">{t("userProfile.role")}</label>
+        <label className="text-muted-foreground font-mono text-xxxs uppercase">{t("settings.userProfile.role")}</label>
         <div className="flex gap-2">
           {ROLES.map((r) => (
             <button
@@ -83,7 +83,7 @@ function UserProfileForm({ user, onSaved }: { user: LocalUser; onSaved: (u: Loca
       </div>
 
       <div className="space-y-1.5">
-        <label className="text-muted-foreground font-mono text-xxxs uppercase">{t("userProfile.pin")}</label>
+        <label className="text-muted-foreground font-mono text-xxxs uppercase">{t("settings.userProfile.pin")}</label>
         <div className="relative">
           <Input
             type={showPin ? "text" : "password"}
@@ -104,7 +104,9 @@ function UserProfileForm({ user, onSaved }: { user: LocalUser; onSaved: (u: Loca
       </div>
 
       <div className="space-y-1.5">
-        <label className="text-muted-foreground font-mono text-xxxs uppercase">{t("userProfile.pinConfirm")}</label>
+        <label className="text-muted-foreground font-mono text-xxxs uppercase">
+          {t("settings.userProfile.pinConfirm")}
+        </label>
         <Input
           type="password"
           value={pinConfirm}
@@ -113,21 +115,23 @@ function UserProfileForm({ user, onSaved }: { user: LocalUser; onSaved: (u: Loca
           placeholder="••••••"
           className="bg-input border-border text-xs h-8 tracking-[0.3em]"
         />
-        {pinMismatch && <p className="text-xxxs text-danger mt-1">{t("userProfile.pinMismatch")}</p>}
+        {pinMismatch && <p className="text-xxxs text-danger mt-1">{t("settings.userProfile.pinMismatch")}</p>}
       </div>
 
       <div className="space-y-1.5">
-        <label className="text-muted-foreground font-mono text-xxxs uppercase">{t("userProfile.recovery")}</label>
+        <label className="text-muted-foreground font-mono text-xxxs uppercase">
+          {t("settings.userProfile.recovery")}
+        </label>
         <Input
           value={recoveryQuestion}
           onChange={(e) => setRecoveryQuestion(e.target.value)}
-          placeholder={t("userProfile.recoveryQuestion")}
+          placeholder={t("settings.userProfile.recoveryQuestion")}
           className="bg-input border-border text-xs h-8"
         />
         <Input
           value={recoveryAnswer}
           onChange={(e) => setRecoveryAnswer(e.target.value)}
-          placeholder={t("userProfile.recoveryAnswer")}
+          placeholder={t("settings.userProfile.recoveryAnswer")}
           className="bg-input border-border text-xs h-8"
         />
       </div>
@@ -139,7 +143,7 @@ function UserProfileForm({ user, onSaved }: { user: LocalUser; onSaved: (u: Loca
         disabled={!isValid || saving}
         className="w-full bg-brand hover:bg-brand text-brand-foreground font-bold text-xs h-9"
       >
-        {saving ? <span className="animate-pulse">{t("settings.saving")}</span> : t("userProfile.saveProfile")}
+        {saving ? <span className="animate-pulse">{t("settings.saving")}</span> : t("settings.userProfile.saveProfile")}
       </Button>
     </div>
   );

@@ -8,7 +8,7 @@ This screen serves as the main cockpit for the village cooperative. It supports 
 - **Main Quest Checklist**: Main targets (Annual RAT, filing tax reports, auditing outstanding balances).
 - **Tasks Board (Harian / Mingguan)**: Local Todo list allowing managers to add and clear harian (daily) and weekly tasks.
 - **Calendar Panel**: Renders [DashboardCalendar.tsx](file:///Users/okihita/ArcaneSanctum/PAKDE/PAKDE-tauri/src/features/DashboardCalendar.tsx) for tracking meeting dates.
-- **RSS News Stream**: Integrates regional ministry bulletins from `NEWS_ITEMS` data.
+- **Berita & Info Column**: Renders the cooperative's own `news` table (`@/db/news`), seeded per co-op on creation (and a single welcome item for the demo co-op). Loaded asynchronously with a loading state.
 
 ---
 

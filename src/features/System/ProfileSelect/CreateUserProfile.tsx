@@ -10,19 +10,9 @@ import { useAppVersion } from "@/hooks/useAppVersion";
 
 const LBL_TITLE = "Buat Profil Pengguna";
 const LBL_SUBTITLE_PREFIX = "Anda akan menjadi administrator untuk";
-const LBL_NAME = "Nama Lengkap";
-const LBL_ROLE = "Peran";
-const LBL_PIN = "PIN (6 digit)";
-const LBL_PIN_CONFIRM = "Konfirmasi PIN";
-const LBL_PIN_MISMATCH = "PIN tidak cocok";
-const LBL_RECOVERY = "Pemulihan Akun (opsional)";
-const LBL_SAVING = "Menyimpan...";
 const LBL_START = "Mulai Kelola Koperasi";
-const LBL_PIN_VALIDATION = "PIN harus 6 digit angka dan cocok dengan konfirmasi.";
 const PLACEHOLDER_NAME = "Nama Anda";
 const PLACEHOLDER_PIN = "123456";
-const PLACEHOLDER_RECOVERY_Q = "Pertanyaan pemulihan (contoh: Nama hewan peliharaan pertama?)";
-const PLACEHOLDER_RECOVERY_A = "Jawaban pemulihan";
 
 const ROLES = [
   { value: "admin" as const, label: "Admin / Ketua" },
@@ -53,7 +43,7 @@ export default function CreateUserProfile({ cooperativeId, cooperativeName, onCo
 
   const handleCreate = async () => {
     if (!isValid) {
-      setError(LBL_PIN_VALIDATION);
+      setError(t("settings.userProfile.pinValidation"));
       return;
     }
     setCreating(true);
@@ -97,7 +87,7 @@ export default function CreateUserProfile({ cooperativeId, cooperativeName, onCo
           <div className="space-y-1.5">
             <label className="text-success text-xxxs uppercase tracking-wider flex items-center gap-1">
               <UserPlus className="h-3 w-3" />
-              {LBL_NAME}
+              {t("settings.userProfile.name")}
             </label>
             <Input
               value={name}
@@ -111,7 +101,7 @@ export default function CreateUserProfile({ cooperativeId, cooperativeName, onCo
           <div className="space-y-1.5">
             <label className="text-success text-xxxs uppercase tracking-wider flex items-center gap-1">
               <ShieldCheck className="h-3 w-3" />
-              {LBL_ROLE}
+              {t("settings.userProfile.role")}
             </label>
             <div className="flex gap-2">
               {ROLES.map((r) => (
@@ -134,7 +124,7 @@ export default function CreateUserProfile({ cooperativeId, cooperativeName, onCo
           <div className="space-y-1.5">
             <label className="text-success text-xxxs uppercase tracking-wider flex items-center gap-1">
               <Key className="h-3 w-3" />
-              {LBL_PIN}
+              {t("settings.userProfile.pin")}
             </label>
             <div className="relative">
               <Input
@@ -161,7 +151,7 @@ export default function CreateUserProfile({ cooperativeId, cooperativeName, onCo
           <div className="space-y-1.5">
             <label className="text-success text-xxxs uppercase tracking-wider flex items-center gap-1">
               <Key className="h-3 w-3" />
-              {LBL_PIN_CONFIRM}
+              {t("settings.userProfile.pinConfirm")}
             </label>
             <Input
               type="password"
@@ -175,26 +165,26 @@ export default function CreateUserProfile({ cooperativeId, cooperativeName, onCo
               className="bg-slate-900 border-slate-700 text-slate-100 text-xs h-9 tracking-[0.3em]"
             />
             {pinConfirm.length > 0 && pin !== pinConfirm && (
-              <p className="text-xxxs text-danger mt-1">{LBL_PIN_MISMATCH}</p>
+              <p className="text-xxxs text-danger mt-1">{t("settings.userProfile.pinMismatch")}</p>
             )}
           </div>
 
           <details className="space-y-2">
             <summary className="text-xxs text-slate-500 cursor-pointer hover:text-slate-400 flex items-center gap-1">
               <Question className="h-3 w-3" />
-              {LBL_RECOVERY}
+              {t("settings.userProfile.recovery")}
             </summary>
             <div className="space-y-1.5 mt-2 pl-6">
               <Input
                 value={recoveryQuestion}
                 onChange={(e) => setRecoveryQuestion(e.target.value)}
-                placeholder={PLACEHOLDER_RECOVERY_Q}
+                placeholder={t("settings.userProfile.recoveryQuestion")}
                 className="bg-slate-900 border-slate-700 text-slate-100 text-xxs h-8"
               />
               <Input
                 value={recoveryAnswer}
                 onChange={(e) => setRecoveryAnswer(e.target.value)}
-                placeholder={PLACEHOLDER_RECOVERY_A}
+                placeholder={t("settings.userProfile.recoveryAnswer")}
                 className="bg-slate-900 border-slate-700 text-slate-100 text-xxs h-8"
               />
             </div>
@@ -206,7 +196,7 @@ export default function CreateUserProfile({ cooperativeId, cooperativeName, onCo
           disabled={!isValid || creating}
           className="w-full bg-brand hover:bg-brand/90 text-brand-foreground font-bold text-sm h-10 disabled:opacity-40"
         >
-          {creating ? <span className="animate-pulse">{LBL_SAVING}</span> : <>{LBL_START}</>}
+          {creating ? <span className="animate-pulse">{t("settings.saving")}</span> : <>{LBL_START}</>}
         </Button>
 
         <p className="text-xxs text-slate-600 text-center">{t("splash.version", { version: appVersion })}</p>

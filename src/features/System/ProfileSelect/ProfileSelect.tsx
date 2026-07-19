@@ -17,6 +17,8 @@ import {
 } from "@phosphor-icons/react";
 import type { CooperativeProfile } from "@/types";
 import { initDb } from "@/db";
+import { getCoopDb } from "@/db/coopDb";
+import { ensureDemoNews } from "@/db/news";
 import { listCooperatives, getDemoCooperative } from "./cooperativeDb";
 import { sfx } from "./sfx";
 import { bgMusic } from "./music";
@@ -27,7 +29,7 @@ import { UNIT_CONFIG } from "./unitIcons";
 import { DEMO_TIERS } from "./demoTiers";
 import CampaignBriefingDialog from "./CampaignBriefingDialog";
 import DirectionalTransition, { type SwapDir } from "./DirectionalTransition";
-import { seedDemoCooperativeAtLevel, isDemoSeeded, type DemoLevel } from "@/db/seed-demo";
+import { seedDemoCooperativeAtLevel, isDemoSeeded, isDemoCooperative, type DemoLevel } from "@/db/seed-demo";
 import type { UpdaterApi } from "@/hooks/useUpdater";
 import { useAppVersion } from "@/hooks/useAppVersion";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -85,6 +87,13 @@ export default function ProfileSelect({ onProfileSelect, onDbError, updater }: P
       setSlideIndex((prev) => (prev + 1) % SLIDESHOW_IMAGES.length);
     }, SLIDE_INTERVAL_MS);
     return () => clearInterval(timer);
+  }, []);
+
+  // Music pause on unmount
+  useEffect(() => {
+    return () => {
+      bgMusic.pause();
+    };
   }, []);
 
   const loadProfiles = async () => {
@@ -183,6 +192,12 @@ export default function ProfileSelect({ onProfileSelect, onDbError, updater }: P
     try {
       const coop = await getDemoCooperative();
       if (coop) {
+        // Guarantee the demo's mock news feed is present (idempotent upsert) so
+        // Beranda always shows content even on a pre-existing account.
+        if (isDemoCooperative(coop)) {
+          const db = await getCoopDb(coop.id);
+          await ensureDemoNews(db);
+        }
         sfx.playChime();
         setTimeout(() => {
           onProfileSelect(coop);

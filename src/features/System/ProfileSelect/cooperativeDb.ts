@@ -1,4 +1,6 @@
 import { createRegistryRepository, getRegistryDb, getCoopDb, initCoopDb } from "@/db";
+import { seedDefaultNews } from "@/db/news";
+import { getCoopMemberCount } from "@/hooks/useMembers";
 import type { CooperativeProfile, EwsAlert } from "@/types";
 
 const coopRepo = createRegistryRepository<CooperativeProfile>("cooperatives");
@@ -55,6 +57,10 @@ export async function createCooperative(input: CreateCooperativeInput): Promise<
 
   // Provision this cooperative's own data file before any feature writes to it.
   await initCoopDb(newId);
+  const coopDb = await getCoopDb(newId);
+
+  // Seed default news/announcements so the Beranda Berita column is populated.
+  await seedDefaultNews(coopDb);
 
   return rows[0];
 }
@@ -106,6 +112,21 @@ export async function getNetWorth(cooperativeId: string): Promise<number> {
 
 export type AlertSeverity = "info" | "warning" | "critical";
 
+/** Cooperative net SHU (Net Surplus): (Revenue − Expense) × 0.9 (income tax). */
+export async function getNetShu(cooperativeId: string): Promise<number> {
+  const db = await getCoopDb(cooperativeId);
+  const rows = await db.select<Array<{ revenue: number; expense: number }>>(
+    `SELECT
+        COALESCE(SUM(CASE WHEN type = 'pendapatan' THEN balance ELSE 0 END), 0) AS revenue,
+        COALESCE(SUM(CASE WHEN type = 'beban' THEN balance ELSE 0 END), 0) AS expense
+      FROM coa_accounts`,
+  );
+  const r = rows[0];
+  if (!r) return 0;
+  const gross = r.revenue - r.expense;
+  return gross > 0 ? gross * 0.9 : 0;
+}
+
 /** Live headline stats for the persistent top-bar status cluster. */
 export interface TopBarStats {
   /** Assets − Liabilities from the chart of accounts. */
@@ -118,6 +139,8 @@ export interface TopBarStats {
   alertCount: number;
   /** Worst active alert severity, or null when none. */
   worstSeverity: AlertSeverity | null;
+  /** Average SHU per member (net SHU ÷ active member count). */
+  avgShu: number;
 }
 
 /**
@@ -146,12 +169,14 @@ export async function getCommunityLiveliness(
 
 const SEVERITY_ORDER: Record<AlertSeverity, number> = { info: 1, warning: 2, critical: 3 };
 
-/** Aggregate the three headline meters into a single call (one DB open). */
+/** Aggregate the headline meters into a single call (one DB open each). */
 export async function getTopBarStats(cooperativeId: string): Promise<TopBarStats> {
-  const [netWorth, liveliness, alerts] = await Promise.all([
+  const [netWorth, liveliness, alerts, shu, memberCount] = await Promise.all([
     getNetWorth(cooperativeId),
     getCommunityLiveliness(cooperativeId),
     getActiveEwsAlerts(cooperativeId),
+    getNetShu(cooperativeId),
+    getCoopMemberCount(),
   ]);
 
   let worstSeverity: AlertSeverity | null = null;
@@ -161,11 +186,14 @@ export async function getTopBarStats(cooperativeId: string): Promise<TopBarStats
     }
   }
 
+  const avgShu = memberCount > 0 ? shu / memberCount : 0;
+
   return {
     netWorth,
     eventCount: liveliness.eventCount,
     avgParticipants: liveliness.avgParticipants,
     alertCount: alerts.length,
     worstSeverity,
+    avgShu,
   };
 }

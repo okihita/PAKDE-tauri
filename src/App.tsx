@@ -1,6 +1,7 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import "@/i18n"; // initialize i18next before render
 import { useTranslation } from "react-i18next";
+import i18next from "i18next";
 import {
   listCooperatives,
   getCooperativeById,
@@ -18,8 +19,36 @@ import { getCurrentWindow } from "@tauri-apps/api/window";
 import { exit } from "@tauri-apps/plugin-process";
 import { IconProvider } from "@/components/IconContext";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import CommandPaletteDialog, { type CommandAction } from "@/components/ui/command-palette/CommandPaletteDialog";
+import { useCommandPalette } from "@/hooks/useCommandPalette";
+import { requestOpenMember, requestAddMember } from "@/lib/commandPaletteEvents";
 import { Button } from "@/components/ui/button";
-import { SignOut, XCircle, WarningIcon } from "@phosphor-icons/react";
+import {
+  SignOut,
+  XCircle,
+  WarningIcon,
+  CalendarPlus,
+  UserPlusIcon,
+  SunIcon,
+  MoonIcon,
+  TranslateIcon,
+  CloudCheck,
+  Gear,
+  UserCircleIcon,
+  SquaresFour,
+  UsersIcon,
+  ChartBarIcon,
+  Note,
+  WarehouseIcon,
+  BuildingsIcon,
+  HandshakeIcon,
+  TrendUpIcon,
+  HandCoins,
+  TrophyIcon,
+  BookOpenIcon,
+  RocketLaunchIcon,
+  Coins,
+} from "@phosphor-icons/react";
 import DbErrorScreen from "@/features/System/DbErrorScreen/DbErrorScreen";
 import Sidebar from "@/features/System/Sidebar";
 import TopBar from "@/features/System/TopBar";
@@ -65,9 +94,6 @@ const LBL_CANCEL = "Batal";
 const LBL_QUIT = "Tutup Aplikasi";
 const LBL_QUIT_BTN = "QUIT";
 const LBL_QUIT_CONFIRM = "Apakah Anda yakin ingin menutup aplikasi?";
-const LBL_EXIT = "Keluar ke Pilihan Profil";
-const LBL_EXIT_BTN = "KELUAR";
-const LBL_EXIT_CONFIRM = "Apakah Anda yakin ingin kembali ke pilihan profil? Sesi Anda tersimpan otomatis.";
 const LBL_ALERT_ATTENTION = "Perlu perhatian segera";
 
 function quitApp() {
@@ -103,11 +129,14 @@ function AppContent() {
   const [netWorth, setNetWorth] = useState(0);
   const [topStats, setTopStats] = useState<TopBarStats | null>(null);
   const [showQuitConfirm, setShowQuitConfirm] = useState(false);
-  const [showExitConfirm, setShowExitConfirm] = useState(false);
+  const [showSessionDialog, setShowSessionDialog] = useState(false);
 
   // Update lifecycle — owned at the app root so the title screen can surface an
   // "Update available" banner and a manual check button without a login gate.
   const updater = useUpdater();
+
+  // Global command palette (Cmd/Ctrl+K, "/").
+  const palette = useCommandPalette();
 
   // Sync font-size setting to <html> and persist
   useEffect(() => {
@@ -132,10 +161,9 @@ function AppContent() {
     setAppState("profile_select");
   }, []);
 
-  // Ask for confirmation before exiting to the profile screen (avoids misclick
-  // on Escape / the Switch Profile button). Stable.
-  const requestSwitchProfile = useCallback(() => {
-    setShowExitConfirm(true);
+  // Open the merged session dialog (logout / quit app / cancel). Stable.
+  const openSessionDialog = useCallback(() => {
+    setShowSessionDialog(true);
   }, []);
 
   // Keyboard shortcuts: Cmd/Ctrl + +/-/0 to zoom font, Escape to return home
@@ -153,11 +181,11 @@ function AppContent() {
           setShowQuitConfirm(false);
           return;
         }
-        // 1b. The exit-to-profile confirmation is open → close it.
-        if (showExitConfirm) {
+        // 1b. The merged session dialog is open → close it.
+        if (showSessionDialog) {
           e.preventDefault();
           e.stopPropagation();
-          setShowExitConfirm(false);
+          setShowSessionDialog(false);
           return;
         }
         // 2. Any other open modal dialog (member form, settings sub-dialog,
@@ -171,11 +199,17 @@ function AppContent() {
           setAppState("profile_select");
           return;
         }
-        // 4. Main app (the "game loop") → confirm before returning to the
-        //    profile screen (avoid misclick). Title screen is already home.
+        // 4. Main app, not on Beranda and no popup open → return to Beranda.
+        if (appState === "main" && activeTab !== "home") {
+          e.preventDefault();
+          setActiveTab("home");
+          return;
+        }
+        // 5. Main app on Beranda → open the session dialog (avoid misclick
+        //    leaving the app). Title screen is handled below.
         if (appState === "main") {
           e.preventDefault();
-          requestSwitchProfile();
+          openSessionDialog();
           return;
         }
         // 5. Title screen (profile selection) → confirm before quitting.
@@ -210,7 +244,7 @@ function AppContent() {
 
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [appState, showQuitConfirm, showExitConfirm, handleSwitchProfile, requestSwitchProfile]);
+  }, [appState, activeTab, showQuitConfirm, showSessionDialog, handleSwitchProfile, openSessionDialog]);
 
   // Load dashboard data on mount
   useEffect(() => {
@@ -347,6 +381,111 @@ function AppContent() {
     },
     [coopProfile?.xp],
   );
+
+  // Command Palette action registry. Rebuilt when language/theme change so the
+  // labels stay in sync; `guardedSetActiveTab` is stable so it doesn't churn.
+  const paletteActions = useMemo<CommandAction[]>(() => {
+    const nav = (id: TabId, title: string, icon: CommandAction["icon"], keywords: string) => ({
+      id: `nav-${id}`,
+      group: "navigation" as const,
+      title,
+      subtitle: t("commandPalette.groupNavigation"),
+      icon,
+      keywords,
+      run: () => guardedSetActiveTab(id),
+    });
+    return [
+      // ── Quick Actions ──
+      {
+        id: "qa-deposit",
+        group: "quickActions",
+        title: t("commandPalette.newDeposit"),
+        subtitle: t("sidebar.nav.anggota"),
+        icon: Coins,
+        keywords: "deposit simpanan setor savings",
+        run: () => guardedSetActiveTab("anggota"),
+      },
+      {
+        id: "qa-event",
+        group: "quickActions",
+        title: t("commandPalette.newEvent"),
+        subtitle: t("sidebar.nav.kegiatan"),
+        icon: CalendarPlus,
+        keywords: "event kegiatan baru create",
+        run: () => guardedSetActiveTab("kegiatan"),
+      },
+      {
+        id: "qa-member",
+        group: "quickActions",
+        title: t("commandPalette.newMember"),
+        subtitle: t("sidebar.nav.anggota"),
+        icon: UserPlusIcon,
+        keywords: "member anggota baru register daftar",
+        run: () => {
+          guardedSetActiveTab("anggota");
+          requestAddMember();
+        },
+      },
+      // ── Navigation ──
+      nav("home", t("sidebar.nav.home"), SquaresFour, "beranda dashboard home"),
+      nav("anggota", t("sidebar.nav.anggota"), UsersIcon, "members anggota"),
+      nav("kegiatan", t("sidebar.nav.kegiatan"), CalendarPlus, "event kegiatan"),
+      nav("dampak", t("sidebar.nav.dampak"), HandshakeIcon, "impact dampak"),
+      nav("units", t("sidebar.nav.units"), BuildingsIcon, "units bisnis"),
+      nav("sales", t("sidebar.nav.sales"), HandshakeIcon, "sales penjualan"),
+      nav("asetFisik", t("sidebar.nav.asetFisik"), WarehouseIcon, "assets aset"),
+      nav("development", t("sidebar.nav.development"), RocketLaunchIcon, "development pengembangan"),
+      nav("statistics", t("sidebar.nav.statistics"), ChartBarIcon, "statistics statistik"),
+      nav("accounting", t("sidebar.nav.accounting"), Note, "accounting ledger buku besar"),
+      nav("feasibility", t("sidebar.nav.feasibility"), TrendUpIcon, "feasibility kelayakan"),
+      nav("hibah", t("sidebar.nav.hibah"), HandCoins, "grant hibah"),
+      nav("leveling", t("sidebar.nav.leveling"), TrophyIcon, "leveling level"),
+      nav("learn", t("sidebar.nav.learn"), BookOpenIcon, "learn belajar"),
+      // ── System ──
+      {
+        id: "sys-theme",
+        group: "system",
+        title: t("commandPalette.toggleTheme"),
+        icon: appTheme === "dark" ? SunIcon : MoonIcon,
+        keywords: "theme dark light mode",
+        run: () => setAppTheme((p) => (p === "dark" ? "light" : "dark")),
+      },
+      {
+        id: "sys-lang",
+        group: "system",
+        title: t("commandPalette.toggleLanguage"),
+        icon: TranslateIcon,
+        keywords: "language bahasa en id",
+        run: () => i18next.changeLanguage(i18next.language.startsWith("id") ? "en" : "id"),
+      },
+      {
+        id: "sys-sync",
+        group: "system",
+        title: t("commandPalette.openSync"),
+        subtitle: t("sidebar.nav.sync"),
+        icon: CloudCheck,
+        keywords: "sync sinkronisasi",
+        run: () => guardedSetActiveTab("sync"),
+      },
+      {
+        id: "sys-settings",
+        group: "system",
+        title: t("commandPalette.openSettings"),
+        subtitle: t("sidebar.nav.settings"),
+        icon: Gear,
+        keywords: "settings pengaturan",
+        run: () => guardedSetActiveTab("settings"),
+      },
+      {
+        id: "sys-profile",
+        group: "system",
+        title: t("commandPalette.openProfile"),
+        icon: UserCircleIcon,
+        keywords: "profile profil user",
+        run: () => setShowUserModal(true),
+      },
+    ];
+  }, [t, appTheme, guardedSetActiveTab, setAppTheme, setShowUserModal]);
 
   const ranking = useRanking(coopProfile);
 
@@ -530,11 +669,11 @@ function AppContent() {
               currentUser={currentUser}
               appTheme={appTheme}
               onThemeToggle={() => setAppTheme((t) => (t === "dark" ? "light" : "dark"))}
-              onSwitchProfile={requestSwitchProfile}
               onOpenProfile={() => setShowUserModal(true)}
-              onQuit={() => setShowQuitConfirm(true)}
+              onOpenSession={openSessionDialog}
               topStats={topStats}
               onAlertsClick={() => guardedSetActiveTab("home")}
+              onOpenPalette={palette.openPalette}
             />
           </div>
 
@@ -556,7 +695,9 @@ function AppContent() {
           )}
 
           <main className="flex-1 max-h-full overscroll-contain overflow-y-auto p-6 brand-scroll">
-            {activeTab === "home" && <Dashboard xp={coopProfile?.xp ?? 0} />}
+            {activeTab === "home" && (
+              <Dashboard xp={coopProfile?.xp ?? 0} coopId={coopProfile?.id ?? getActiveCoopId()} />
+            )}
             {activeTab === "statistics" && <Statistics coopProfile={coopProfile} />}
             {activeTab === "ranking" && <Ranking ranking={ranking} onGoSync={() => guardedSetActiveTab("sync")} />}
             {activeTab === "leveling" && <Leveling xp={coopProfile?.xp ?? 0} />}
@@ -595,7 +736,7 @@ function AppContent() {
                 setFontSizeSetting={setFontSizeSetting}
                 appTheme={appTheme}
                 setAppTheme={setAppTheme}
-                onSwitchProfile={requestSwitchProfile}
+                onSwitchProfile={openSessionDialog}
               />
             )}
           </main>
@@ -639,41 +780,72 @@ function AppContent() {
         </DialogContent>
       </Dialog>
 
-      {/* Exit-to-profile confirmation (main view). Opened by Escape or the
-          Switch Profile button; confirms before leaving the session so a
-          misclick can't drop the user to the title screen. Never quits. */}
-      <Dialog open={showExitConfirm} onOpenChange={setShowExitConfirm}>
+      {/* Merged session dialog (main view). One entry point offering three
+          explicit choices: log out to profile selection, quit the app, or
+          cancel. Opened by the TopBar session button or the Settings switch. */}
+      <Dialog open={showSessionDialog} onOpenChange={setShowSessionDialog}>
         <DialogContent
-          className="bg-slate-900 border border-slate-800 max-w-sm shadow-2xl"
+          className="bg-slate-900 border border-slate-800 max-w-sm shadow-2xl p-0 overflow-hidden"
           onEscapeKeyDown={(e) => e.preventDefault()}
         >
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-sm font-bold text-slate-200">
-              <SignOut className="h-5 w-5 text-warning shrink-0" />
-              {LBL_EXIT}
-            </DialogTitle>
-          </DialogHeader>
-          <p className="text-xs text-slate-400 leading-relaxed py-2">{LBL_EXIT_CONFIRM}</p>
-          <DialogFooter className="flex gap-2">
-            <Button
-              variant="outline"
-              onClick={() => setShowExitConfirm(false)}
-              className="flex-1 border-slate-800 bg-slate-950 text-slate-300 hover:text-white text-xs h-8"
-            >
-              <XCircle className="h-3.5 w-3.5 mr-1" />
-              {LBL_CANCEL}
-            </Button>
-            <Button
+          {/* Header */}
+          <div className="flex items-center gap-3 px-5 pt-5 pb-4 border-b border-slate-800">
+            <div className="grid h-9 w-9 place-items-center rounded-full bg-warning/15 text-warning shrink-0">
+              <SignOut className="h-4 w-4" />
+            </div>
+            <div className="min-w-0">
+              <DialogTitle className="text-sm font-bold text-slate-100">{t("session.title")}</DialogTitle>
+              <p className="text-xxs text-slate-400 mt-0.5">{t("session.desc")}</p>
+            </div>
+          </div>
+
+          {/* Action rows */}
+          <div className="flex flex-col gap-1 p-3">
+            <button
+              type="button"
               onClick={() => {
-                setShowExitConfirm(false);
+                setShowSessionDialog(false);
                 handleSwitchProfile();
               }}
-              className="flex-1 bg-warning hover:bg-warning/90 text-white font-bold text-xs h-8"
+              className="group flex items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors hover:bg-slate-800/70 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-warning"
             >
-              <SignOut className="h-3.5 w-3.5 mr-1" />
-              {LBL_EXIT_BTN}
+              <div className="grid h-8 w-8 place-items-center rounded-lg bg-warning/10 text-warning shrink-0">
+                <SignOut className="h-4 w-4" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-bold text-slate-100">{t("session.logout")}</p>
+                <p className="text-xxs text-slate-400 leading-snug">{t("session.logoutDesc")}</p>
+              </div>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setShowSessionDialog(false);
+                quitApp();
+              }}
+              className="group flex items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors hover:bg-danger/10 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-danger"
+            >
+              <div className="grid h-8 w-8 place-items-center rounded-lg bg-danger/10 text-danger shrink-0">
+                <XCircle className="h-4 w-4" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-bold text-slate-100">{t("session.quitApp")}</p>
+                <p className="text-xxs text-slate-400 leading-snug">{t("session.quitAppDesc")}</p>
+              </div>
+            </button>
+          </div>
+
+          {/* Footer */}
+          <div className="px-3 pb-3">
+            <Button
+              variant="outline"
+              onClick={() => setShowSessionDialog(false)}
+              className="w-full justify-center border-slate-800 bg-slate-950 text-slate-300 hover:text-white text-xs h-8"
+            >
+              {t("session.cancel")}
             </Button>
-          </DialogFooter>
+          </div>
         </DialogContent>
       </Dialog>
 
@@ -682,6 +854,16 @@ function AppContent() {
         onOpenChange={setShowProfileModal}
         coopProfile={coopProfile}
         setCoopProfile={setCoopProfile}
+      />
+
+      <CommandPaletteDialog
+        open={palette.open}
+        onOpenChange={palette.setOpen}
+        actions={paletteActions}
+        onOpenMember={(member) => {
+          guardedSetActiveTab("anggota");
+          requestOpenMember(member);
+        }}
       />
 
       <UserProfileModal

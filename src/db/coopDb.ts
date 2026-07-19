@@ -395,6 +395,27 @@ export async function initCoopDb(coopId: string): Promise<void> {
     ]);
   }
 
+  // ── news / pengumuman (Berita & Info) ──
+  // Coop-scoped announcements, kept OUTSIDE the version gate so existing coops
+  // (already at COOP_SCHEMA_VERSION) pick it up on next launch without a
+  // destructive migration. `audience` targets everyone or only logged-in users;
+  // `created_by` records the author (local_users.id). The tenant is the coop DB
+  // file, so no coop_id column is needed.
+  await db.execute(`
+    CREATE TABLE IF NOT EXISTS news (
+      id TEXT PRIMARY KEY,
+      title TEXT NOT NULL,
+      content TEXT NOT NULL,
+      source TEXT NOT NULL CHECK(source IN ('kabupaten','provinsi','kementerian','internal')),
+      source_name TEXT NOT NULL,
+      audience TEXT NOT NULL DEFAULT 'all' CHECK(audience IN ('all','users')),
+      created_by TEXT,
+      pinned INTEGER DEFAULT 0,
+      created_at TEXT DEFAULT (datetime('now'))
+    );
+  `);
+  await db.execute(`CREATE INDEX IF NOT EXISTS idx_news_created ON news(created_at);`);
+
   // ── equipment (physical assets, outside the version gate so existing
   //    coops pick it up on next launch without re-running the v4→ migration) ──
   await db.execute(`

@@ -5,6 +5,7 @@ import { appDataDir, join } from "@tauri-apps/api/path";
 import { exists, remove } from "@tauri-apps/plugin-fs";
 import { DEMO_TIERS, type DemoTier } from "@/features/System/ProfileSelect/demoTiers";
 import { resolveWilayah } from "@/db/wilayahLookup";
+import { seedDemoNews, ensureDemoNews } from "@/db/news";
 import { generateNik, type Gender } from "@/data/nik";
 import { todayISO } from "@/lib/utils";
 
@@ -110,6 +111,11 @@ export async function seedDemoCooperativeAtLevel(level: DemoLevel): Promise<void
   // 9. Seed the board (pengurus) referencing real demo members — consolidates
   //    the old free-text officers string. Each position must be an anggota.
   await seedDemoPengurus(db);
+
+  // 10. Seed the demo's mock news feed (full set, idempotent).
+  await seedDemoNews(db);
+  // Defensive: guarantee every demo item is present even on a reused file.
+  await ensureDemoNews(db);
 }
 
 export async function seedDemoCooperative(): Promise<void> {

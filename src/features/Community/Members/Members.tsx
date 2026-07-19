@@ -21,6 +21,7 @@ import MemberFormDialog from "./MemberFormDialog";
 import MemberDetailDialog from "./MemberDetailDialog";
 import LevelUpDialog from "./LevelUpDialog";
 import { getCoopDb } from "@/db";
+import { onRequestOpenMember, onRequestAddMember } from "@/lib/commandPaletteEvents";
 
 function InsightTile({ label, value, sub, danger }: { label: string; value: string; sub?: string; danger?: boolean }) {
   return (
@@ -133,6 +134,17 @@ export default function Members({ onMembersChanged, xp = 0 }: { onMembersChanged
     m.loadMembersData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Command Palette hooks: open a member's detail dialog or the add form
+  // directly from the global search without leaving the Members tab.
+  useEffect(() => {
+    const offOpen = onRequestOpenMember((member) => setSelectedMember(member));
+    const offAdd = onRequestAddMember(() => m.openAddMemberModal());
+    return () => {
+      offOpen();
+      offAdd();
+    };
+  }, [m]);
 
   const fmt = (n: number) => `Rp ${Math.round(n).toLocaleString()}`;
   const i: MemberInsights = m.insights;
