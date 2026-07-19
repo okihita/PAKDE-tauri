@@ -11,7 +11,6 @@ import {
   Warning,
   PencilSimple,
   ChartBar,
-  CaretRight,
 } from "@phosphor-icons/react";
 import type { TabId } from "@/features/System/moduleUnlock";
 import { Tooltip } from "@/components/ui/tooltip";
@@ -41,26 +40,6 @@ const RIGHT_RAIL = "w-72";
 const statSlot =
   "flex items-center gap-1.5 px-2 py-1 rounded-lg hover:bg-sidebar-ring focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand transition-colors shrink-0 cursor-default";
 
-const TAB_BREADCRUMBS: Record<TabId, { groupKey?: string; navKey: string }> = {
-  home: { navKey: "sidebar.nav.home" },
-  anggota: { groupKey: "sidebar.groups.komunitas", navKey: "sidebar.nav.anggota" },
-  kegiatan: { groupKey: "sidebar.groups.komunitas", navKey: "sidebar.nav.kegiatan" },
-  dampak: { groupKey: "sidebar.groups.komunitas", navKey: "sidebar.nav.dampak" },
-  units: { groupKey: "sidebar.groups.bisnis", navKey: "sidebar.nav.units" },
-  sales: { groupKey: "sidebar.groups.bisnis", navKey: "sidebar.nav.sales" },
-  asetFisik: { groupKey: "sidebar.groups.bisnis", navKey: "sidebar.nav.asetFisik" },
-  development: { groupKey: "sidebar.groups.bisnis", navKey: "sidebar.nav.development" },
-  accounting: { groupKey: "sidebar.groups.keuangan", navKey: "sidebar.nav.accounting" },
-  statistics: { groupKey: "sidebar.groups.keuangan", navKey: "sidebar.nav.statistics" },
-  feasibility: { groupKey: "sidebar.groups.keuangan", navKey: "sidebar.nav.feasibility" },
-  hibah: { groupKey: "sidebar.groups.keuangan", navKey: "sidebar.nav.hibah" },
-  ranking: { groupKey: "sidebar.groups.keuangan", navKey: "sidebar.nav.ranking" },
-  leveling: { groupKey: "sidebar.groups.learn", navKey: "sidebar.nav.leveling" },
-  learn: { groupKey: "sidebar.groups.learn", navKey: "sidebar.nav.learn" },
-  sync: { groupKey: "sidebar.groups.sistem", navKey: "sidebar.nav.sync" },
-  settings: { groupKey: "sidebar.groups.sistem", navKey: "sidebar.nav.settings" },
-};
-
 export default function TopBar({
   activeTab,
   onNavigate,
@@ -84,21 +63,13 @@ export default function TopBar({
         ? "text-warning"
         : "text-muted-foreground";
 
-  const crumb = TAB_BREADCRUMBS[activeTab] || { navKey: "sidebar.nav.home" };
-
   return (
     <div className="bg-sidebar border-b border-border flex items-center justify-between gap-4 px-6 h-12 shrink-0 select-none print:hidden z-40 relative">
       {/* ── Active Module Breadcrumb + Live stat cluster (left) ── */}
       <div className="flex items-center gap-3 min-w-0 flex-1">
-        {/* Active View Location Indicator */}
-        <div className="flex items-center gap-1 text-xs font-semibold text-foreground/90 shrink-0 pr-2 border-r border-border/60">
-          {crumb.groupKey && (
-            <>
-              <span className="text-muted-foreground font-normal">{t(crumb.groupKey)}</span>
-              <CaretRight className="h-3 w-3 text-muted-foreground/50 shrink-0" />
-            </>
-          )}
-          <span className="font-bold text-foreground">{t(crumb.navKey)}</span>
+        {/* Active View Location Indicator — fixed width on all tabs to prevent vitals layout shift */}
+        <div className="w-24 shrink-0 flex items-center pr-2 border-r border-border/60 text-xs font-semibold">
+          {activeTab === "home" && <span className="font-bold text-foreground">{t("sidebar.nav.home")}</span>}
         </div>
 
         {/* Live Vitals Cluster */}
