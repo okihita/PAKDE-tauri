@@ -11,16 +11,20 @@ export function todayISO(d: Date = new Date()): string {
 }
 
 /** Compact Indonesian Rupiah formatter for tight spaces (e.g. "Rp 1,2 jt"). */
-export function formatCompactRupiah(value: number): string {
+export function formatCompactRupiah(value: number, omitSymbol: boolean = false): string {
+  const prefix = omitSymbol ? "" : "Rp ";
   const abs = Math.abs(value);
   if (abs >= 1_000_000_000) {
     const n = value / 1_000_000_000;
-    return `Rp ${n.toFixed(abs % 1_000_000_000 === 0 ? 0 : 1).replace(".", ",")} M`;
+    return `${prefix}${n.toFixed(abs % 1_000_000_000 === 0 ? 0 : 1).replace(".", ",")} M`;
   }
   if (abs >= 1_000_000) {
     const n = value / 1_000_000;
-    return `Rp ${n.toFixed(abs % 1_000_000 === 0 ? 0 : 1).replace(".", ",")} jt`;
+    return `${prefix}${n.toFixed(abs % 1_000_000 === 0 ? 0 : 1).replace(".", ",")} jt`;
   }
-  if (abs >= 1_000) return `Rp ${Math.round(value / 1_000)} rb`;
-  return `Rp ${value}`;
+  if (abs >= 1_000) return `${prefix}${Math.round(value / 1_000)} rb`;
+  return `${prefix}${value}`;
 }
+
+/** Platform check for macOS / iOS device detection. */
+export const IS_MAC = typeof navigator !== "undefined" && /Mac|iPhone|iPad/.test(navigator.platform);

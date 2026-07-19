@@ -78,6 +78,7 @@ import { useGlobalSfx } from "@/hooks/useGlobalSfx";
 import BackupFileOpenHandler from "@/features/System/Backup/BackupFileOpenHandler";
 import { takeAutoBackup, isAutoBackupEnabled, AUTO_BACKUP_INTERVAL_MS } from "@/features/System/Backup/autoBackup";
 import { reportError } from "@/lib/reportError";
+import { IS_MAC } from "@/lib/utils";
 import CreateUserProfile from "@/features/System/ProfileSelect/CreateUserProfile";
 import UserSignIn from "@/features/System/ProfileSelect/UserSignIn";
 
@@ -93,6 +94,7 @@ const TITLEBAR_TEXT = "PAKDE";
 const LBL_CANCEL = "Batal";
 const LBL_QUIT = "Tutup Aplikasi";
 const LBL_QUIT_BTN = "QUIT";
+const isMac = IS_MAC;
 const LBL_QUIT_CONFIRM = "Apakah Anda yakin ingin menutup aplikasi?";
 const LBL_ALERT_ATTENTION = "Perlu perhatian segera";
 
@@ -130,6 +132,38 @@ function AppContent() {
   const [topStats, setTopStats] = useState<TopBarStats | null>(null);
   const [showQuitConfirm, setShowQuitConfirm] = useState(false);
   const [showSessionDialog, setShowSessionDialog] = useState(false);
+
+  // Helper for responsive sidebar collapse with a hard viewport safety floor (< 1024px).
+  const computeSidebarCollapsed = useCallback((width: number, userPref: string | null): boolean => {
+    if (width < 1024) return true;
+    if (userPref !== null) return userPref === "true";
+    return width < 1280;
+  }, []);
+
+  const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(() => {
+    const userPref = typeof window !== "undefined" ? localStorage.getItem("pakde-sidebar-collapsed") : null;
+    const width = typeof window !== "undefined" ? window.innerWidth : 1400;
+    if (width < 1024) return true;
+    if (userPref !== null) return userPref === "true";
+    return width < 1280;
+  });
+
+  useEffect(() => {
+    const handleResize = () => {
+      const userPref = localStorage.getItem("pakde-sidebar-collapsed");
+      setSidebarCollapsed(computeSidebarCollapsed(window.innerWidth, userPref));
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [computeSidebarCollapsed]);
+
+  const toggleSidebarCollapse = useCallback(() => {
+    setSidebarCollapsed((prev) => {
+      const next = !prev;
+      localStorage.setItem("pakde-sidebar-collapsed", String(next));
+      return next;
+    });
+  }, []);
 
   // Update lifecycle — owned at the app root so the title screen can surface an
   // "Update available" banner and a manual check button without a login gate.
@@ -220,8 +254,19 @@ function AppContent() {
         }
       }
 
-      // Cmd/Ctrl + +/-/0 to zoom font
+      // Cmd/Ctrl + B → toggle left sidebar; Cmd/Ctrl + Shift + B → toggle right news panel
       const mod = e.metaKey || e.ctrlKey;
+      if (mod && !e.shiftKey && (e.key === "b" || e.key === "B")) {
+        e.preventDefault();
+        toggleSidebarCollapse();
+        return;
+      }
+      if (mod && e.shiftKey && (e.key === "b" || e.key === "B")) {
+        e.preventDefault();
+        window.dispatchEvent(new CustomEvent("pakde:toggle-news"));
+        return;
+      }
+
       if (!mod) return;
 
       if (e.key === "+" || e.key === "=") {
@@ -244,7 +289,15 @@ function AppContent() {
 
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [appState, activeTab, showQuitConfirm, showSessionDialog, handleSwitchProfile, openSessionDialog]);
+  }, [
+    appState,
+    activeTab,
+    showQuitConfirm,
+    showSessionDialog,
+    handleSwitchProfile,
+    openSessionDialog,
+    toggleSidebarCollapse,
+  ]);
 
   // Load dashboard data on mount
   useEffect(() => {
@@ -477,6 +530,39 @@ function AppContent() {
         run: () => guardedSetActiveTab("settings"),
       },
       {
+        id: "sys-sidebar",
+        group: "system",
+        title: sidebarCollapsed ? "Buka Sidebar Kiri" : "Tutup Sidebar Kiri",
+        subtitle: isMac ? "⌘B" : "Ctrl+B",
+        icon: SquaresFour,
+        keywords: "sidebar navigasi collapse expand buka tutup left",
+        shortcut: isMac ? "⌘B" : "Ctrl+B",
+        run: toggleSidebarCollapse,
+      },
+      {
+        id: "sys-news",
+        group: "system",
+        title: "Buka / Tutup Panel Berita",
+        subtitle: isMac ? "⌘⇧B" : "Ctrl+Shift+B",
+        icon: Note,
+        keywords: "news berita panel right collapse expand buka tutup",
+        shortcut: isMac ? "⌘⇧B" : "Ctrl+Shift+B",
+        run: () => window.dispatchEvent(new CustomEvent("pakde:toggle-news")),
+      },
+      {
+        id: "sys-focus-mode",
+        group: "system",
+        title: "Mode Fokus (Tutup Semua Sidebar)",
+        subtitle: "Maksimalkan area kerja",
+        icon: SquaresFour,
+        keywords: "focus fokus mode full screen bersih",
+        run: () => {
+          setSidebarCollapsed(true);
+          localStorage.setItem("pakde-sidebar-collapsed", "true");
+          window.dispatchEvent(new CustomEvent("pakde:toggle-news", { detail: { collapse: true } }));
+        },
+      },
+      {
         id: "sys-profile",
         group: "system",
         title: t("commandPalette.openProfile"),
@@ -485,7 +571,7 @@ function AppContent() {
         run: () => setShowUserModal(true),
       },
     ];
-  }, [t, appTheme, guardedSetActiveTab, setAppTheme, setShowUserModal]);
+  }, [t, appTheme, guardedSetActiveTab, setAppTheme, setShowUserModal, sidebarCollapsed, toggleSidebarCollapse]);
 
   const ranking = useRanking(coopProfile);
 
@@ -655,6 +741,8 @@ function AppContent() {
           rankingRank={ranking.ourRanks.kabupaten}
           rankingUnlocked={isTabUnlocked("ranking", coopProfile?.xp ?? 0)}
           onOpenProfile={() => setShowProfileModal(true)}
+          isCollapsed={sidebarCollapsed}
+          onToggleCollapse={toggleSidebarCollapse}
         />
 
         <div className="flex-1 flex flex-col min-h-0 overflow-hidden">

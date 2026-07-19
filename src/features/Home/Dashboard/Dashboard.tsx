@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -306,29 +306,74 @@ export default function Dashboard({ xp = 0, coopId }: { xp?: number; coopId: str
     calendar: <CalendarWidget t={t} />,
   };
 
+  // Helper for responsive news rail collapse with a hard viewport safety floor (< 1200px).
+  const computeNewsCollapsed = useCallback((width: number, userPref: string | null): boolean => {
+    if (width < 1200) return true;
+    if (userPref !== null) return userPref === "true";
+    return width < 1400;
+  }, []);
+
+  const [newsCollapsed, setNewsCollapsed] = useState<boolean>(() => {
+    const userPref = typeof window !== "undefined" ? localStorage.getItem("pakde-news-collapsed") : null;
+    const width = typeof window !== "undefined" ? window.innerWidth : 1600;
+    if (width < 1200) return true;
+    if (userPref !== null) return userPref === "true";
+    return width < 1400;
+  });
+
+  useEffect(() => {
+    const handleResize = () => {
+      const userPref = localStorage.getItem("pakde-news-collapsed");
+      setNewsCollapsed(computeNewsCollapsed(window.innerWidth, userPref));
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [computeNewsCollapsed]);
+
+  const toggleNewsCollapse = useCallback(() => {
+    setNewsCollapsed((prev) => {
+      const next = !prev;
+      localStorage.setItem("pakde-news-collapsed", String(next));
+      return next;
+    });
+  }, []);
+
+  useEffect(() => {
+    const handleToggleEvent = (e: Event) => {
+      const custom = e as CustomEvent<{ collapse?: boolean }>;
+      if (custom.detail?.collapse !== undefined) {
+        setNewsCollapsed(custom.detail.collapse);
+        localStorage.setItem("pakde-news-collapsed", String(custom.detail.collapse));
+      } else {
+        toggleNewsCollapse();
+      }
+    };
+    window.addEventListener("pakde:toggle-news", handleToggleEvent);
+    return () => window.removeEventListener("pakde:toggle-news", handleToggleEvent);
+  }, [toggleNewsCollapse]);
+
   return (
-    <div className="flex-1 overflow-auto">
-      {/* Campaign strip is capped to the 3-column campaign area (not full width). */}
-      <div className="flex gap-4 items-start">
-        {/* ── Left: campaign strip + 3-column campaign row ── */}
-        <div className="flex-1 min-w-0 flex flex-col gap-4">
-          <CampaignStrip xp={xp} pengurusReady={pengurusReady} />
+    <div className="flex h-[calc(100%+3rem)] -m-6 overflow-hidden">
+      {/* ── Left workspace: campaign strip + campaign cards ── */}
+      <div className="flex-1 min-w-0 overflow-y-auto p-6 brand-scroll space-y-4">
+        <CampaignStrip xp={xp} pengurusReady={pengurusReady} />
 
-          {/* Fixed 3-column campaign row: mainquest · tugas · calendar.
-              Drag-and-drop removed — order is fixed. */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 auto-rows-min">
-            {CAMPAIGN_CARDS.map((id) => (
-              <div key={id}>{cardContents[id]}</div>
-            ))}
-          </div>
-        </div>
-
-        {/* ── Right rail: Berita column (fixed width, full height, top-aligned).
-            Mirrors the left Sidebar / TopBar settings right rail (w-72). ── */}
-        <div className="w-72 shrink-0 h-full">
-          <NewsWidget coopId={coopId} />
+        {/* Fixed campaign row: stacks vertically on <2xl screens so tasks & calendar remain spacious. */}
+        <div className="grid grid-cols-1 2xl:grid-cols-3 gap-4 auto-rows-min">
+          {CAMPAIGN_CARDS.map((id) => (
+            <div key={id}>{cardContents[id]}</div>
+          ))}
         </div>
       </div>
+
+      {/* ── Right snapped News Sidebar (flush to right border, w-80 <-> w-12) ── */}
+      <aside
+        className={`border-l border-border bg-sidebar shrink-0 h-full select-none ${
+          newsCollapsed ? "w-12 overflow-visible" : "w-80 overflow-hidden"
+        }`}
+      >
+        <NewsWidget coopId={coopId} isCollapsed={newsCollapsed} onToggleCollapse={toggleNewsCollapse} />
+      </aside>
     </div>
   );
 }
