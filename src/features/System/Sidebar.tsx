@@ -340,17 +340,6 @@ export default function Sidebar({
         isCollapsed ? "w-16 overflow-visible" : "w-72 overflow-x-hidden",
       )}
     >
-      {/* ── Border edge toggle button ── */}
-      <Tooltip label={isCollapsed ? LBL_EXPAND_SIDEBAR : LBL_COLLAPSE_SIDEBAR} side="right">
-        <button
-          type="button"
-          onClick={onToggleCollapse}
-          className="absolute -right-3 top-3.5 z-40 h-6 w-6 rounded-full border border-border bg-card hover:bg-secondary text-muted-foreground hover:text-foreground shadow-sm flex items-center justify-center transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
-        >
-          {isCollapsed ? <CaretRight className="h-3.5 w-3.5" /> : <CaretLeft className="h-3.5 w-3.5" />}
-        </button>
-      </Tooltip>
-
       <div className="flex flex-col flex-1 min-h-0">
         {/* ── Guild Header ── */}
         <div className="px-2 pt-3 pb-2 border-b border-border">
@@ -474,6 +463,36 @@ export default function Sidebar({
           {renderHome()}
           {GROUPS.map(renderGroup)}
         </nav>
+
+        {/* ── Sidebar Bottom Footer ── */}
+        <div
+          className={cn(
+            "border-t border-border shrink-0 bg-sidebar",
+            isCollapsed ? "p-1.5 flex justify-center" : "p-2",
+          )}
+        >
+          {isCollapsed ? (
+            <Tooltip label={LBL_EXPAND_SIDEBAR} side="right">
+              <button
+                type="button"
+                onClick={onToggleCollapse}
+                aria-label={LBL_EXPAND_SIDEBAR}
+                className="h-10 w-10 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+              >
+                <CaretRight className="h-4 w-4 shrink-0" />
+              </button>
+            </Tooltip>
+          ) : (
+            <button
+              type="button"
+              onClick={onToggleCollapse}
+              className="w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand whitespace-nowrap"
+            >
+              <span>{LBL_COLLAPSE_SIDEBAR}</span>
+              <CaretLeft className="h-4 w-4 shrink-0" />
+            </button>
+          )}
+        </div>
       </div>
     </aside>
   );
