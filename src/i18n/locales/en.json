@@ -116,6 +116,15 @@
     "avgShuDesc": "Net SHU divided by active member count.",
     "openProfile": "Open user profile"
   },
+  "session": {
+    "title": "End Session",
+    "desc": "Choose the action you want to take.",
+    "logout": "Log Out Account",
+    "logoutDesc": "Return to profile selection. Your session is saved automatically.",
+    "quitApp": "Quit App",
+    "quitAppDesc": "Fully exit the PAKDE application.",
+    "cancel": "Cancel"
+  },
   "dashboard": {
     "welcome": "Welcome",
     "legalId": "LEGAL ID",

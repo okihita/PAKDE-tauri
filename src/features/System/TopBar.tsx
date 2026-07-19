@@ -5,7 +5,6 @@ import {
   MoonIcon,
   UserCheck,
   SignOut,
-  XCircle,
   CloudCheck,
   Coins,
   Fire,
@@ -24,9 +23,8 @@ interface TopBarProps {
   currentUser: LocalUser | null;
   appTheme: "dark" | "light";
   onThemeToggle: () => void;
-  onSwitchProfile: () => void;
   onOpenProfile: () => void;
-  onQuit: () => void;
+  onOpenSession: () => void;
   topStats?: TopBarStats | null;
   onAlertsClick?: () => void;
 }
@@ -49,9 +47,8 @@ export default function TopBar({
   onNavigate,
   appTheme,
   onThemeToggle,
-  onSwitchProfile,
   onOpenProfile,
-  onQuit,
+  onOpenSession,
   topStats,
   onAlertsClick,
 }: TopBarProps) {
@@ -203,28 +200,16 @@ export default function TopBar({
 
         <span className="h-6 w-px bg-border mx-2 shrink-0" />
 
-        {/* ── Session exit ── */}
-        <div className="flex items-center gap-1">
-          <button
-            onClick={onSwitchProfile}
-            aria-label={t("profileSelect.switchProfile")}
-            title={t("profileSelect.switchProfile")}
-            className={`${ctrlBtn} hover:text-danger`}
-          >
-            <SignOut className="h-4 w-4" />
-          </button>
-          <button
-            onClick={onQuit}
-            aria-label={LBL_QUIT}
-            title={LBL_QUIT}
-            className="p-2 rounded-lg hover:bg-danger/10 transition-colors shrink-0 text-muted-foreground hover:text-danger"
-          >
-            <XCircle className="h-4 w-4" />
-          </button>
-        </div>
+        {/* ── Session: single entry point → merged logout/quit dialog ── */}
+        <button
+          onClick={onOpenSession}
+          aria-label={t("session.title")}
+          title={t("session.title")}
+          className={`${ctrlBtn} hover:text-danger`}
+        >
+          <SignOut className="h-4 w-4" />
+        </button>
       </div>
     </div>
   );
 }
-
-const LBL_QUIT = "Tutup Aplikasi";

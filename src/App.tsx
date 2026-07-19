@@ -65,9 +65,6 @@ const LBL_CANCEL = "Batal";
 const LBL_QUIT = "Tutup Aplikasi";
 const LBL_QUIT_BTN = "QUIT";
 const LBL_QUIT_CONFIRM = "Apakah Anda yakin ingin menutup aplikasi?";
-const LBL_EXIT = "Keluar ke Pilihan Profil";
-const LBL_EXIT_BTN = "KELUAR";
-const LBL_EXIT_CONFIRM = "Apakah Anda yakin ingin kembali ke pilihan profil? Sesi Anda tersimpan otomatis.";
 const LBL_ALERT_ATTENTION = "Perlu perhatian segera";
 
 function quitApp() {
@@ -103,7 +100,7 @@ function AppContent() {
   const [netWorth, setNetWorth] = useState(0);
   const [topStats, setTopStats] = useState<TopBarStats | null>(null);
   const [showQuitConfirm, setShowQuitConfirm] = useState(false);
-  const [showExitConfirm, setShowExitConfirm] = useState(false);
+  const [showSessionDialog, setShowSessionDialog] = useState(false);
 
   // Update lifecycle — owned at the app root so the title screen can surface an
   // "Update available" banner and a manual check button without a login gate.
@@ -132,10 +129,9 @@ function AppContent() {
     setAppState("profile_select");
   }, []);
 
-  // Ask for confirmation before exiting to the profile screen (avoids misclick
-  // on Escape / the Switch Profile button). Stable.
-  const requestSwitchProfile = useCallback(() => {
-    setShowExitConfirm(true);
+  // Open the merged session dialog (logout / quit app / cancel). Stable.
+  const openSessionDialog = useCallback(() => {
+    setShowSessionDialog(true);
   }, []);
 
   // Keyboard shortcuts: Cmd/Ctrl + +/-/0 to zoom font, Escape to return home
@@ -153,11 +149,11 @@ function AppContent() {
           setShowQuitConfirm(false);
           return;
         }
-        // 1b. The exit-to-profile confirmation is open → close it.
-        if (showExitConfirm) {
+        // 1b. The merged session dialog is open → close it.
+        if (showSessionDialog) {
           e.preventDefault();
           e.stopPropagation();
-          setShowExitConfirm(false);
+          setShowSessionDialog(false);
           return;
         }
         // 2. Any other open modal dialog (member form, settings sub-dialog,
@@ -175,7 +171,7 @@ function AppContent() {
         //    profile screen (avoid misclick). Title screen is already home.
         if (appState === "main") {
           e.preventDefault();
-          requestSwitchProfile();
+          openSessionDialog();
           return;
         }
         // 5. Title screen (profile selection) → confirm before quitting.
@@ -210,7 +206,7 @@ function AppContent() {
 
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [appState, showQuitConfirm, showExitConfirm, handleSwitchProfile, requestSwitchProfile]);
+  }, [appState, showQuitConfirm, showSessionDialog, handleSwitchProfile, openSessionDialog]);
 
   // Load dashboard data on mount
   useEffect(() => {
@@ -530,9 +526,8 @@ function AppContent() {
               currentUser={currentUser}
               appTheme={appTheme}
               onThemeToggle={() => setAppTheme((t) => (t === "dark" ? "light" : "dark"))}
-              onSwitchProfile={requestSwitchProfile}
               onOpenProfile={() => setShowUserModal(true)}
-              onQuit={() => setShowQuitConfirm(true)}
+              onOpenSession={openSessionDialog}
               topStats={topStats}
               onAlertsClick={() => guardedSetActiveTab("home")}
             />
@@ -595,7 +590,7 @@ function AppContent() {
                 setFontSizeSetting={setFontSizeSetting}
                 appTheme={appTheme}
                 setAppTheme={setAppTheme}
-                onSwitchProfile={requestSwitchProfile}
+                onSwitchProfile={openSessionDialog}
               />
             )}
           </main>
@@ -639,10 +634,10 @@ function AppContent() {
         </DialogContent>
       </Dialog>
 
-      {/* Exit-to-profile confirmation (main view). Opened by Escape or the
-          Switch Profile button; confirms before leaving the session so a
-          misclick can't drop the user to the title screen. Never quits. */}
-      <Dialog open={showExitConfirm} onOpenChange={setShowExitConfirm}>
+      {/* Merged session dialog (main view). One entry point offering three
+          explicit choices: log out to profile selection, quit the app, or
+          cancel. Opened by the TopBar session button or the Settings switch. */}
+      <Dialog open={showSessionDialog} onOpenChange={setShowSessionDialog}>
         <DialogContent
           className="bg-slate-900 border border-slate-800 max-w-sm shadow-2xl"
           onEscapeKeyDown={(e) => e.preventDefault()}
@@ -650,30 +645,41 @@ function AppContent() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-sm font-bold text-slate-200">
               <SignOut className="h-5 w-5 text-warning shrink-0" />
-              {LBL_EXIT}
+              {t("session.title")}
             </DialogTitle>
           </DialogHeader>
-          <p className="text-xs text-slate-400 leading-relaxed py-2">{LBL_EXIT_CONFIRM}</p>
-          <DialogFooter className="flex gap-2">
+          <p className="text-xs text-slate-400 leading-relaxed py-1">{t("session.desc")}</p>
+          <div className="flex flex-col gap-2 pt-2">
             <Button
-              variant="outline"
-              onClick={() => setShowExitConfirm(false)}
-              className="flex-1 border-slate-800 bg-slate-950 text-slate-300 hover:text-white text-xs h-8"
+              onClick={() => {
+                setShowSessionDialog(false);
+                handleSwitchProfile();
+              }}
+              className="w-full justify-start bg-warning hover:bg-warning/90 text-white font-bold text-xs h-9"
             >
-              <XCircle className="h-3.5 w-3.5 mr-1" />
-              {LBL_CANCEL}
+              <SignOut className="h-3.5 w-3.5 mr-2" />
+              {t("session.logout")}
+              <span className="ml-auto text-xxs font-normal opacity-80">{t("session.logoutDesc")}</span>
             </Button>
             <Button
               onClick={() => {
-                setShowExitConfirm(false);
-                handleSwitchProfile();
+                setShowSessionDialog(false);
+                quitApp();
               }}
-              className="flex-1 bg-warning hover:bg-warning/90 text-white font-bold text-xs h-8"
+              className="w-full justify-start bg-danger hover:bg-danger/90 text-white font-bold text-xs h-9"
             >
-              <SignOut className="h-3.5 w-3.5 mr-1" />
-              {LBL_EXIT_BTN}
+              <XCircle className="h-3.5 w-3.5 mr-2" />
+              {t("session.quitApp")}
+              <span className="ml-auto text-xxs font-normal opacity-80">{t("session.quitAppDesc")}</span>
             </Button>
-          </DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowSessionDialog(false)}
+              className="w-full justify-center border-slate-800 bg-slate-950 text-slate-300 hover:text-white text-xs h-8"
+            >
+              {t("session.cancel")}
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
 

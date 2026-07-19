@@ -116,6 +116,15 @@
     "avgShuDesc": "SHU bersih dibagi jumlah anggota aktif.",
     "openProfile": "Buka profil pengguna"
   },
+  "session": {
+    "title": "Keluar Sesi",
+    "desc": "Pilih tindakan yang ingin Anda lakukan.",
+    "logout": "Keluar Akun",
+    "logoutDesc": "Kembali ke pilihan profil. Sesi tersimpan otomatis.",
+    "quitApp": "Tutup Aplikasi",
+    "quitAppDesc": "Keluar sepenuhnya dari aplikasi PAKDE.",
+    "cancel": "Batal"
+  },
   "dashboard": {
     "welcome": "Selamat Datang",
     "legalId": "BADAN HUKUM",
