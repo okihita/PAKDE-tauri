@@ -98,12 +98,12 @@ export default function CalendarWidget({ t }: { t: (key: string) => string }) {
     <>
       <Card className="bg-card border-border text-foreground hover-glow-card">
         <CardHeader className="pb-2 flex flex-row items-center justify-between">
-          <CardTitle className="text-xs font-mono tracking-widest text-muted-foreground uppercase flex items-center gap-2">
+          <CardTitle className="text-xs tracking-widest text-muted-foreground uppercase flex items-center gap-2">
             <CalendarIcon className="h-3 w-3" />
             {t("beranda.calendar")}
           </CardTitle>
           <div className="flex items-center gap-2">
-            <span className="text-xxs font-mono text-muted-foreground">
+            <span className="text-xxs text-muted-foreground">
               {monthName(viewYear, viewMonth)} {viewYear}
             </span>
             <div className="flex gap-0.5">
@@ -125,7 +125,7 @@ export default function CalendarWidget({ t }: { t: (key: string) => string }) {
         <CardContent className="space-y-3">
           <div className="grid grid-cols-7 gap-0">
             {DAYS_SHORT.map((d) => (
-              <div key={d} className="text-center text-xxxs font-mono text-muted-foreground py-1">
+              <div key={d} className="text-center text-xxxs text-muted-foreground py-1">
                 {t(`beranda.${d}`)}
               </div>
             ))}
@@ -134,7 +134,7 @@ export default function CalendarWidget({ t }: { t: (key: string) => string }) {
               return (
                 <div
                   key={i}
-                  className={`text-center text-xxs font-mono py-1.5 rounded relative ${
+                  className={`text-center text-xxs py-1.5 rounded relative ${
                     d === null
                       ? "text-transparent"
                       : isToday(d)
@@ -155,9 +155,7 @@ export default function CalendarWidget({ t }: { t: (key: string) => string }) {
 
           {monthEvents.length > 0 && (
             <div className="border-t border-border pt-2 space-y-1.5">
-              <p className="text-xxxs font-mono text-muted-foreground uppercase tracking-wider">
-                {t("beranda.eventsTitle")}
-              </p>
+              <p className="text-xxxs text-muted-foreground uppercase tracking-wider">{t("beranda.eventsTitle")}</p>
               <div className="space-y-0.5">
                 {monthEvents
                   .sort((a, b) => a.date - b.date)
@@ -167,7 +165,7 @@ export default function CalendarWidget({ t }: { t: (key: string) => string }) {
                       className="flex items-center gap-2 text-xxs py-1.5 px-2 rounded hover:bg-secondary cursor-pointer transition-colors"
                       onClick={() => setSelectedEvent(ev)}
                     >
-                      <span className="text-xxxs font-mono text-warning shrink-0 w-6 text-right">{ev.date}</span>
+                      <span className="text-xxxs text-warning shrink-0 w-6 text-right">{ev.date}</span>
                       <span className="text-muted-foreground truncate">{ev.title}</span>
                     </div>
                   ))}

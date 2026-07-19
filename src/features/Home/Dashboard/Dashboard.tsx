@@ -213,11 +213,11 @@ export default function Dashboard({ xp = 0 }: { xp?: number }) {
       <Card className="bg-card border-border text-foreground hover-glow-card">
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-xs font-mono tracking-widest text-muted-foreground uppercase flex items-center gap-2">
+            <CardTitle className="text-xs tracking-widest text-muted-foreground uppercase flex items-center gap-2">
               <CheckCircleIcon className="h-3 w-3 text-success" />
               {t("beranda.todoMain")}
               <span
-                className={`ml-1 px-1.5 py-0.5 rounded text-xxxs font-mono ${currentLevel.bgClass} ${currentLevel.textClass}`}
+                className={`ml-1 px-1.5 py-0.5 rounded text-xxxs ${currentLevel.bgClass} ${currentLevel.textClass}`}
               >
                 {currentLevel.labelId}
               </span>
@@ -225,7 +225,7 @@ export default function Dashboard({ xp = 0 }: { xp?: number }) {
             {main.doneCount > 0 && (
               <button
                 onClick={main.removeDone}
-                className="text-xxxs font-mono text-muted-foreground hover:text-foreground transition-colors"
+                className="text-xxxs text-muted-foreground hover:text-foreground transition-colors"
               >
                 {t("beranda.clearDone", { n: main.doneCount })}
               </button>
@@ -261,14 +261,14 @@ export default function Dashboard({ xp = 0 }: { xp?: number }) {
       <Card className="bg-card border-border text-foreground hover-glow-card">
         <CardHeader className="pb-3 space-y-0">
           <div className="flex items-center justify-between mb-2">
-            <CardTitle className="text-xs font-mono tracking-widest text-muted-foreground uppercase flex items-center gap-2">
+            <CardTitle className="text-xs tracking-widest text-muted-foreground uppercase flex items-center gap-2">
               <CheckCircleIcon className="h-3 w-3 text-success" />
               {tab === "daily" ? t("beranda.todo") : t("beranda.todoWeekly")}
             </CardTitle>
             {activeList.doneCount > 0 && (
               <button
                 onClick={activeList.removeDone}
-                className="text-xxxs font-mono text-muted-foreground hover:text-foreground transition-colors"
+                className="text-xxxs text-muted-foreground hover:text-foreground transition-colors"
               >
                 {t("beranda.clearDone", { n: activeList.doneCount })}
               </button>
@@ -338,7 +338,7 @@ export default function Dashboard({ xp = 0 }: { xp?: number }) {
       <Card className="bg-card border-border text-foreground hover-glow-card">
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-xs font-mono tracking-widest text-muted-foreground uppercase flex items-center gap-2">
+            <CardTitle className="text-xs tracking-widest text-muted-foreground uppercase flex items-center gap-2">
               <NewspaperIcon className="h-3 w-3 text-info" />
               {t("beranda.news.title")}
               {unreadCount > 0 && (
@@ -350,7 +350,7 @@ export default function Dashboard({ xp = 0 }: { xp?: number }) {
             {unreadCount > 0 && (
               <button
                 onClick={markAllRead}
-                className="text-xxxs font-mono text-muted-foreground hover:text-foreground transition-colors"
+                className="text-xxxs text-muted-foreground hover:text-foreground transition-colors"
               >
                 {t("beranda.news.markRead")}
               </button>
@@ -392,7 +392,7 @@ export default function Dashboard({ xp = 0 }: { xp?: number }) {
                       <CaretRight className="h-3.5 w-3.5 text-muted-foreground/0 group-hover:text-muted-foreground transition-colors shrink-0 mt-0.5" />
                     </div>
                     <p className="text-xxs text-muted-foreground leading-relaxed mt-1 line-clamp-2">{item.content}</p>
-                    <p className="text-xxxs font-mono text-muted-foreground/70 mt-1.5">
+                    <p className="text-xxxs text-muted-foreground/70 mt-1.5">
                       {item.sourceName} · {fmtDate(item.timestamp)}
                     </p>
                   </div>
@@ -436,11 +436,11 @@ export default function Dashboard({ xp = 0 }: { xp?: number }) {
           <div className="space-y-3 text-xs text-muted-foreground">
             <div className="flex items-center gap-2">
               <span
-                className={`text-xxxs font-mono px-1.5 py-0.5 rounded ${selectedNews ? SOURCE_BADGE[selectedNews.source] : ""}`}
+                className={`text-xxxs px-1.5 py-0.5 rounded ${selectedNews ? SOURCE_BADGE[selectedNews.source] : ""}`}
               >
                 {selectedNews?.sourceName ?? ""}
               </span>
-              <span className="text-xxxs font-mono">{selectedNews ? fmtDate(selectedNews.timestamp) : ""}</span>
+              <span className="text-xxxs">{selectedNews ? fmtDate(selectedNews.timestamp) : ""}</span>
             </div>
             <p className="leading-relaxed">{selectedNews?.content}</p>
           </div>

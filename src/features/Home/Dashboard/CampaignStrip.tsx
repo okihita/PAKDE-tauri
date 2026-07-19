@@ -135,10 +135,10 @@ export default function CampaignStrip({ xp = 0, pengurusReady = false }: Campaig
         {/* Region 1 — tier track */}
         <div className="flex flex-col gap-2 px-5 pt-4">
           <div className="flex items-center justify-between">
-            <span className="text-xxxs font-mono uppercase tracking-widest text-muted-foreground">
+            <span className="text-xxxs uppercase tracking-widest text-muted-foreground">
               {LABEL_CAMPAIGN} {currentTier} → {goalTier}
             </span>
-            <span className={`text-xxxs font-mono px-1.5 py-0.5 rounded border ${band.cls}`}>{band.id}</span>
+            <span className={`text-xxxs px-1.5 py-0.5 rounded border ${band.cls}`}>{band.id}</span>
           </div>
           <div className="relative h-2 rounded-full bg-secondary">
             <div
@@ -146,7 +146,7 @@ export default function CampaignStrip({ xp = 0, pengurusReady = false }: Campaig
               style={{ width: `${progress * 100}%` }}
             />
           </div>
-          <div className="flex items-center justify-between text-xxxs font-mono text-muted-foreground">
+          <div className="flex items-center justify-between text-xxxs text-muted-foreground">
             <span>XP {xp}</span>
             <span>{Math.round(progress * 100)}%</span>
           </div>
@@ -209,7 +209,7 @@ export default function CampaignStrip({ xp = 0, pengurusReady = false }: Campaig
                     </span>
                   )}
                 </div>
-                <div className="text-xxxs font-mono text-muted-foreground">
+                <div className="text-xxxs text-muted-foreground">
                   {LABEL_RESIDENTS} {memberCount} {LABEL_OF} {currentTier}/{goalTier}
                   {currentTier >= goalTier && <span className="ml-2 text-success">{LABEL_DONE}</span>}
                 </div>
