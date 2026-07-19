@@ -80,16 +80,6 @@ export const DEFAULT_NEWS_ITEMS: ReadonlyArray<Omit<NewsItem, "timestamp">> = [
   },
 ];
 
-/** Single launch announcement shown for the demo cooperative. */
-export const DEMO_NEWS_ITEM: Omit<NewsItem, "timestamp"> = {
-  id: "demo-selamat-datang",
-  title: "Selamat Datang di Koperasi Desa Makmur",
-  content:
-    "Ini adalah mode demo PAKDE. Jelajahi fitur pembukuan, manajemen anggota, dan panduan EWS tanpa risiko. Data yang ditampilkan adalah contoh tiruan.",
-  source: "internal",
-  sourceName: "PAKDE",
-};
-
 /** Richer mock feed seeded into the demo cooperative so Beranda shows content. */
 export const DEMO_NEWS_ITEMS: ReadonlyArray<Omit<NewsItem, "timestamp">> = [
   {
